@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>多模态消融 — M0–M3 数据配比方案</title>
+<link rel="stylesheet" href="../common/base.css">
+<link rel="stylesheet" href="../2b/styles.css">
+<style>
+  .empty-state {
+    border: 1px dashed var(--border);
+    border-radius: 10px;
+    padding: 48px 24px;
+    text-align: center;
+    color: var(--text-secondary);
+    background: #fafbfc;
+  }
+  .empty-state .big { font-size: 34px; margin-bottom: 10px; }
+  .empty-state .t { font-size: 14.5px; font-weight: 650; color: var(--text); margin-bottom: 6px; }
+  .empty-state .s { font-size: 12.5px; max-width: 520px; margin: 0 auto; line-height: 1.7; }
+  .code-block {
+    background: #0f172a; color: #e2e8f0; border-radius: 8px;
+    padding: 14px 16px; font-size: 12.5px; line-height: 1.6;
+    overflow-x: auto; margin: 10px 0 16px;
+  }
+  .code-block code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+</style>
+</head>
+<body>
+
+<div class="site-header">
+  <div class="site-header-inner">
+    <a class="site-brand" href="../index.html"><span class="dot">●</span> RL 实验看板</a>
+            <div class="site-nav">
+      <a href="../index.html">总览</a>
+      <a href="../algo/index.html">算法介绍</a>
+      <a href="../2b/index.html">2B 训练</a>
+      <a href="../4b/index.html">4B 训练</a>
+      <a href="../mm/index.html" class="active">多模态训练</a>
+    </div>
+  </div>
+</div>
+
+<div class="page">
+
+  <h1>多模态训练 — Qwen3.5-2B 图文数据配比</h1>
+  <p class="subtitle">方案说明见 <a href="../algo/mm.html">多模态介绍</a> · 2×A100-80GB（排队中）· <strong>训练尚未开始</strong>。</p>
+
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="overview">方案 / 算法总览</button>
+    <button class="tab-btn" data-tab="charts">训练过程（数据采集中）</button>
+  </div>
+
+  <div class="tab-panel active" id="panel-overview">
+
+    <section>
+      <div class="callout">
+        <div class="title">这一轮要回答的问题</div>
+        在完全相同的模型、算法、序列长度、采样预算下，唯一自变量是<strong>训练数据里图文样本的占比</strong>。想看两件事：① 视觉推理能力的获得速度与上限（Geo3K acc）；② 混入图文数据后，纯文本数学能力是否被"稀释"或"带崩"（复用 aime24/math_500 探针，与 E1 GRPO 直接可比）。详见 <span class="mono">vlm_exp/exp_plan_mm.md</span>。
+      </div>
+    </section>
+
+    <section>
+      <h2>M0–M3 消融分组设计</h2>
+      <table>
+        <thead>
+          <tr><th>组</th><th>图文占比</th><th>训练数据组成</th><th>说明</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>M0</strong></td><td>0%（纯文本）</td>
+            <td class="mono">polaris_easy_boxed.parquet（全量 13688 行）</td>
+            <td><strong>直接复用已跑完的 e1_grpo_2b 结果</strong>，不重跑，省 ~26h——本质就是 E1 的原始设定，把"0% 图文"端点直接对齐到已有结果。</td>
+          </tr>
+          <tr>
+            <td><strong>M1</strong></td><td>100%（纯图文）</td>
+            <td class="mono">geo3k/train.parquet（2101 行）</td>
+            <td>极端组，检验纯视觉信号下 GRPO 的行为；池小需 <span class="mono">total_epochs=10</span> 循环凑够 150 step。</td>
+          </tr>
+          <tr>
+            <td><strong>M2</strong></td><td>50%</td>
+            <td class="mono">geo3k/train + text_subset_m2_2101（各 2101 行）</td>
+            <td>等量混合；池 4202 行，<span class="mono">total_epochs=5</span>。</td>
+          </tr>
+          <tr>
+            <td><strong>M3</strong></td><td>20%</td>
+            <td class="mono">geo3k/train(2101) + text_subset_m3_8404</td>
+            <td>更贴近真实 post-training 配比；池 10505 行，<span class="mono">total_epochs=2</span>。</td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="caption">统一不变量（M1–M3 逐字相同，只改 data.train_files）：GRPO、train_batch_size=32、rollout.n=8、max_prompt_length=1024、max_response_length=16384、非思考模式、lr=1e-6、total_training_steps=150、data.seed=1、2 卡 FSDP2 —— 与 E1 统一配置块完全一致，只多了图文数据。</p>
+    </section>
+
+    <section>
+      <h2>模型与任务选型依据</h2>
+      <p class="cpt-p">
+        <strong>模型：Qwen3.5-2B 原生 vision</strong>——与 E1–E5 文本实验<strong>同一份权重、同一个 conda 环境</strong>，已用 <span class="mono">AutoProcessor</span> 实测确认 checkpoint 带 <span class="mono">vision_config</span>/<span class="mono">image_token_id</span>，processor 类是 <span class="mono">Qwen3VLProcessor</span>，能正确把图像转成 <span class="mono">pixel_values</span>/<span class="mono">image_grid_thw</span>。选它而非独立的 Qwen3-VL-2B，是因为可以做"同底座加图像模态"这种最干净的对比，且直接复用已验证过的 <span class="mono">verl_qwen35</span> 环境与 E1 超参。<br><br>
+        <strong>任务：Geo3K</strong>（<span class="mono">hiyouga/geometry3k</span>，几何图形+数学推理，2101 训练/601 测试）——verl 官方有现成 GRPO 示例和 reward 实现，社区结果可比，规模适合 2B/2 卡的预算。
+      </p>
+    </section>
+
+    <section>
+      <h2>Reward 设计：按 data_source 分发判分</h2>
+      <p class="cpt-p">同一 batch 里会混有 <span class="mono">data_source=math_dapo/aime24</span>（纯文本）和 <span class="mono">data_source=hiyouga/geometry3k</span>（图文）的行，统一 dispatcher 按来源分发：</p>
+      <pre class="code-block"><code>def compute_score(data_source, solution_str, ground_truth, extra_info=None):
+    if data_source == "hiyouga/geometry3k":
+        return _score_geo3k(solution_str, ground_truth)
+    return _score_text_math(solution_str, ground_truth)</code></pre>
+      <p class="cpt-p">
+        <strong>纯文本分支</strong>：复用现有 <span class="mono">reward_boxed.py</span> 逻辑（Math-Verify 符号等价判定，强制 <span class="mono">\boxed{}</span>），与 E1–E5 完全一致，保证 M0↔M1–M3 的文本判分口径不变。<br>
+        <strong>图文分支</strong>：复用 verl 官方 <span class="mono">geo3k.py</span> 判分逻辑（mathruler 的 <span class="mono">grade_answer</span> + 10% 权重的格式奖励），与社区 Geo3K GRPO 基线口径一致。
+      </p>
+    </section>
+
+    <section>
+      <h2>为什么只锁定"数据配比"这一个自变量</h2>
+      <p class="cpt-p">多模态场景下值得做的消融还有：视觉编码器冻结 vs 解冻、图像分辨率/视觉 token 数量、模型底座对比（Qwen3.5-2B vs Qwen3-VL-2B）。这些都有价值，但上一轮纯算法消融（5 组×150 step）在 2 卡上就花了 1.5–2 周，多模态单 step 通常更慢；把"数据配比"和其它维度交叉会导致组数指数增长，也会让"是哪个变量导致的差异"难以归因。因此本轮把算法（固定 GRPO）、分辨率、模型底座都固定，只让图文数据配比变化。如果这轮结果显示图文数据对文本能力有明显负面影响或正面迁移，值得作为下一轮"视觉编码器冻结 vs 解冻"消融的立项依据。</p>
+    </section>
+
+    <section>
+      <h2>评测计划（每组跑完执行）</h2>
+      <table class="prose">
+        <thead><tr><th>判据</th><th>方法</th><th>关注点</th></tr></thead>
+        <tbody>
+          <tr><td>视觉能力主判据</td><td>Geo3K test（601题）acc，vLLM 批量推理 + geo3k.py 判分逻辑离线评测</td><td>M0(0%)→M1(100%) 理应单调上升；重点看 M2/M3 用多少图文比例就能追多少视觉能力</td></tr>
+          <tr><td>文本能力保持主判据</td><td>math_500（沿用 exp_plan.md 主判据口径），复用 evalscope 流程</td><td>混入图文数据后，文本数学能力相对 M0(=E1) 掉了多少；"掉多少图文比例换多少视觉能力"的权衡曲线</td></tr>
+          <tr><td>通用能力监控</td><td>mmlu_temp</td><td>相对 base 掉 1–2 点内正常</td></tr>
+          <tr><td>训练过程指标</td><td>reward/pass rate 按 data_source 分开看</td><td>naive reward manager 的 per-sample 判分自然按行归属，可从 rollout_dump/*.jsonl 按 data_source 拆开统计</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>执行顺序与当前状态</h2>
+      <table>
+        <thead><tr><th>阶段</th><th>状态</th><th>说明</th></tr></thead>
+        <tbody>
+          <tr><td>数据准备（Geo3K 下载 + 文本子集切分 + 验证探针）</td><td><span class="badge"><span class="sdot" style="background:var(--e3)"></span>已完成</span></td><td>产物已落盘 <span class="mono">vlm_exp/parquet/mm/</span>，可直接被训练脚本引用</td></tr>
+          <tr><td>Reward dispatcher / 训练脚本（M1–M3 + 烟测脚本）</td><td><span class="badge"><span class="sdot" style="background:var(--e3)"></span>已完成</span></td><td><span class="mono">run_m1_geo3k_2b.sh</span> / <span class="mono">run_m2_mix50_2b.sh</span> / <span class="mono">run_m3_mix20_2b.sh</span> / <span class="mono">run_smoke_mm.sh</span></td></tr>
+          <tr><td>多模态链路烟测</td><td><span class="badge"><span class="sdot" style="background:var(--e2)"></span>待执行</span></td><td>验证 FSDP2+vLLM 对多模态生成路径无报错（此前架构验证只测过纯文本）——正式跑前必须先过</td></tr>
+          <tr><td>M1 → M2 → M3 正式训练</td><td><span class="badge"><span class="sdot" style="background:var(--danger)"></span>排队中</span></td><td>等文本赛道 2B 机位空出（E5 REINFORCE++ 训练完）后依次启动，本页 2B 机位当前仍被 E5 占用</td></tr>
+          <tr><td>Geo3K 601 题离线评测脚本</td><td><span class="badge"><span class="sdot" style="background:var(--e2)"></span>待开发</span></td><td>暂无现成 evalscope 多模态评测能力，需要另写</td></tr>
+        </tbody>
+      </table>
+      <p class="caption">时间预算粗估：烟测几分钟~半小时；M1–M3 单 step 耗时待烟测校准（图文响应通常更短但视觉 encoder 有额外开销，方向不确定）；评测每组 ~2-4h；合计与文本 5 组消融相近量级（约 1~1.5 周），实际以烟测结果为准。</p>
+    </section>
+
+  </div>
+
+  <div class="tab-panel" id="panel-charts">
+    <div class="empty-state">
+      <div class="big">📡</div>
+      <div class="t">训练尚未开始，暂无监控数据</div>
+      <div class="s">
+        M1–M3 需等 2B 机位（当前被 E5 REINFORCE++ 占用）空出后依次启动。启动后本页会补上与 2B/4B 页面一致的结构：Pass rate / Geo3K acc / 响应长度 / entropy / grad_norm 逐 step 曲线，以及按 <span class="mono">data_source</span> 拆开的文本 vs 图文 reward 对比。<br><br>
+        数据源规划：<span class="mono">vlm_exp/logs/exp2card_mm/m1_geo3k_2b/train_*.log</span>（M2/M3 同理），届时会复用 <span class="mono">scripts/parse_4b_logs.py</span> 同款解析逻辑产出 <span class="mono">js/data-m*.js</span>。
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const tabBtns = document.querySelectorAll(".tab-btn");
+  const panels = {
+    overview: document.getElementById("panel-overview"),
+    charts: document.getElementById("panel-charts"),
+  };
+  tabBtns.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const tab = btn.dataset.tab;
+      tabBtns.forEach((b) => b.classList.toggle("active", b === btn));
+      Object.entries(panels).forEach(([k, el]) => el.classList.toggle("active", k === tab));
+    });
+  });
+</script>
+</body>
+</html>

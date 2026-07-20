@@ -1,0 +1,364 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>2B 训练 — Qwen3.5-2B（E1–E5）</title>
+<link rel="stylesheet" href="../common/base.css">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="site-header">
+  <div class="site-header-inner">
+    <a class="site-brand" href="../index.html"><span class="dot">●</span> RL 实验看板</a>
+            <div class="site-nav">
+      <a href="../index.html">总览</a>
+      <a href="../algo/index.html">算法介绍</a>
+      <a href="../2b/index.html" class="active">2B 训练</a>
+      <a href="../4b/index.html">4B 训练</a>
+      <a href="../mm/index.html">多模态训练</a>
+    </div>
+  </div>
+</div>
+
+<div class="page">
+
+  <h1>2B 训练监控 — Qwen3.5-2B（E1–E5）</h1>
+  <p class="subtitle">2×A100-80GB · non-thinking · 16K response · E1–E4 已完成 150/150，E5 训练中。算法定义见 <a href="../algo/index.html">算法介绍</a>。</p>
+
+<div class="subtabs">
+    <button class="subtab-btn active" data-subtab="compare">对比总览（E1–E4）</button>
+    <button class="subtab-btn" data-subtab="e1">E1 GRPO 详细监控</button>
+    <button class="subtab-btn" data-subtab="e2">E2 DAPO 详细监控</button>
+    <button class="subtab-btn" data-subtab="e3">E3 Dr.GRPO 详细监控</button>
+    <button class="subtab-btn" data-subtab="e4">E4 RLOO 详细监控</button>
+  </div>
+
+  <div class="subpanel active" id="subpanel-compare">
+  <p class="tertiary">Sources: archive/e1_grpo_2b, archive/e2_dapo_2b, archive/e3_drgrpo_2b, archive/e4_rloo_2b（各自 logs/train_*.log）。训练动态曲线（pass rate / length / entropy / grad_norm）四组统一截取 step 1–129 对齐比较——E1 归档 canvas 快照止于该范围（实际四组训练均已跑满 150 步）。AIME24 验证曲线不受此限制，覆盖全部 step 25–150。静态网页版，E1–E3 数据与 Cursor Canvas 版本（archive/canvases/e1-e3-algorithm-comparison.canvas.tsx）一致；E4 为本次新增，直接取自 archive/e4_rloo_2b/logs/train_20260717_180634.log，尚未回填进该 canvas 源文件。pass rate = (reward_mean+1)/2 over 32×8 samples/step。</p>
+
+  <section>
+    <div class="callout">
+      <div class="title">四组最终 AIME24 acc@1 都落在噪声带内，训练动态上的差异更清晰</div>
+      30 题验证集、单 seed，step150 四组 acc@1（33.3% / 30.0% / 40.0% / <strong>40.0%</strong>）互相之间的差距都在这个样本量的噪声范围内，不能当定量结论——<strong>math_500（500 题）才是主判据</strong>，目前四组都还未补测。训练侧信号更一致：<strong>Dr.GRPO(E3) 起步最慢（step25 附近仅 ~39%）但末10步均值 pass rate 最高</strong>（67.9% vs E1 的 62.8%、E2 的 58.8%）——去掉组内 std 归一化似乎换来了更陡的后段爬升；<strong>RLOO(E4) 起步最快</strong>（step1 附近已 ~37–41%，四组最高），末段稳定在 63–67% 区间，介于 E1 和 E3 之间；<strong>DAPO(E2) 靠 Overlong Reward Shaping 把响应长度压得最短</strong>（末10步均值远低于 E1/E3/E4），换来最快的墙钟时间（21h12m，比其余三组快 ~20%），但这份数据下没有换来更高的 pass rate 或 AIME 分数。
+    </div>
+  </section>
+
+  <section>
+    <h2>Pass rate 学习曲线对比（%，5-step 移动平均，step 1–129）</h2>
+    <div class="chart-card">
+      <div class="legend" id="legend-pass"></div>
+      <div class="chart-wrap"><canvas id="chart-pass" height="280"></canvas><div class="tooltip" id="tip-pass"></div></div>
+    </div>
+    <p class="caption">X: training step · Y: batch pass rate（5-step 移动平均，降噪）。E4 起步最快（KL loss 保留+留一法 baseline，早期信号最稳）；E2 起步最低最慢（KL loss 关闭+更激进的长度压制，早期更不稳）。E1/E3/E4 都在 step40–50 附近先后突破 55–60%（E2 明显更晚，step59 才达到）；E3 在 step100–125 一度领先全场达 6–11 个百分点，E4 全程稳定在中上区间，最后几步小幅收窄，全程领先 E2。</p>
+  </section>
+
+  <section class="grid2">
+    <div>
+      <h2>平均响应长度对比（tokens，step 1–129）</h2>
+      <div class="chart-card">
+        <div class="legend" id="legend-len"></div>
+        <div class="chart-wrap"><canvas id="chart-len" height="240"></canvas><div class="tooltip" id="tip-len"></div></div>
+      </div>
+      <p class="caption">X: step · Y: mean generated tokens/response. E2 因 Overlong Reward Shaping 下降最快最深；E3 去掉 std 归一化后不降反升；E1/E4 都介于两者之间、大致持平（E4 略低、波动更小）。（虚线 = 16K 生成上限）</p>
+    </div>
+    <div>
+      <h2>策略熵对比（entropy，step 1–129）</h2>
+      <div class="chart-card">
+        <div class="legend" id="legend-ent"></div>
+        <div class="chart-wrap"><canvas id="chart-ent" height="240"></canvas><div class="tooltip" id="tip-ent"></div></div>
+      </div>
+      <p class="caption">X: step · Y: mean token entropy. E3 收得最紧（0.27→0.10）；E2 全程最高最松（无 KL loss 拉住参考分布）；E1/E4（都有 KL loss）收敛节奏几乎一致，居中。</p>
+    </div>
+  </section>
+
+  <section class="grid2">
+    <div>
+      <h2>梯度范数对比（grad_norm，step 1–129）</h2>
+      <div class="chart-card">
+        <div class="legend" id="legend-grad"></div>
+        <div class="chart-wrap"><canvas id="chart-grad" height="220"></canvas><div class="tooltip" id="tip-grad"></div></div>
+      </div>
+      <p class="caption">X: step · Y: 全局梯度范数。E3 基线最低（0.13–0.20），E1/E2/E4 在 0.23–0.41 区间、幅值接近。E3 在 step133–140（此图范围外）另有一次瞬时尖峰，见 archive/e3_drgrpo_2b 的独立 canvas。</p>
+    </div>
+    <div>
+      <h2>150 步总训练耗时（小时）</h2>
+      <div class="chart-card">
+        <div class="chart-wrap"><canvas id="chart-dur" height="220"></canvas><div class="tooltip" id="tip-dur"></div></div>
+      </div>
+      <p class="caption">X: 实验 · Y: 150 步全程墙钟耗时。E2(DAPO) 因响应更短耗时最少；E1/E3 耗时接近（差 &lt;1h）；E4(RLOO) 最慢，因保留 KL loss 多一次 ref 前向。</p>
+    </div>
+  </section>
+
+  <section>
+    <p class="tertiary">本页由 archive/canvases/e1-e3-algorithm-comparison.canvas.tsx 的数据静态渲染而成（纯 HTML/CSS/JS，零外部依赖，可离线打开）。用 <code>bash serve.sh</code> 起一个本地静态服务器后在浏览器访问，或直接双击/拖拽本文件到浏览器打开。</p>
+  </section>
+  </div>
+
+    <div class="subpanel" id="subpanel-e1">
+    <p class="tertiary">Source: archive/e1_grpo_2b/logs/train_20260712_185929.log（本归档快照覆盖 step 1–129，实际训练已跑满 150 步，后续 resume 的日志未回填进此 canvas 快照）。完整交互版（含 MFU / 吞吐 / 耗时构成等更多指标）：<code>archive/canvases/e1-grpo-training.canvas.tsx</code>（Cursor Canvas 格式，只能在 Cursor IDE 内打开）。</p>
+    <div class="callout" style="margin-top:10px">
+      <div class="title">E1 · GRPO baseline —— 唯一保留 low_var_kl 形式 KL loss 的 grpo 组</div>
+      组内均值 baseline + 除以组内 std（未去偏，带 Dr.GRPO 要修的两个隐藏偏置）；KL loss 系数 1e-3，把策略持续拉向参考模型。pass rate 由首步 ~43% 升到末段 60%+；entropy 0.45→0.22 平稳收敛；kl_loss 随训练单调爬升（参考模型漂移，符合预期，无失控）。
+    </div>
+    <section class="grid2" style="margin-top:16px">
+      <div>
+        <h2>Pass rate（%，逐 step 原始值）</h2>
+        <div class="chart-card">
+          <div class="chart-wrap"><canvas id="chart-e1-pass" height="200"></canvas><div class="tooltip" id="tip-e1-pass"></div></div>
+        </div>
+      </div>
+      <div>
+        <h2>响应长度（tokens）</h2>
+        <div class="chart-card">
+          <div class="chart-wrap"><canvas id="chart-e1-len" height="200"></canvas><div class="tooltip" id="tip-e1-len"></div></div>
+        </div>
+      </div>
+    </section>
+    <section class="grid2" style="margin-top:16px">
+      <div>
+        <h2>策略熵 entropy</h2>
+        <div class="chart-card">
+          <div class="chart-wrap"><canvas id="chart-e1-ent" height="200"></canvas><div class="tooltip" id="tip-e1-ent"></div></div>
+        </div>
+      </div>
+      <div>
+        <h2>梯度范数 grad_norm</h2>
+        <div class="chart-card">
+          <div class="chart-wrap"><canvas id="chart-e1-grad" height="200"></canvas><div class="tooltip" id="tip-e1-grad"></div></div>
+        </div>
+      </div>
+    </section>
+    <section class="grid2" style="margin-top:16px">
+      <div>
+        <h2>actor/loss</h2>
+        <div class="chart-card">
+          <div class="chart-wrap"><canvas id="chart-e1-loss" height="200"></canvas><div class="tooltip" id="tip-e1-loss"></div></div>
+        </div>
+      </div>
+      <div>
+        <h2>PPO KL（×1e5，带符号）</h2>
+        <div class="chart-card">
+          <div class="chart-wrap"><canvas id="chart-e1-ppokl" height="200"></canvas><div class="tooltip" id="tip-e1-ppokl"></div></div>
+        </div>
+      </div>
+    </section>
+    <section class="grid2" style="margin-top:16px">
+      <div>
+        <h2>PPO 裁剪比例 pg_clipfrac（%）</h2>
+        <div class="chart-card">
+          <div class="chart-wrap"><canvas id="chart-e1-clip" height="200"></canvas><div class="tooltip" id="tip-e1-clip"></div></div>
+        </div>
+      </div>
+      <div>
+        <h2>rollout↔训练概率偏离度（(1−corr)×1e4）</h2>
+        <div class="chart-card">
+          <div class="chart-wrap"><canvas id="chart-e1-corr" height="200"></canvas><div class="tooltip" id="tip-e1-corr"></div></div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div class="subpanel" id="subpanel-e2">
+    <p class="tertiary">Source: archive/e2_dapo_2b/logs/train_20260714_110612.log（150/150 步一次性跑完）。完整交互版（含 MFU / 吞吐 / 耗时构成等更多指标）：<code>archive/canvases/e2-dapo-training.canvas.tsx</code>（Cursor Canvas 格式，只能在 Cursor IDE 内打开）。</p>
+    <div class="callout" style="margin-top:10px">
+      <div class="title">E2 · DAPO —— Clip-Higher + Dynamic Sampling + Overlong 惩罚，关闭 KL loss</div>
+      非对称裁剪 0.2/0.28（下方裁剪比例图的高端裁剪明显更活跃，低端 pg_clipfrac_lower 几乎恒为 0）；Overlong Reward Shaping 把响应长度压得四组最短；关闭 KL loss，省一次 ref 前向，墙钟最快（21h12m）。pass rate 起步最低最慢（无 KL 拉住 + 更激进的长度压制）。
+    </div>
+    <section class="grid2" style="margin-top:16px">
+      <div>
+        <h2>Pass rate（%，逐 step 原始值）</h2>
+        <div class="chart-card">
+          <div class="chart-wrap"><canvas id="chart-e2-pass" height="200"></canvas><div class="tooltip" id="tip-e2-pass"></div></div>
+        </div>
+      </div>
+      <div>
+        <h2>响应长度（tokens）</h2>
+        <div class="chart-card">
+          <div class="chart-wrap"><canvas id="chart-e2-len" height="200"></canvas><div class="tooltip" id="tip-e2-len"></div></div>
+        </div>
+      </div>
+    </section>
+    <section class="grid2" style="margin-top:16px">
+      <div>
+        <h2>策略熵 entropy</h2>
+        <div class="chart-card">
+          <div class="chart-wrap"><canvas id="chart-e2-ent" height="200"></canvas><div class="tooltip" id="tip-e2-ent"></div></div>
+        </div>
+      </div>
+      <div>
+        <h2>梯度范数 grad_norm</h2>
+        <div class="chart-card">
+          <div class="chart-wrap"><canvas id="chart-e2-grad" height="200"></canvas><div class="tooltip" id="tip-e2-grad"></div></div>
+        </div>
+      </div>
+    </section>
+    <section class="grid2" style="margin-top:16px">
+      <div>
+        <h2>actor/loss</h2>
+        <div class="chart-card">
+          <div class="chart-wrap"><canvas id="chart-e2-loss" height="200"></canvas><div class="tooltip" id="tip-e2-loss"></div></div>
+        </div>
+      </div>
+      <div>
+        <h2>PPO KL（×1e5，带符号）</h2>
+        <div class="chart-card">
+          <div class="chart-wrap"><canvas id="chart-e2-ppokl" height="200"></canvas><div class="tooltip" id="tip-e2-ppokl"></div></div>
+        </div>
+      </div>
+    </section>
+    <section class="grid2" style="margin-top:16px">
+      <div>
+        <h2>PPO 裁剪比例 pg_clipfrac（%）</h2>
+        <div class="chart-card">
+          <div class="chart-wrap"><canvas id="chart-e2-clip" height="200"></canvas><div class="tooltip" id="tip-e2-clip"></div></div>
+        </div>
+      </div>
+      <div>
+        <h2>rollout↔训练概率偏离度（(1−corr)×1e4）</h2>
+        <div class="chart-card">
+          <div class="chart-wrap"><canvas id="chart-e2-corr" height="200"></canvas><div class="tooltip" id="tip-e2-corr"></div></div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div class="subpanel" id="subpanel-e3">
+    <p class="tertiary">Source: archive/e3_drgrpo_2b/logs/train_20260715_114131.log（150/150 步一次性跑完；step133–140 附近有一次瞬时不稳定 episode（PPO KL/裁剪比例短暂尖峰，entropy 骤降），下方 PPO KL 与裁剪比例图上能看到该尖峰）。完整交互版（含 MFU / 吞吐 / 耗时构成等更多指标）：<code>archive/canvases/e3-drgrpo-training.canvas.tsx</code>（Cursor Canvas 格式，只能在 Cursor IDE 内打开）。</p>
+    <div class="callout" style="margin-top:10px">
+      <div class="title">E3 · Dr.GRPO —— 去掉组内 std 归一化 + 固定 horizon 归一，关闭 KL loss</div>
+      不除以组内 std（修长度/难度偏置）+ loss_agg_mode=seq-mean-token-sum-norm（固定分母而非逐序列 token 数）；关闭 KL loss。梯度范数全组最低最稳（0.13–0.20，除尖峰外）；起步最慢但后段 pass rate 全场最高；响应长度不降反升（~10.3k→12.6k）。
+    </div>
+    <section class="grid2" style="margin-top:16px">
+      <div>
+        <h2>Pass rate（%，逐 step 原始值）</h2>
+        <div class="chart-card">
+          <div class="chart-wrap"><canvas id="chart-e3-pass" height="200"></canvas><div class="tooltip" id="tip-e3-pass"></div></div>
+        </div>
+      </div>
+      <div>
+        <h2>响应长度（tokens）</h2>
+        <div class="chart-card">
+          <div class="chart-wrap"><canvas id="chart-e3-len" height="200"></canvas><div class="tooltip" id="tip-e3-len"></div></div>
+        </div>
+      </div>
+    </section>
+    <section class="grid2" style="margin-top:16px">
+      <div>
+        <h2>策略熵 entropy</h2>
+        <div class="chart-card">
+          <div class="chart-wrap"><canvas id="chart-e3-ent" height="200"></canvas><div class="tooltip" id="tip-e3-ent"></div></div>
+        </div>
+      </div>
+      <div>
+        <h2>梯度范数 grad_norm</h2>
+        <div class="chart-card">
+          <div class="chart-wrap"><canvas id="chart-e3-grad" height="200"></canvas><div class="tooltip" id="tip-e3-grad"></div></div>
+        </div>
+      </div>
+    </section>
+    <section class="grid2" style="margin-top:16px">
+      <div>
+        <h2>actor/loss</h2>
+        <div class="chart-card">
+          <div class="chart-wrap"><canvas id="chart-e3-loss" height="200"></canvas><div class="tooltip" id="tip-e3-loss"></div></div>
+        </div>
+      </div>
+      <div>
+        <h2>PPO KL（×1e5，带符号）</h2>
+        <div class="chart-card">
+          <div class="chart-wrap"><canvas id="chart-e3-ppokl" height="200"></canvas><div class="tooltip" id="tip-e3-ppokl"></div></div>
+        </div>
+      </div>
+    </section>
+    <section class="grid2" style="margin-top:16px">
+      <div>
+        <h2>PPO 裁剪比例 pg_clipfrac（%）</h2>
+        <div class="chart-card">
+          <div class="chart-wrap"><canvas id="chart-e3-clip" height="200"></canvas><div class="tooltip" id="tip-e3-clip"></div></div>
+        </div>
+      </div>
+      <div>
+        <h2>rollout↔训练概率偏离度（(1−corr)×1e4）</h2>
+        <div class="chart-card">
+          <div class="chart-wrap"><canvas id="chart-e3-corr" height="200"></canvas><div class="tooltip" id="tip-e3-corr"></div></div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div class="subpanel" id="subpanel-e4">
+    <p class="tertiary">Source: archive/e4_rloo_2b/logs/train_20260717_180634.log（150/150 步一次性跑完）。完整交互版（含 MFU / 吞吐 / 耗时构成等更多指标）：<code>archive/canvases/e4-rloo-training.canvas.tsx</code>（Cursor Canvas 格式，只能在 Cursor IDE 内打开）。</p>
+    <div class="callout" style="margin-top:10px">
+      <div class="title">E4 · RLOO —— 留一法(leave-one-out) baseline，重新开 KL loss</div>
+      每条样本的 baseline 用同组其余 G−1 条的均值（去掉自己），估计更无偏；重新开 KL loss（low_var_kl，1e-3），带回一次 ref 前向，墙钟最长（26h48m）。pass rate 起步最快（四组最高），末段稳定在中上区间，step150 与 E1/E3 并列全场最高 aime24 acc@1。
+    </div>
+    <section class="grid2" style="margin-top:16px">
+      <div>
+        <h2>Pass rate（%，逐 step 原始值）</h2>
+        <div class="chart-card">
+          <div class="chart-wrap"><canvas id="chart-e4-pass" height="200"></canvas><div class="tooltip" id="tip-e4-pass"></div></div>
+        </div>
+      </div>
+      <div>
+        <h2>响应长度（tokens）</h2>
+        <div class="chart-card">
+          <div class="chart-wrap"><canvas id="chart-e4-len" height="200"></canvas><div class="tooltip" id="tip-e4-len"></div></div>
+        </div>
+      </div>
+    </section>
+    <section class="grid2" style="margin-top:16px">
+      <div>
+        <h2>策略熵 entropy</h2>
+        <div class="chart-card">
+          <div class="chart-wrap"><canvas id="chart-e4-ent" height="200"></canvas><div class="tooltip" id="tip-e4-ent"></div></div>
+        </div>
+      </div>
+      <div>
+        <h2>梯度范数 grad_norm</h2>
+        <div class="chart-card">
+          <div class="chart-wrap"><canvas id="chart-e4-grad" height="200"></canvas><div class="tooltip" id="tip-e4-grad"></div></div>
+        </div>
+      </div>
+    </section>
+    <section class="grid2" style="margin-top:16px">
+      <div>
+        <h2>actor/loss</h2>
+        <div class="chart-card">
+          <div class="chart-wrap"><canvas id="chart-e4-loss" height="200"></canvas><div class="tooltip" id="tip-e4-loss"></div></div>
+        </div>
+      </div>
+      <div>
+        <h2>PPO KL（×1e5，带符号）</h2>
+        <div class="chart-card">
+          <div class="chart-wrap"><canvas id="chart-e4-ppokl" height="200"></canvas><div class="tooltip" id="tip-e4-ppokl"></div></div>
+        </div>
+      </div>
+    </section>
+    <section class="grid2" style="margin-top:16px">
+      <div>
+        <h2>PPO 裁剪比例 pg_clipfrac（%）</h2>
+        <div class="chart-card">
+          <div class="chart-wrap"><canvas id="chart-e4-clip" height="200"></canvas><div class="tooltip" id="tip-e4-clip"></div></div>
+        </div>
+      </div>
+      <div>
+        <h2>rollout↔训练概率偏离度（(1−corr)×1e4）</h2>
+        <div class="chart-card">
+          <div class="chart-wrap"><canvas id="chart-e4-corr" height="200"></canvas><div class="tooltip" id="tip-e4-corr"></div></div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+</div>
+
+<script src="js/data-compare.js"></script>
+<script src="js/data-e1.js"></script>
+<script src="js/data-e2.js"></script>
+<script src="js/data-e3.js"></script>
+<script src="js/data-e4.js"></script>
+<script src="js/charts.js"></script>
+</body>
+</html>

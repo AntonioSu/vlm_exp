@@ -1,0 +1,515 @@
+/* 算法介绍页专用视觉 — 克制、可读、有层次；不套通用卡片堆叠 */
+
+@import url("https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,550;9..144,650&family=Source+Sans+3:wght@400;500;600;700&display=swap");
+
+:root {
+  --algo-ink: #14181f;
+  --algo-muted: #5c6570;
+  --algo-faint: #8b949e;
+  --algo-line: #e4e7ec;
+  --algo-paper: #f7f5f1;
+  --algo-panel: #ffffff;
+  --algo-accent: #1f6b4a;
+  --algo-accent-soft: rgba(31, 107, 74, 0.08);
+  --algo-ppo: #334155;
+  --algo-grpo: #2563eb;
+  --algo-dapo: #c2410c;
+  --algo-dr: #0f766e;
+  --algo-rloo: #7c3aed;
+  --algo-rpp: #be185d;
+}
+
+body.algo-body {
+  background:
+    radial-gradient(900px 420px at 12% -10%, rgba(31, 107, 74, 0.07), transparent 60%),
+    radial-gradient(700px 380px at 90% 0%, rgba(37, 99, 235, 0.06), transparent 55%),
+    linear-gradient(180deg, #f3f1ec 0%, var(--algo-paper) 40%, #eef0f3 100%);
+  color: var(--algo-ink);
+  font-family: "Source Sans 3", "PingFang SC", "Noto Sans SC", sans-serif;
+  line-height: 1.65;
+}
+
+.algo-page {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 28px 24px 96px;
+}
+
+/* 二级页签 */
+.algo-subnav {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid var(--algo-line);
+  margin: 0 0 32px;
+}
+.algo-subnav a {
+  text-decoration: none;
+  color: var(--algo-faint);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  padding: 12px 18px 11px;
+  margin-bottom: -1px;
+  border-bottom: 2px solid transparent;
+  transition: color 0.15s, border-color 0.15s;
+}
+.algo-subnav a:hover { color: var(--algo-ink); }
+.algo-subnav a.active {
+  color: var(--algo-accent);
+  border-bottom-color: var(--algo-accent);
+}
+
+/* Hero */
+.algo-hero {
+  margin-bottom: 40px;
+  animation: algo-in 0.45s ease both;
+}
+.algo-kicker {
+  display: inline-block;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--algo-accent);
+  margin: 0 0 10px;
+}
+.algo-hero h1 {
+  font-family: "Fraunces", "Source Serif 4", Georgia, serif;
+  font-size: clamp(28px, 4vw, 36px);
+  font-weight: 650;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  margin: 0 0 14px;
+  color: var(--algo-ink);
+}
+.algo-hero .lede {
+  font-size: 16px;
+  color: var(--algo-muted);
+  max-width: 62ch;
+  margin: 0;
+}
+.algo-hero .lede a {
+  color: var(--algo-accent);
+  font-weight: 600;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(31, 107, 74, 0.35);
+}
+.algo-hero .lede a:hover { border-bottom-color: var(--algo-accent); }
+
+/* 算法色条 */
+.algo-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 22px;
+}
+.algo-chips span {
+  font-size: 12.5px;
+  font-weight: 700;
+  padding: 5px 11px;
+  border-radius: 6px;
+  color: #fff;
+  letter-spacing: 0.01em;
+}
+.chip-ppo { background: var(--algo-ppo); }
+.chip-grpo { background: var(--algo-grpo); }
+.chip-dapo { background: var(--algo-dapo); }
+.chip-dr { background: var(--algo-dr); }
+.chip-rloo { background: var(--algo-rloo); }
+.chip-rpp { background: var(--algo-rpp); }
+
+/* 算法族分类 */
+.family-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.15fr 1fr;
+  gap: 14px;
+  margin-top: 4px;
+}
+@media (max-width: 840px) {
+  .family-grid { grid-template-columns: 1fr; }
+}
+.family-card {
+  padding: 18px 18px 16px;
+  background: var(--algo-panel);
+  border: 1px solid var(--algo-line);
+  border-radius: 12px;
+  border-top: 3px solid var(--family-tone, var(--algo-accent));
+}
+.family-card .family-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--family-tone, var(--algo-accent));
+  margin: 0 0 8px;
+}
+.family-card h3 {
+  font-family: "Fraunces", Georgia, serif;
+  font-size: 17px;
+  font-weight: 650;
+  margin: 0 0 8px;
+  letter-spacing: -0.015em;
+}
+.family-card .family-desc {
+  font-size: 13px;
+  color: var(--algo-muted);
+  margin: 0 0 14px;
+  line-height: 1.5;
+}
+.family-card .family-members {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.family-card .family-members span {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 9px;
+  border-radius: 5px;
+  color: #fff;
+}
+.family-card .family-note {
+  margin: 12px 0 0;
+  font-size: 12px;
+  color: var(--algo-faint);
+  line-height: 1.45;
+}
+.family-card[data-f="actor"] { --family-tone: var(--algo-ppo); }
+.family-card[data-f="group"] { --family-tone: var(--algo-grpo); }
+.family-card[data-f="other"] { --family-tone: var(--algo-rloo); }
+
+.pros-group-label {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--algo-faint);
+  margin: 22px 0 0;
+  padding-bottom: 6px;
+}
+.pros-group-label:first-child { margin-top: 0; }
+
+/* 逐算法短介 */
+.intro-list {
+  display: grid;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.intro-item {
+  display: grid;
+  grid-template-columns: 132px 1fr;
+  gap: 20px;
+  padding: 20px 0 20px 16px;
+  border-top: 1px solid var(--algo-line);
+  border-left: 3px solid var(--intro-tone, var(--algo-line));
+}
+.intro-item:last-child { border-bottom: 1px solid var(--algo-line); }
+.intro-item[data-a="ppo"] { --intro-tone: var(--algo-ppo); }
+.intro-item[data-a="grpo"] { --intro-tone: var(--algo-grpo); }
+.intro-item[data-a="dapo"] { --intro-tone: var(--algo-dapo); }
+.intro-item[data-a="dr"] { --intro-tone: var(--algo-dr); }
+.intro-item[data-a="rloo"] { --intro-tone: var(--algo-rloo); }
+.intro-item[data-a="rpp"] { --intro-tone: var(--algo-rpp); }
+.intro-meta .name {
+  font-family: "Fraunces", Georgia, serif;
+  font-size: 18px;
+  font-weight: 650;
+  letter-spacing: -0.015em;
+  color: var(--algo-ink);
+  margin: 0 0 4px;
+}
+.intro-meta .tag {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--intro-tone);
+  margin: 0 0 6px;
+}
+.intro-meta .full {
+  font-size: 12px;
+  color: var(--algo-faint);
+  margin: 0;
+  line-height: 1.4;
+}
+.intro-body p {
+  font-size: 14.5px;
+  color: var(--algo-muted);
+  margin: 0 0 8px;
+  max-width: 68ch;
+  line-height: 1.6;
+}
+.intro-body p:last-child { margin-bottom: 0; }
+.intro-body .how {
+  font-size: 13.5px;
+  color: var(--algo-ink);
+}
+.intro-body .how strong {
+  font-weight: 650;
+  color: var(--intro-tone);
+}
+@media (max-width: 640px) {
+  .intro-item { grid-template-columns: 1fr; gap: 8px; }
+}
+
+/* Sections */
+.algo-section {
+  margin-top: 48px;
+  animation: algo-in 0.5s ease both;
+  animation-delay: 0.05s;
+}
+.algo-section h2 {
+  font-family: "Fraunces", Georgia, serif;
+  font-size: 22px;
+  font-weight: 650;
+  letter-spacing: -0.015em;
+  margin: 0 0 6px;
+  color: var(--algo-ink);
+}
+.algo-section .sec-sub {
+  font-size: 13.5px;
+  color: var(--algo-faint);
+  margin: 0 0 22px;
+}
+
+/* 区别点：时间线式，无卡片框 */
+.diff-list {
+  position: relative;
+  padding-left: 0;
+  margin: 0;
+  list-style: none;
+}
+.diff-list::before {
+  content: "";
+  position: absolute;
+  left: 15px;
+  top: 8px;
+  bottom: 8px;
+  width: 1px;
+  background: var(--algo-line);
+}
+.diff-item {
+  position: relative;
+  padding: 0 0 28px 48px;
+}
+.diff-item:last-child { padding-bottom: 0; }
+.diff-num {
+  position: absolute;
+  left: 0;
+  top: 2px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--algo-panel);
+  border: 2px solid var(--algo-accent);
+  color: var(--algo-accent);
+  font-size: 13px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+  font-variant-numeric: tabular-nums;
+}
+.diff-item h3 {
+  font-size: 16px;
+  font-weight: 700;
+  margin: 4px 0 8px;
+  color: var(--algo-ink);
+}
+.diff-item p {
+  font-size: 14.5px;
+  color: var(--algo-muted);
+  margin: 0;
+  max-width: 68ch;
+}
+.diff-item p strong { color: var(--algo-ink); font-weight: 650; }
+.diff-item .mono,
+.algo-page .mono {
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 0.9em;
+  background: var(--algo-accent-soft);
+  color: var(--algo-accent);
+  padding: 1px 5px;
+  border-radius: 4px;
+}
+
+/* Pros/cons — 横向算法块，不用边框盒 */
+.pros-grid {
+  display: grid;
+  gap: 0;
+}
+.pros-row {
+  display: grid;
+  grid-template-columns: 140px 1fr 1fr;
+  gap: 20px;
+  padding: 18px 0;
+  border-top: 1px solid var(--algo-line);
+}
+.pros-row:last-child { border-bottom: 1px solid var(--algo-line); }
+.pros-name {
+  font-weight: 700;
+  font-size: 15px;
+  padding-top: 2px;
+}
+.pros-name .dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 8px;
+  vertical-align: 1px;
+}
+.pros-col h4 {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--algo-faint);
+  margin: 0 0 6px;
+}
+.pros-col p {
+  font-size: 13.5px;
+  color: var(--algo-muted);
+  margin: 0;
+  line-height: 1.55;
+}
+@media (max-width: 720px) {
+  .pros-row { grid-template-columns: 1fr; gap: 10px; }
+}
+
+/* Config table */
+.table-wrap {
+  overflow-x: auto;
+  margin-top: 4px;
+  border-radius: 10px;
+  border: 1px solid var(--algo-line);
+  background: var(--algo-panel);
+}
+.algo-page table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  border: none;
+  border-radius: 0;
+}
+.algo-page table th,
+.algo-page table td {
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--algo-line);
+  text-align: center;
+  vertical-align: top;
+}
+.algo-page table tbody tr:last-child td { border-bottom: none; }
+.algo-page table th:first-child,
+.algo-page table td:first-child {
+  text-align: left;
+  color: var(--algo-muted);
+  font-weight: 600;
+  white-space: nowrap;
+  background: #faf9f7;
+  position: sticky;
+  left: 0;
+  z-index: 1;
+}
+.algo-page table thead th {
+  background: #f0eeea;
+  font-weight: 700;
+  font-size: 12.5px;
+  color: var(--algo-ink);
+}
+.algo-page table thead th:first-child { background: #ebe8e2; }
+.algo-page .na { color: var(--algo-faint); }
+.algo-caption {
+  font-size: 12.5px;
+  color: var(--algo-faint);
+  margin: 12px 0 0;
+}
+
+/* Memory list */
+.memo-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+.memo-list li {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 16px;
+  align-items: baseline;
+  padding: 12px 0 12px 14px;
+  border-left: 3px solid var(--algo-line);
+  font-size: 14.5px;
+  color: var(--algo-muted);
+}
+.memo-list li .k {
+  font-weight: 700;
+  color: var(--algo-ink);
+  font-size: 14px;
+}
+.memo-list li[data-a="ppo"] { border-left-color: var(--algo-ppo); }
+.memo-list li[data-a="grpo"] { border-left-color: var(--algo-grpo); }
+.memo-list li[data-a="dapo"] { border-left-color: var(--algo-dapo); }
+.memo-list li[data-a="dr"] { border-left-color: var(--algo-dr); }
+.memo-list li[data-a="rloo"] { border-left-color: var(--algo-rloo); }
+.memo-list li[data-a="rpp"] { border-left-color: var(--algo-rpp); }
+.memo-list li[data-a="mm"] { border-left-color: var(--algo-accent); }
+.memo-list li .k { min-width: 0; }
+.memo-list li[data-wide] {
+  grid-template-columns: 160px 1fr;
+}
+@media (max-width: 560px) {
+  .memo-list li { grid-template-columns: 1fr; gap: 4px; }
+}
+
+/* Mix ratio visual for mm page */
+.mix-rail {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin: 8px 0 28px;
+}
+@media (max-width: 720px) { .mix-rail { grid-template-columns: 1fr 1fr; } }
+.mix-cell {
+  padding: 16px 14px;
+  background: var(--algo-panel);
+  border-radius: 10px;
+  border: 1px solid var(--algo-line);
+}
+.mix-cell .pct {
+  font-family: "Fraunces", Georgia, serif;
+  font-size: 28px;
+  font-weight: 650;
+  color: var(--algo-accent);
+  line-height: 1;
+  margin-bottom: 8px;
+}
+.mix-cell .bar {
+  height: 6px;
+  border-radius: 3px;
+  background: #ebe8e2;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+.mix-cell .bar i {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, var(--algo-accent), #3d9b72);
+  border-radius: 3px;
+}
+.mix-cell p {
+  font-size: 12.5px;
+  color: var(--algo-muted);
+  margin: 0;
+  line-height: 1.45;
+}
+
+@keyframes algo-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}

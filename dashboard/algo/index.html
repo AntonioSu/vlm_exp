@@ -1,0 +1,310 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>算法介绍 — PPO / GRPO / DAPO / Dr.GRPO / RLOO / REINFORCE++</title>
+<link rel="stylesheet" href="../common/base.css">
+<link rel="stylesheet" href="algo.css">
+</head>
+<body class="algo-body">
+
+<div class="site-header">
+  <div class="site-header-inner">
+    <a class="site-brand" href="../index.html"><span class="dot">●</span> RL 实验看板</a>
+    <div class="site-nav">
+      <a href="../index.html">总览</a>
+      <a href="../algo/index.html" class="active">算法介绍</a>
+      <a href="../2b/index.html">2B 训练</a>
+      <a href="../4b/index.html">4B 训练</a>
+      <a href="../mm/index.html">多模态训练</a>
+    </div>
+  </div>
+</div>
+
+<div class="algo-page">
+  <div class="algo-subnav">
+    <a href="index.html" class="active">算法</a>
+    <a href="mm.html">多模态</a>
+  </div>
+
+  <header class="algo-hero">
+    <p class="algo-kicker">Text RL · Algorithm Primer</p>
+    <h1>从 PPO 到五种 critic-free 变体</h1>
+    <p class="lede">
+      先按「要不要 value 网络」分成两大家族，再在 critic-free 里按 baseline 怎么估继续细分。
+      本轮 2B/4B 训练只跑了右侧五族；PPO 因需另训 critic、显存与时间翻倍，未纳入对比。
+      曲线见 <a href="../2b/index.html">2B 训练</a> / <a href="../4b/index.html">4B 训练</a>。
+    </p>
+    <div class="algo-chips">
+      <span class="chip-ppo">PPO</span>
+      <span class="chip-grpo">GRPO</span>
+      <span class="chip-dapo">DAPO</span>
+      <span class="chip-dr">Dr.GRPO</span>
+      <span class="chip-rloo">RLOO</span>
+      <span class="chip-rpp">REINFORCE++</span>
+    </div>
+  </header>
+
+  <section class="algo-section">
+    <h2>算法怎么分</h2>
+    <p class="sec-sub">三条谱系：actor-critic → 组相对 → 其它无 critic 基线</p>
+    <div class="family-grid">
+      <div class="family-card" data-f="actor">
+        <p class="family-label">Family A · Actor-Critic</p>
+        <h3>有 Value 网络</h3>
+        <p class="family-desc">用 learned critic（常配 GAE）估 advantage；策略更新仍可套 PPO clip。多一份前向与显存。</p>
+        <div class="family-members">
+          <span class="chip-ppo">PPO</span>
+        </div>
+        <p class="family-note">本轮未跑（2 卡预算下 critic 成本过高）</p>
+      </div>
+      <div class="family-card" data-f="group">
+        <p class="family-label">Family B · Group-Relative</p>
+        <h3>同题 G 条相对打分</h3>
+        <p class="family-desc">同一 prompt 采样多条，用组内统计当 baseline，省掉 critic。GRPO 是基座；DAPO / Dr.GRPO 是其上工程与偏置修正。</p>
+        <div class="family-members">
+          <span class="chip-grpo">GRPO</span>
+          <span class="chip-dapo">DAPO</span>
+          <span class="chip-dr">Dr.GRPO</span>
+        </div>
+        <p class="family-note">共享 <span class="mono">adv_estimator=grpo</span>，差在归一化 / KL / 采样与 reward 机制</p>
+      </div>
+      <div class="family-card" data-f="other">
+        <p class="family-label">Family C · Other Critic-Free</p>
+        <h3>换一套 baseline</h3>
+        <p class="family-desc">同样不训 value，但不走「组内均值 ± std」这条路：留一法，或全 batch 白化。</p>
+        <div class="family-members">
+          <span class="chip-rloo">RLOO</span>
+          <span class="chip-rpp">REINFORCE++</span>
+        </div>
+        <p class="family-note">RLOO 仍用组内采样；REINFORCE++ 不依赖同题分组</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="algo-section">
+    <h2>逐算法简介</h2>
+    <p class="sec-sub">每个算法在做什么 · 核心机制一句话</p>
+    <ul class="intro-list">
+      <li class="intro-item" data-a="ppo">
+        <div class="intro-meta">
+          <p class="tag">Family A</p>
+          <h3 class="name">PPO</h3>
+          <p class="full">Proximal Policy Optimization</p>
+        </div>
+        <div class="intro-body">
+          <p>强化学习里最常用的 actor-critic 算法。策略（actor）与价值（critic）一起训：critic 估状态价值，再用 GAE 得到 advantage；actor 用 importance ratio 做裁剪更新，防止一步走太远。</p>
+          <p class="how"><strong>核心：</strong>learned V(s) + clip(π/π_old) · 本轮因需另训 critic 未跑</p>
+        </div>
+      </li>
+      <li class="intro-item" data-a="grpo">
+        <div class="intro-meta">
+          <p class="tag">Family B · 基座</p>
+          <h3 class="name">GRPO</h3>
+          <p class="full">Group Relative Policy Optimization</p>
+        </div>
+        <div class="intro-body">
+          <p>DeepSeek-R1 等后训练常用的 critic-free 方法。对同一题采样 G 条回答，用组内 reward 均值（再除以组内 std）当 advantage，只更新策略、不训 value。本轮对照实验的共同基线。</p>
+          <p class="how"><strong>核心：</strong>组内相对打分 · 常配 low_var_kl · <span class="mono">adv_estimator=grpo</span></p>
+        </div>
+      </li>
+      <li class="intro-item" data-a="dapo">
+        <div class="intro-meta">
+          <p class="tag">Family B · 工程增强</p>
+          <h3 class="name">DAPO</h3>
+          <p class="full">Decoupled Clip and Dynamic sAmpling Policy Optimization</p>
+        </div>
+        <div class="intro-body">
+          <p>在 GRPO 骨架上补齐工程机制：非对称 clip（Clip-Higher）保住探索；Dynamic Sampling 丢掉全对/全错的无用组；Overlong 软惩罚超长回答；并关掉 KL，让策略 freer。</p>
+          <p class="how"><strong>核心：</strong>GRPO + 四件套 · reward manager = <span class="mono">dapo</span></p>
+        </div>
+      </li>
+      <li class="intro-item" data-a="dr">
+        <div class="intro-meta">
+          <p class="tag">Family B · 偏置修正</p>
+          <h3 class="name">Dr.GRPO</h3>
+          <p class="full">Done-right GRPO</p>
+        </div>
+        <div class="intro-body">
+          <p>针对 GRPO 两个隐性问题的最小修正：不再除以组内 std（减轻「简单题梯度被放大」的难度偏置）；loss 用固定分母聚合（减轻长度偏置）。通常同时关 KL。</p>
+          <p class="how"><strong>核心：</strong><span class="mono">norm_adv_by_std=False</span> + <span class="mono">seq-mean-token-sum-norm</span></p>
+        </div>
+      </li>
+      <li class="intro-item" data-a="rloo">
+        <div class="intro-meta">
+          <p class="tag">Family C</p>
+          <h3 class="name">RLOO</h3>
+          <p class="full">REINFORCE Leave-One-Out</p>
+        </div>
+        <div class="intro-body">
+          <p>同样对同题采 G 条，但每条的 baseline 是「去掉自己后」其余 G−1 条的均值（leave-one-out）。相对含自身的组均值<strong>偏差更小</strong>，但估基线<strong>方差更大</strong>。若关注难度偏置（简单/困难 prompt 梯度权重失衡）或多步 off-policy 稳定性，RLOO（或带 shrinkage 的变体）往往比除以组内 std 的 GRPO 更干净。仍属 critic-free，常配 KL。</p>
+          <p class="how"><strong>核心：</strong>LOO · 减偏差、增方差；偏置/off-policy 更干净 · <span class="mono">adv_estimator=rloo</span></p>
+        </div>
+      </li>
+      <li class="intro-item" data-a="rpp">
+        <div class="intro-meta">
+          <p class="tag">Family C</p>
+          <h3 class="name">REINFORCE++</h3>
+          <p class="full">REINFORCE with batch whitening</p>
+        </div>
+        <div class="intro-body">
+          <p>不做「同题组内相对」：对折扣 return 在整个 batch 上做均值方差白化，再当 advantage。实现最接近经典 REINFORCE，不依赖 G&gt;1 的组结构；KL 常用 mse 形式。</p>
+          <p class="how"><strong>核心：</strong>全 batch 白化 · <span class="mono">adv_estimator=reinforce_plus_plus</span></p>
+        </div>
+      </li>
+    </ul>
+  </section>
+
+  <section class="algo-section">
+    <h2>主要区别点</h2>
+    <p class="sec-sub">五条轴线：从 PPO 对照到 DAPO 工程</p>
+    <ol class="diff-list">
+      <li class="diff-item">
+        <div class="diff-num">1</div>
+        <h3>有没有 Critic —— PPO vs 其余全部</h3>
+        <p><strong>PPO</strong>：另训 value 网络，用 GAE（或类似）估 advantage，策略侧再做 ratio clip。<strong>其余五种</strong>：不训 critic，用采样统计当 baseline，显存与实现都更轻，也是本轮对比的主线。</p>
+      </li>
+      <li class="diff-item">
+        <div class="diff-num">2</div>
+        <h3>Advantage 的 baseline 怎么估</h3>
+        <p><strong>PPO</strong>：value 预测的 V(s)。<strong>GRPO / DAPO / Dr.GRPO</strong>：同题 G 条的<strong>组内平均 reward</strong>。<strong>RLOO</strong>：留一法——每条 baseline 是同组其余 G−1 条均值，相对组均值<strong>减小偏差、增大方差</strong>。<strong>REINFORCE++</strong>：不做组内 baseline，对全 batch 折扣 return 做白化。</p>
+      </li>
+      <li class="diff-item">
+        <div class="diff-num">3</div>
+        <h3>GRPO 的两个隐藏偏置 —— Dr.GRPO 修这两处</h3>
+        <p><strong>难度偏置</strong>：除以组内 std，越「确定」的题梯度被放大。Dr.GRPO 去掉（<span class="mono">norm_adv_by_std=False</span>）。<strong>长度偏置</strong>：<span class="mono">token-mean</span> 分母随长度漂移；Dr.GRPO 用 <span class="mono">seq-mean-token-sum-norm</span>（固定分母）。DAPO 沿用 GRPO 这两项未改。PPO / RLOO / REINFORCE++ 不在这条偏置轴上。</p>
+      </li>
+      <li class="diff-item">
+        <div class="diff-num">4</div>
+        <h3>要不要 KL 约束</h3>
+        <p><strong>开 KL</strong>（PPO 常有、以及 GRPO / RLOO / REINFORCE++）：更稳，但多一次 ref 前向。GRPO / RLOO 常用 <span class="mono">low_var_kl</span>，REINFORCE++ 常用 <span class="mono">mse</span>。<strong>关 KL</strong>（DAPO / Dr.GRPO）：更自由、更快。</p>
+      </li>
+      <li class="diff-item">
+        <div class="diff-num">5</div>
+        <h3>DAPO 的工程四件套（仅 DAPO）</h3>
+        <p><strong>Clip-Higher</strong> 非对称裁剪 · <strong>Dynamic Sampling</strong> 丢掉全对/全错组 · <strong>Overlong Reward Shaping</strong> 软惩罚超长回答 · <strong>关 KL</strong>。</p>
+      </li>
+    </ol>
+  </section>
+
+  <section class="algo-section">
+    <h2>优缺点一览</h2>
+    <p class="sec-sub">按族分组 · 算法层面的一般权衡，非单次实验结论</p>
+    <div class="pros-grid">
+      <p class="pros-group-label">Actor-Critic</p>
+      <div class="pros-row">
+        <div class="pros-name"><span class="dot" style="background:var(--algo-ppo)"></span>PPO</div>
+        <div class="pros-col">
+          <h4>优点</h4>
+          <p>经典稳；GAE + clip 理论与工程成熟；单条样本也能估 advantage，不强制同题多样本。</p>
+        </div>
+        <div class="pros-col">
+          <h4>缺点</h4>
+          <p>要训 critic，显存与时间明显更高；value 估偏会拖策略；LLM 长序列下 critic 更难训稳。</p>
+        </div>
+      </div>
+
+      <p class="pros-group-label">Group-Relative</p>
+      <div class="pros-row">
+        <div class="pros-name"><span class="dot" style="background:var(--algo-grpo)"></span>GRPO</div>
+        <div class="pros-col">
+          <h4>优点</h4>
+          <p>实现简单、无需 value；组内均值 baseline 稳；社区验证最充分，其余变体的共同基座。</p>
+        </div>
+        <div class="pros-col">
+          <h4>缺点</h4>
+          <p>长度/难度两个隐藏偏置；开 KL 更慢；无超长与全对/全错组的专门处理。</p>
+        </div>
+      </div>
+      <div class="pros-row">
+        <div class="pros-name"><span class="dot" style="background:var(--algo-dapo)"></span>DAPO</div>
+        <div class="pros-col">
+          <h4>优点</h4>
+          <p>Clip-Higher 保探索；Dynamic Sampling 保证有效梯度；Overlong 抑长度；关 KL 更自由。</p>
+        </div>
+        <div class="pros-col">
+          <h4>缺点</h4>
+          <p>机制与超参多；重复采样成本高；仍带 GRPO 两偏置；压长度或伤长推理题。</p>
+        </div>
+      </div>
+      <div class="pros-row">
+        <div class="pros-name"><span class="dot" style="background:var(--algo-dr)"></span>Dr.GRPO</div>
+        <div class="pros-col">
+          <h4>优点</h4>
+          <p>最小改动修掉长度+难度偏置；理论更干净；梯度方差通常更小。</p>
+        </div>
+        <div class="pros-col">
+          <h4>缺点</h4>
+          <p>早期信号可能偏弱；无长度抑制时回答可能变长；固定分母实现若取 padding 可能漂移。</p>
+        </div>
+      </div>
+
+      <p class="pros-group-label">Other Critic-Free</p>
+      <div class="pros-row">
+        <div class="pros-name"><span class="dot" style="background:var(--algo-rloo)"></span>RLOO</div>
+        <div class="pros-col">
+          <h4>优点</h4>
+          <p>LOO baseline 与当前样本解耦，<strong>偏差更小</strong>。若更关心<strong>难度偏置</strong>（简单/困难 prompt 的梯度权重失衡）或<strong>多步 off-policy 稳定性</strong>，RLOO（或带 shrinkage 的变体）通常比除以组内 std 的 GRPO 更干净。</p>
+        </div>
+        <div class="pros-col">
+          <h4>缺点</h4>
+          <p>每条只用 G−1 估基线，<strong>方差更大</strong>；依赖 G&gt;1；开 KL 仍有 ref 开销；对 reward 异常值更敏感。</p>
+        </div>
+      </div>
+      <div class="pros-row">
+        <div class="pros-name"><span class="dot" style="background:var(--algo-rpp)"></span>REINFORCE++</div>
+        <div class="pros-col">
+          <h4>优点</h4>
+          <p>不依赖组内分组；全 batch 白化尺度稳；实现最直接。</p>
+        </div>
+        <div class="pros-col">
+          <h4>缺点</h4>
+          <p>不同难度题被耦合归一；无组内 baseline 方差可能更高；开 KL 仍有 ref 开销。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="algo-section">
+    <h2>核心配置差异</h2>
+    <p class="sec-sub">对照表 · PPO 列为概念对照；本轮脚本只覆盖右侧五列</p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th></th><th>PPO</th><th>GRPO</th><th>DAPO</th><th>Dr.GRPO</th><th>RLOO</th><th>REINFORCE++</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>族</td><td>Actor-Critic</td><td colspan="3">Group-Relative</td><td colspan="2">Other Critic-Free</td></tr>
+          <tr><td>adv_estimator</td><td class="mono">gae</td><td class="mono">grpo</td><td class="mono">grpo</td><td class="mono">grpo</td><td class="mono">rloo</td><td class="mono">reinforce_plus_plus</td></tr>
+          <tr><td>Critic / Value</td><td>要训</td><td>否</td><td>否</td><td>否</td><td>否</td><td>否</td></tr>
+          <tr><td>baseline</td><td>V(s) + GAE</td><td>组内均值</td><td>组内均值</td><td>组内均值</td><td>LOO（减偏差、增方差）</td><td>全 batch 白化</td></tr>
+          <tr><td>除以组内 std</td><td class="na">—</td><td>是</td><td>是</td><td>否</td><td>是</td><td class="na">—</td></tr>
+          <tr><td>loss_agg_mode</td><td class="mono">token-mean</td><td class="mono">token-mean</td><td class="mono">token-mean</td><td class="mono">seq-mean-token-sum-norm</td><td class="mono">token-mean</td><td class="mono">token-mean</td></tr>
+          <tr><td>KL loss</td><td>常开</td><td>开 low_var_kl</td><td>关</td><td>关</td><td>开 low_var_kl</td><td>开 mse</td></tr>
+          <tr><td>clip</td><td>对称</td><td>对称</td><td>非对称</td><td>对称</td><td>对称</td><td>对称</td></tr>
+          <tr><td>Dynamic Sampling</td><td class="na">—</td><td class="na">—</td><td>有</td><td class="na">—</td><td class="na">—</td><td class="na">—</td></tr>
+          <tr><td>Overlong 惩罚</td><td class="na">—</td><td class="na">—</td><td>有</td><td class="na">—</td><td class="na">—</td><td class="na">—</td></tr>
+          <tr><td>reward manager</td><td class="mono">naive</td><td class="mono">naive</td><td class="mono">dapo</td><td class="mono">naive</td><td class="mono">naive</td><td class="mono">naive</td></tr>
+          <tr><td>本轮是否训练</td><td>否</td><td>是</td><td>是</td><td>是</td><td>是</td><td>是</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="algo-section">
+    <h2>一句话记忆</h2>
+    <p class="sec-sub">按族带走六句</p>
+    <ul class="memo-list">
+      <li data-a="ppo" data-wide><span class="k">PPO</span><span>有 critic + GAE；clip 更新；本轮因成本未跑</span></li>
+      <li data-a="grpo"><span class="k">GRPO</span><span>组内均值 + 除以 std；常配 KL</span></li>
+      <li data-a="dapo"><span class="k">DAPO</span><span>GRPO + Clip-Higher / Dynamic Sampling / Overlong / 关 KL</span></li>
+      <li data-a="dr"><span class="k">Dr.GRPO</span><span>不除 std + 固定分母，去两个偏置</span></li>
+      <li data-a="rloo"><span class="k">RLOO</span><span>LOO：减偏差、增方差；难度偏置 / off-policy 更干净（可加 shrinkage）</span></li>
+      <li data-a="rpp" data-wide><span class="k">REINFORCE++</span><span>无组内 baseline，全 batch 白化 + mse KL</span></li>
+    </ul>
+  </section>
+</div>
+
+</body>
+</html>

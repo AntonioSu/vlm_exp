@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>RL 实验看板 — Qwen3.5（2B / 4B / 多模态）</title>
+<link rel="stylesheet" href="common/base.css">
+<style>
+  .hero { margin: 4px 0 6px; }
+  .hero h1 { font-size: 24px; margin: 0 0 8px; }
+  .hero p { color: var(--text-secondary); font-size: 14px; margin: 0; max-width: 760px; }
+  .section-title { font-size: 15px; font-weight: 650; margin: 36px 0 8px; }
+  .intro-block { max-width: 78ch; }
+  .intro-block p {
+    font-size: 14px;
+    color: var(--text-secondary);
+    line-height: 1.7;
+    margin: 0 0 12px;
+  }
+  .intro-block p:last-child { margin-bottom: 0; }
+  .intro-block strong { color: var(--text); font-weight: 650; }
+  .intro-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px 28px;
+    margin-top: 18px;
+  }
+  @media (max-width: 720px) { .intro-grid { grid-template-columns: 1fr; } }
+  .intro-item h4 {
+    font-size: 13px;
+    font-weight: 650;
+    margin: 0 0 6px;
+    color: var(--text);
+  }
+  .intro-item p {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.65;
+    margin: 0;
+  }
+  .intro-item .mono {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 0.92em;
+    background: #f3f4f6;
+    padding: 1px 5px;
+    border-radius: 4px;
+  }
+</style>
+</head>
+<body>
+
+<div class="site-header">
+  <div class="site-header-inner">
+    <a class="site-brand" href="index.html"><span class="dot">●</span> RL 实验看板</a>
+            <div class="site-nav">
+      <a href="index.html" class="active">总览</a>
+      <a href="algo/index.html">算法介绍</a>
+      <a href="2b/index.html">2B 训练</a>
+      <a href="4b/index.html">4B 训练</a>
+      <a href="mm/index.html">多模态训练</a>
+    </div>
+  </div>
+</div>
+
+<div class="page-shell">
+  <div class="page-card">
+
+    <div class="hero">
+      <h1>Qwen3.5 RL 算法对比实验</h1>
+      <p>一套受控对比实验与静态看板：在统一训练设定下只换 RL 算法，观察训练动态与数学能力差异；并延伸到更大模型规模与多模态图文配比。</p>
+    </div>
+
+    <div class="section-title">项目介绍</div>
+    <div class="intro-block">
+      <p>
+        本项目基于 <strong>verl</strong>，在 Qwen3.5 上做 LLM post-training 的 RL 算法横向对比。
+        核心问题不是「哪个算法绝对最好」，而是：在<strong>数据、序列长度、采样预算、学习率、总步数、种子</strong>尽量锁死时，
+        GRPO / DAPO / Dr.GRPO / RLOO / REINFORCE++（对照概念上还有 PPO）各自如何影响 pass rate、响应长度、熵、梯度稳定性与验证集表现。
+      </p>
+      <p>
+        实验分三条线推进：<strong>2B 语言模型</strong>是主赛道（2×A100，先跑完、日志与归档最全）；
+        <strong>4B 语言模型</strong>用同一套算法定义放大复验（4×A100，TP=4、关闭 offload）；
+        <strong>多模态</strong>固定 GRPO，只改图文样本占比（0/20/50/100%），检验视觉推理收益与文本能力是否被稀释。
+        PPO 因需另训 critic、显存与时间成本高，本轮未纳入训练对比。
+      </p>
+    </div>
+    <div class="intro-grid">
+      <div class="intro-item">
+        <h4>统一不变量</h4>
+        <p>非思考模式 · 16K response · <span class="mono">train_batch_size=32</span> · <span class="mono">rollout.n=8</span> · 150 step · 训练数据 <span class="mono">polaris_easy_boxed</span> · 验证 <span class="mono">aime24</span>（<span class="mono">test_freq=25</span>）。各赛道只改模型规模或数据模态，不改算法超参定义。</p>
+      </div>
+      <div class="intro-item">
+        <h4>算法谱系</h4>
+        <p>Actor-Critic：PPO。Group-Relative：GRPO / DAPO / Dr.GRPO。其它 critic-free：RLOO / REINFORCE++。差异集中在 baseline、std 归一化、KL、以及 DAPO 的工程机制。详见「算法介绍」。</p>
+      </div>
+      <div class="intro-item">
+        <h4>看板怎么读</h4>
+        <p>「算法介绍」讲定义与权衡（含多模态配比说明）；「2B / 4B 训练」只放训练曲线与对比图；「多模态训练」是开跑后的监控占位。下方卡片按入口进入。</p>
+      </div>
+      <div class="intro-item">
+        <h4>数据与复现</h4>
+        <p>2B 归档在 <span class="mono">archive/e*_2b/</span>；4B 日志在 <span class="mono">logs/exp2card/e*_4b/</span>；方案见 <span class="mono">exp_plan.md</span> / <span class="mono">4b_exp_plan.md</span> / 多模态 <span class="mono">exp_plan_mm.md</span>。本站为零依赖静态页，<span class="mono">bash serve.sh</span> 即可本地打开。</p>
+      </div>
+    </div>
+
+    <div class="section-title">入口</div>
+    <div class="track-grid">
+
+      <a class="track-card" href="algo/index.html">
+        <div class="bar" style="background:var(--accent)"></div>
+        <div class="go">进入 →</div>
+        <div class="kicker">Shared · Algorithms</div>
+        <h3>算法介绍</h3>
+        <p class="desc">按族分类：PPO（actor-critic）与五种 critic-free（GRPO 族 / RLOO / REINFORCE++）。含差异点、优缺点与配置表；训练曲线见各赛道页。</p>
+        <div class="stat-row">
+          <span><b>PPO · GRPO / DAPO / Dr.GRPO · RLOO / REINFORCE++</b></span>
+        </div>
+      </a>
+
+      <a class="track-card" href="2b/index.html">
+        <div class="bar" style="background:var(--e1)"></div>
+        <div class="go">进入 →</div>
+        <div class="kicker">Track 1 · Language Model</div>
+        <h3>2B 训练监控</h3>
+        <p class="desc">Qwen3.5-2B · 2×A100-80GB · 16K 非思考模式 · E1–E5 五组算法对比，是本轮最先跑完、数据最完整的赛道。</p>
+        <div class="stat-row">
+          <span><b>E1–E4</b> 已完成</span>
+          <span><b>E5</b> 训练中</span>
+          <span>最高 aime24@150步 <b>40.0%</b></span>
+        </div>
+      </a>
+
+      <a class="track-card" href="4b/index.html">
+        <div class="bar" style="background:var(--e4)"></div>
+        <div class="go">进入 →</div>
+        <div class="kicker">Track 2 · Language Model</div>
+        <h3>4B 训练监控</h3>
+        <p class="desc">Qwen3.5-4B · 4×A100-80GB · 同一套算法对比在更大模型规模上复验；仅训练过程曲线（算法说明见「算法介绍」）。</p>
+        <div class="stat-row">
+          <span><b>E1–E4</b> 已完成</span>
+          <span><b>E5</b> 训练中</span>
+          <span>最高 aime24@150步 <b>76.7%</b></span>
+        </div>
+      </a>
+
+      <a class="track-card" href="algo/mm.html">
+        <div class="bar" style="background:var(--tl-green)"></div>
+        <div class="go">进入 →</div>
+        <div class="kicker">Under 算法介绍 · Multimodal</div>
+        <h3>多模态配比说明</h3>
+        <p class="desc">在「算法介绍」下的「多模态」页签：固定 GRPO，只改图文占比（0/20/50/100%）。训练监控见「多模态训练」。</p>
+        <div class="stat-row">
+          <span><b>算法介绍 → 多模态</b></span>
+        </div>
+      </a>
+
+    </div>
+
+  </div>
+</div>
+
+<div class="footer-note">
+  数据来源：<code>archive/e*_2b/</code>、<code>logs/exp2card/e*_4b/</code>、<code>vlm_exp/exp_plan_mm.md</code> 各自的训练日志与方案文档。零依赖静态网页（无 CDN、无框架），<code>bash serve.sh</code> 起服务后浏览器访问，或直接拖入浏览器以 <code>file://</code> 方式打开。
+</div>
+
+</body>
+</html>

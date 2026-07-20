@@ -1,0 +1,190 @@
+/* 共享视觉语言：跨 落地页 / 2b / 4b / mm 四个页面复用。
+   设计参考 https://spaces.ac.cn/me.html 的时间线（空心圆点+竖线）与深色顶栏卡片式布局，
+   但改成更克制的现代配色，不用衬线字体。 */
+
+:root {
+  --page-bg: #eef0f3;
+  --card-bg: #ffffff;
+  --border: #e5e7eb;
+  --text: #111827;
+  --text-secondary: #6b7280;
+  --text-tertiary: #9ca3af;
+  --header-bg: #161b25;
+  --header-bg-2: #1f2637;
+  --accent: #4f7cff;
+  --e1: #2563eb;
+  --e2: #d97706;
+  --e3: #059669;
+  --e4: #9333ea;
+  --e5: #db2777;
+  --danger: #dc2626;
+  --info-bg: #eff6ff;
+  --info-border: #bfdbfe;
+  --tl-green: #66cd00;
+}
+* { box-sizing: border-box; }
+html, body {
+  margin: 0;
+  background: var(--page-bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+}
+
+/* ---- 顶栏：深色，跨页面一致，用于站内导航 ---- */
+.site-header {
+  background: linear-gradient(135deg, var(--header-bg), var(--header-bg-2));
+  color: #f3f4f6;
+}
+.site-header-inner {
+  max-width: 1160px;
+  margin: 0 auto;
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+.site-brand {
+  font-size: 15px;
+  font-weight: 650;
+  color: #fff;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.site-brand .dot { color: var(--tl-green); }
+.site-nav {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+.site-nav a {
+  color: rgba(255,255,255,0.72);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 550;
+  padding: 7px 12px;
+  border-radius: 7px;
+  transition: background 0.12s, color 0.12s;
+}
+.site-nav a:hover { color: #fff; background: rgba(255,255,255,0.08); }
+.site-nav a.active { color: #fff; background: rgba(255,255,255,0.14); }
+
+/* ---- 页面外框：浅灰底 + 居中白卡片 ---- */
+.page-shell {
+  max-width: 1160px;
+  margin: 28px auto 80px;
+  padding: 0 24px;
+}
+.page-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 32px 36px 44px;
+  box-shadow: 0 1px 2px rgba(16,24,40,0.04), 0 1px 12px rgba(16,24,40,0.03);
+}
+
+/* ---- 落地页 track 卡片 ---- */
+.track-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 18px;
+  margin-top: 20px;
+}
+@media (max-width: 900px) { .track-grid { grid-template-columns: 1fr; } }
+.track-card {
+  display: block;
+  text-decoration: none;
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px 20px 18px;
+  transition: transform 0.12s, box-shadow 0.12s, border-color 0.12s;
+  position: relative;
+  overflow: hidden;
+}
+.track-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(16,24,40,0.08);
+  border-color: #d1d5db;
+}
+.track-card .bar { position: absolute; left: 0; top: 0; bottom: 0; width: 4px; }
+.track-card .kicker { font-size: 11.5px; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.04em; font-weight: 650; }
+.track-card h3 { font-size: 17px; margin: 4px 0 8px; }
+.track-card p.desc { font-size: 13px; color: var(--text-secondary); margin: 0 0 14px; min-height: 54px; }
+.track-card .stat-row { display: flex; gap: 14px; font-size: 12px; color: var(--text-tertiary); border-top: 1px solid var(--border); padding-top: 10px; }
+.track-card .stat-row b { color: var(--text); font-weight: 650; }
+.track-card .go { position: absolute; right: 18px; top: 18px; font-size: 12px; color: var(--accent); font-weight: 650; }
+
+/* ---- 时间线（借鉴 spaces.ac.cn 的"微言微语"：空心圆点+竖线） ---- */
+.timeline { position: relative; margin: 6px 0 0; padding-left: 6px; }
+.timeline::before {
+  content: "";
+  position: absolute;
+  left: 96px;
+  top: 6px;
+  bottom: 6px;
+  width: 1px;
+  background: var(--border);
+}
+.tl-row { display: flex; align-items: flex-start; gap: 18px; padding: 10px 0; position: relative; }
+.tl-date { width: 78px; flex: none; text-align: right; font-size: 12px; color: var(--text-tertiary); padding-top: 2px; font-variant-numeric: tabular-nums; }
+.tl-bullet {
+  width: 12px; height: 12px; border-radius: 50%;
+  background: #fff; border: 2px solid var(--tl-green);
+  flex: none; margin-top: 3px; position: relative; z-index: 1;
+}
+.tl-bullet.grey { border-color: #c7cbd1; }
+.tl-bullet.amber { border-color: #d97706; }
+.tl-desc { font-size: 13.5px; color: var(--text); line-height: 1.6; padding-top: 1px; }
+.tl-desc .tag {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 650;
+  padding: 1px 7px;
+  border-radius: 5px;
+  margin-right: 6px;
+  color: #fff;
+  vertical-align: 1px;
+}
+
+/* ---- 状态徽标（复用于落地页/子页面） ---- */
+.status-pill { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600; padding: 3px 9px; border-radius: 999px; }
+.status-pill .sdot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; }
+.status-pill.done { background: #ecfdf5; color: #047857; }
+.status-pill.done .sdot { background: #059669; }
+.status-pill.running { background: #fffbeb; color: #b45309; }
+.status-pill.running .sdot { background: #d97706; }
+.status-pill.planned { background: #f3f4f6; color: #4b5563; }
+.status-pill.planned .sdot { background: #9ca3af; }
+
+.footer-note {
+  max-width: 1160px;
+  margin: 0 auto 40px;
+  padding: 0 24px;
+  color: var(--text-tertiary);
+  font-size: 12px;
+}
+.footer-note a { color: var(--text-secondary); }
+
+/* 算法介绍页二级导航：算法 / 多模态 */
+.algo-subnav {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  border-bottom: 1px solid var(--border);
+  margin: 4px 0 24px;
+}
+.algo-subnav a {
+  text-decoration: none;
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 550;
+  padding: 10px 16px;
+  margin-bottom: -1px;
+  border-bottom: 2px solid transparent;
+}
+.algo-subnav a:hover { color: var(--text); }
+.algo-subnav a.active {
+  color: var(--text);
+  border-bottom-color: var(--text);
+}

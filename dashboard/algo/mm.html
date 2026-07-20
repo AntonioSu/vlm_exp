@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>算法介绍 · 多模态 — 图文数据配比</title>
+<link rel="stylesheet" href="../common/base.css">
+<link rel="stylesheet" href="algo.css">
+</head>
+<body class="algo-body">
+
+<div class="site-header">
+  <div class="site-header-inner">
+    <a class="site-brand" href="../index.html"><span class="dot">●</span> RL 实验看板</a>
+    <div class="site-nav">
+      <a href="../index.html">总览</a>
+      <a href="../algo/index.html" class="active">算法介绍</a>
+      <a href="../2b/index.html">2B 训练</a>
+      <a href="../4b/index.html">4B 训练</a>
+      <a href="../mm/index.html">多模态训练</a>
+    </div>
+  </div>
+</div>
+
+<div class="algo-page">
+  <div class="algo-subnav">
+    <a href="index.html">算法</a>
+    <a href="mm.html" class="active">多模态</a>
+  </div>
+
+  <header class="algo-hero">
+    <p class="algo-kicker">Multimodal · Data Mix</p>
+    <h1>只改图文配比的消融</h1>
+    <p class="lede">
+      算法固定为 <a href="index.html">GRPO</a>，唯一自变量是训练数据里图文样本占比。
+      看两件事：视觉推理上限（Geo3K），以及文本数学是否被稀释。训练曲线见 <a href="../mm/index.html">多模态训练</a>。
+    </p>
+  </header>
+
+  <section class="algo-section">
+    <h2>配比怎么设</h2>
+    <p class="sec-sub">四档占比，其余超参不动</p>
+    <div class="mix-rail">
+      <div class="mix-cell">
+        <div class="pct">0%</div>
+        <div class="bar"><i style="width:4%"></i></div>
+        <p>纯文本对照端点；与文本侧 GRPO 对齐，可复用已有结果。</p>
+      </div>
+      <div class="mix-cell">
+        <div class="pct">20%</div>
+        <div class="bar"><i style="width:20%"></i></div>
+        <p>Geo3K + 更大量文本；更贴近真实 post-training 配比。</p>
+      </div>
+      <div class="mix-cell">
+        <div class="pct">50%</div>
+        <div class="bar"><i style="width:50%"></i></div>
+        <p>Geo3K + 等量文本子集；等量混合。</p>
+      </div>
+      <div class="mix-cell">
+        <div class="pct">100%</div>
+        <div class="bar"><i style="width:100%"></i></div>
+        <p>纯 Geo3K 图文；检验纯视觉信号下的 GRPO。</p>
+      </div>
+    </div>
+    <p class="algo-caption">统一不变量：序列长度、采样预算、学习率、总步数等保持不变，只改 <span class="mono">data.train_files</span> 混合比例。</p>
+  </section>
+
+  <section class="algo-section">
+    <h2>模型与任务</h2>
+    <p class="sec-sub">同底座加视觉，任务选 Geo3K</p>
+    <ol class="diff-list">
+      <li class="diff-item">
+        <div class="diff-num">1</div>
+        <h3>模型：同底座加视觉，不换一套 VL</h3>
+        <p>用 <strong>Qwen3.5-2B 原生 vision</strong>（与文本实验同一份权重），而不是独立 Qwen3-VL-2B。唯一多出来的是图像模态，语言侧起点与文本 GRPO 对齐。</p>
+      </li>
+      <li class="diff-item">
+        <div class="diff-num">2</div>
+        <h3>任务：Geo3K（几何 + 数学推理）</h3>
+        <p>社区有现成 GRPO 与 reward；视觉主判据用 Geo3K test acc，文本保持用 math_500 / aime 等同探针。</p>
+      </li>
+    </ol>
+  </section>
+
+  <section class="algo-section">
+    <h2>Reward 分发</h2>
+    <p class="sec-sub">同一 batch 混有文本行与图文行</p>
+    <ol class="diff-list">
+      <li class="diff-item">
+        <div class="diff-num">1</div>
+        <h3>按 data_source 分流</h3>
+        <p><span class="mono">geometry3k → geo3k 判分</span>；否则走文本 math（boxed + Math-Verify）。</p>
+      </li>
+      <li class="diff-item">
+        <div class="diff-num">2</div>
+        <h3>文本分支</h3>
+        <p>复用文本实验口径，保证 0% 图文端点与文本 GRPO 可比。</p>
+      </li>
+      <li class="diff-item">
+        <div class="diff-num">3</div>
+        <h3>图文分支</h3>
+        <p>复用 Geo3K 官方判分（答案等价 + 少量格式奖励），与社区基线一致。</p>
+      </li>
+    </ol>
+  </section>
+
+  <section class="algo-section">
+    <h2>为什么只锁一个自变量</h2>
+    <p class="sec-sub">避免维度交叉导致不可归因</p>
+    <p class="lede" style="font-size:15px;max-width:68ch">
+      还可消融：冻视觉编码器、分辨率 / 视觉 token、底座对比等。与配比交叉会指数膨胀、难归因。
+      本轮<strong>算法固定 GRPO、分辨率与底座固定</strong>，只改图文占比；若出现明显负/正迁移，再立项下一轮。
+    </p>
+  </section>
+
+  <section class="algo-section">
+    <h2>一句话记忆</h2>
+    <ul class="memo-list">
+      <li data-a="mm"><span class="k">算法固定</span><span>多模态侧只用 GRPO，不与五种文本算法交叉</span></li>
+      <li data-a="mm"><span class="k">唯一变量</span><span>图文样本占比 0% / 20% / 50% / 100%</span></li>
+      <li data-a="mm"><span class="k">双目标</span><span>Geo3K 看视觉；math_500 / aime 看文本是否被稀释</span></li>
+      <li data-a="mm"><span class="k">Reward</span><span>按 data_source：文本 boxed / 图文 geo3k</span></li>
+    </ul>
+  </section>
+</div>
+
+</body>
+</html>
