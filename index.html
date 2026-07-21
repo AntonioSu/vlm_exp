@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>E1 vs E2 vs E3 · RL 算法对比 — Qwen3.5-2B</title>
+<title>RL 算法对比看板 — Qwen3.5-2B（E1–E5）</title>
 <style>
   :root {
     --bg: #fafafa;
@@ -34,7 +34,7 @@
   }
   h1 {
     font-size: 22px;
-    font-weight: 650;
+    font-weight: 650; 
     margin: 0 0 6px;
   }
   h2 {
@@ -136,47 +136,184 @@
     z-index: 10;
   }
   .chart-wrap { position: relative; }
+  .tabs {
+    display: flex;
+    gap: 4px;
+    border-bottom: 1px solid var(--border);
+    margin: 20px 0 0;
+  }
+  .tab-btn {
+    appearance: none;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    padding: 10px 16px;
+    font-size: 14px;
+    font-weight: 550;
+    color: var(--text-secondary);
+    cursor: pointer;
+    margin-bottom: -1px;
+  }
+  .tab-btn:hover { color: var(--text); }
+  .tab-btn.active { color: var(--text); border-bottom-color: var(--text); }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12.5px;
+    color: var(--text-secondary);
+  }
+  .badge .sdot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+  .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px; }
+  td.na { color: var(--text-tertiary); }
+  .memo { list-style: none; padding: 0; margin: 0; }
+  .memo li { padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 13.5px; }
+  .memo li:last-child { border-bottom: none; }
+  .memo .k { font-weight: 600; }
+  .lead { font-size: 14px; margin: 0; }
+  h3.cpt { font-size: 14px; font-weight: 600; margin: 18px 0 4px; }
+  .cpt-p { margin: 0; font-size: 13px; color: var(--text-secondary); }
+  .cpt-p strong { color: var(--text); }
+  .callout .title + br { display: none; }
+  table.prose td, table.prose th { text-align: left; vertical-align: top; }
+  table.prose th:first-child, table.prose td:first-child { white-space: nowrap; color: var(--text); font-weight: 600; }
+  table.prose td { font-size: 12.5px; color: var(--text-secondary); line-height: 1.55; }
+  table.prose thead th { color: var(--text); }
 </style>
 </head>
 <body>
 <div class="page">
 
-  <h1>E1 vs E2 vs E3 · GRPO / DAPO / Dr.GRPO 对比 — Qwen3.5-2B</h1>
-  <p class="subtitle">相同模型/数据/长度/预算下只改 RL 算法（见 exp_plan.md 统一配置块）· 2×A100-80GB · non-thinking · 16K response · 三组均已完成 150/150 步 · pass rate = (reward_mean+1)/2 over 32×8 samples/step</p>
-  <p class="tertiary">Sources: archive/e1_grpo_2b, archive/e2_dapo_2b, archive/e3_drgrpo_2b（各自 logs/train_*.log）。训练动态曲线（pass rate / length / entropy / grad_norm）三组统一截取 step 1–129 对齐比较——E1 归档 canvas 快照止于该范围（实际训练已跑满 150 步）。AIME24 验证曲线不受此限制，覆盖全部 step 25–150。静态网页版，数据为归档时刻快照，与 Cursor Canvas 版本（archive/canvases/e1-e3-algorithm-comparison.canvas.tsx）内容一致。</p>
+  <h1>RL 算法对比看板 — Qwen3.5-2B（E1–E5）</h1>
+  <p class="subtitle">相同模型/数据/长度/预算下只改 RL 算法（见 exp_plan.md 统一配置块）· 2×A100-80GB · non-thinking · 16K response · E1–E3 已完成 150/150，E4 训练中、E5 未启动。</p>
 
-  <section>
-    <h2>统一配置差异 / 关键结果</h2>
-    <table>
-      <thead>
-        <tr><th></th><th>E1 · GRPO</th><th>E2 · DAPO</th><th>E3 · Dr.GRPO</th></tr>
-      </thead>
-      <tbody>
-        <tr><td>KL loss</td><td>开（coef 1e-3）</td><td>关</td><td>关</td></tr>
-        <tr><td>Clip 设计</td><td>对称 0.2/0.2</td><td>非对称 Clip-Higher 0.2/0.28</td><td>对称 0.2/0.2</td></tr>
-        <tr><td>组内 std 归一化</td><td>开（默认 GRPO）</td><td>开</td><td>关（Dr.GRPO 核心改动）</td></tr>
-        <tr><td>其他专属机制</td><td>—</td><td>Dynamic Sampling + Overlong Reward Shaping</td><td>loss_agg=seq-mean-token-sum-norm</td></tr>
-        <tr><td>训练耗时（150 步）</td><td>26h21m</td><td>21h12m</td><td>26h11m</td></tr>
-        <tr><td>pass rate 首5→末10 步均值</td><td>40.9% → 62.8%</td><td>31.4% → 58.8%</td><td>38.8% → 67.9%</td></tr>
-        <tr><td>AIME24 acc@1 · step150</td><td>33.3%</td><td>30.0%</td><td>40.0%</td></tr>
-      </tbody>
-    </table>
-  </section>
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="overview">算法总览（E1–E5）</button>
+    <button class="tab-btn" data-tab="charts">训练过程（E1–E3）</button>
+  </div>
+
+  <div class="tab-panel active" id="panel-overview">
+    <section>
+      <p class="lead">E1–E5 在<strong>完全相同</strong>的模型（Qwen3.5-2B）、数据、序列长度（16K）、采样预算（train_batch_size=32 × rollout.n=8）、种子与步数（150 step）下，<strong>只替换 RL 算法本身</strong>，以隔离"算法差异"对训练动态和最终数学能力的影响。五种算法都是 <strong>critic-free 的策略梯度方法</strong>（不像 PPO 需要额外训练一个 value 网络），差异集中在下面几个点。</p>
+    </section>
+
+    <section>
+      <h2>主要区别点（这 5 个算法到底差在哪）</h2>
+
+      <h3 class="cpt">① 优势（advantage）的 baseline 怎么估</h3>
+      <p class="cpt-p"><strong>GRPO / DAPO / Dr.GRPO</strong>：对同一道题采样 G=8 条，用这一组的<strong>组内平均 reward</strong> 当 baseline（省掉 PPO 的 value 网络）。<strong>RLOO</strong>：同样组内，但用<strong>留一法</strong>——每条的 baseline 是同组其余 G−1 条的均值（去掉自己），估计更无偏。<strong>REINFORCE++</strong>：<strong>不做组内 baseline</strong>，改为对全 batch 的折扣累计 return 做白化（whiten）当优势。</p>
+
+      <div class="callout" style="margin-top:14px">
+        <div class="title">② GRPO 的两个隐藏偏置 —— Dr.GRPO 专门修的就是这两处</div>
+        <strong>难度偏置</strong>：GRPO 把优势<strong>除以组内 std</strong>，越"确定"（std 越小）的题梯度被放得越大，等于按题目难度隐性加权。Dr.GRPO 去掉这个除法（<span class="mono">norm_adv_by_std=False</span>）。<br>
+        <strong>长度偏置</strong>：来自 loss 聚合方式。<span class="mono">token-mean</span> 的分母是"这一步实际的 token 总数"，会随回答变长变短而漂移，使更新步长与内容对错无关地忽大忽小。Dr.GRPO 换成 <span class="mono">seq-mean-token-sum-norm</span>（分母是固定常数），把步长和长度解耦。<br>
+        <strong>DAPO 沿用了 GRPO 的这两项、没有改</strong>——这也是 DAPO 与 Dr.GRPO 虽同基于 <span class="mono">grpo</span> 估计器、改进方向却完全不同的根本原因。
+      </div>
+
+      <h3 class="cpt">③ 要不要 KL 约束</h3>
+      <p class="cpt-p"><strong>开 KL loss</strong>（E1 GRPO / E4 RLOO / E5 REINFORCE++）：用参考模型把策略拉住，更稳，但每步多一次 ref 前向、更慢。<strong>关 KL loss</strong>（E2 DAPO / E3 Dr.GRPO）：省掉 ref 前向、探索更自由。形式上 E1/E4 用 <span class="mono">low_var_kl</span>，E5 用 <span class="mono">mse</span>。</p>
+
+      <h3 class="cpt">④ DAPO 的工程"四件套"（只有 E2 有）</h3>
+      <p class="cpt-p"><strong>Clip-Higher</strong>：非对称裁剪 0.2/0.28，给低概率 token 更大的上升空间，缓解熵崩溃。<strong>Dynamic Sampling</strong>：丢弃组内全对/全错的 prompt 重新采样，保证每个 batch 都有有效梯度。<strong>Overlong Reward Shaping</strong>：对超长回答软惩罚而非硬截断，减少 reward 噪声——同时把回答长度压下去，是 DAPO 墙钟时间最短的主因。<strong>关 KL loss</strong>。</p>
+    </section>
+
+    <section>
+      <h2>各算法优缺点</h2>
+      <table class="prose">
+        <thead>
+          <tr><th>算法</th><th>优点</th><th>缺点</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>E1 · GRPO</td>
+            <td>实现简单、无需 value 网络（省显存与算力）；组内均值 baseline 让优势估计稳定；社区验证最充分，是其余变体的共同基座。</td>
+            <td>带长度偏置（loss 聚合）与难度偏置（除以组内 std）两个隐藏偏置；开 KL loss 每步多一次 ref 前向、更慢；对超长回答、全对/全错组无专门处理。</td>
+          </tr>
+          <tr>
+            <td>E2 · DAPO</td>
+            <td>Clip-Higher 缓解熵崩溃、保住探索；Dynamic Sampling 保证每个 batch 都有有效梯度；Overlong Reward Shaping 抑制长度膨胀、reward 更干净；关 KL 更自由；本实验墙钟最快。</td>
+            <td>机制多、超参多、调参复杂；Dynamic Sampling 需重复采样，单 step 计算量偏大；仍沿用 GRPO 的两个偏置（未修）；压长度可能牺牲需要长推理的难题。</td>
+          </tr>
+          <tr>
+            <td>E3 · Dr.GRPO</td>
+            <td>用最小改动同时修掉 GRPO 的长度 + 难度两个偏置，理论更干净、更无偏；梯度方差更小（本实验 grad_norm 最低）；本实验后段 pass rate 最高。</td>
+            <td>去掉 std 归一化后早期信号弱、起步最慢；无长度抑制，回答可能越训越长（本实验 10.3k→12.6k）推高开销；固定分母须全程恒定才严格复现论文，实现取 batch padding 长度、可能漂移。</td>
+          </tr>
+          <tr>
+            <td>E4 · RLOO</td>
+            <td>留一法 baseline 无偏、方差低；概念简单、同样无需 value 网络；对组内多次采样利用更充分。</td>
+            <td>依赖组内多采样（G&gt;1）才成立，采样成本高；本实验重新开 KL loss，又带回 ref 前向开销；对 reward 尺度与异常值较敏感。</td>
+          </tr>
+          <tr>
+            <td>E5 · REINFORCE++</td>
+            <td>不依赖组内分组，分组不规整/单样本也能用；全 batch 白化让优势尺度稳定；实现最直接。</td>
+            <td>全 batch 白化把不同难度的题耦合在一起归一；无组内 baseline，方差可能更高、更依赖 batch 组成；开 KL loss（mse）仍有 ref 开销；entropy_coeff=0 少一个探索旋钮。</td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="caption">优缺点为算法层面的一般性权衡 + 本实验（Qwen3.5-2B / 16K / 150 step）观察，非普适定论；E4/E5 训练结果待补齐后再校准。</p>
+    </section>
+
+    <section>
+      <h2>算法核心配置差异</h2>
+      <table>
+        <thead>
+          <tr><th></th><th>E1 · GRPO</th><th>E2 · DAPO</th><th>E3 · Dr.GRPO</th><th>E4 · RLOO</th><th>E5 · REINFORCE++</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>adv_estimator</td><td class="mono">grpo</td><td class="mono">grpo</td><td class="mono">grpo</td><td class="mono">rloo</td><td class="mono">reinforce_plus_plus</td></tr>
+          <tr><td>baseline 怎么来</td><td>组内均值</td><td>组内均值</td><td>组内均值</td><td>组内留一法 (LOO)</td><td>无组内 baseline，全 batch 白化折扣 return</td></tr>
+          <tr><td>除以组内 std</td><td>是</td><td>是</td><td>否（去偏）</td><td>是</td><td class="na">—</td></tr>
+          <tr><td>loss_agg_mode</td><td class="mono">token-mean</td><td class="mono">token-mean</td><td class="mono">seq-mean-token-sum-norm</td><td class="mono">token-mean</td><td class="mono">token-mean</td></tr>
+          <tr><td>KL loss</td><td>开（low_var_kl, 1e-3）</td><td>关</td><td>关</td><td>开（low_var_kl, 1e-3）</td><td>开（mse, 1e-3）</td></tr>
+          <tr><td>clip 设计</td><td>对称 0.2</td><td>非对称 0.2/0.28 (Clip-Higher)</td><td>对称</td><td>对称</td><td>对称</td></tr>
+          <tr><td>Dynamic Sampling</td><td class="na">—</td><td>有（filter_groups）</td><td class="na">—</td><td class="na">—</td><td class="na">—</td></tr>
+          <tr><td>Overlong 惩罚</td><td class="na">—</td><td>有（overlong_buffer, len 2048）</td><td class="na">—</td><td class="na">—</td><td class="na">—</td></tr>
+          <tr><td>reward manager</td><td class="mono">naive</td><td class="mono">dapo</td><td class="mono">naive</td><td class="mono">naive</td><td class="mono">naive</td></tr>
+          <tr><td>其他</td><td>baseline</td><td class="na">—</td><td class="na">—</td><td class="na">—</td><td>gamma=1.0, entropy_coeff=0</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>运行状态与结果</h2>
+      <table>
+        <thead>
+          <tr><th></th><th>算法</th><th>状态</th><th>训练耗时</th><th>aime24 acc@1（step 25/50/75/100/125/150）</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>E1</td><td>GRPO</td><td><span class="badge"><span class="sdot" style="background:var(--e3)"></span>已完成 150/150</span></td><td>26h21m</td><td class="mono">0.267 / 0.300 / 0.333 / 0.400 / 0.300 / 0.333</td></tr>
+          <tr><td>E2</td><td>DAPO</td><td><span class="badge"><span class="sdot" style="background:var(--e3)"></span>已完成 150/150</span></td><td><strong>21h12m（最快）</strong></td><td class="mono">0.233 / 0.367 / 0.300 / 0.400 / 0.300 / 0.300</td></tr>
+          <tr><td>E3</td><td>Dr.GRPO</td><td><span class="badge"><span class="sdot" style="background:var(--e3)"></span>已完成 150/150</span></td><td>26h11m</td><td class="mono">0.100 / 0.333 / 0.333 / 0.333 / 0.333 / <strong>0.400</strong></td></tr>
+          <tr><td>E4</td><td>RLOO</td><td><span class="badge"><span class="sdot" style="background:var(--e2)"></span>训练中 ~step90</span></td><td class="na">—</td><td class="na">暂无</td></tr>
+          <tr><td>E5</td><td>REINFORCE++</td><td><span class="badge"><span class="sdot" style="background:var(--text-tertiary)"></span>未启动</span></td><td class="na">—</td><td class="na">—</td></tr>
+        </tbody>
+      </table>
+      <p class="caption">aime24 为 30 题、单 seed，噪声大，仅看趋势；正式排名以 math_500 外部评测为准（三组均待补跑，见 archive/README.md）。E4/E5 数据待跑完补齐。</p>
+    </section>
+
+    <section>
+      <h2>一句话记忆点</h2>
+      <ul class="memo">
+        <li><span class="k">E1 GRPO</span> — 基准；唯一开 KL loss 的 grpo 组。</li>
+        <li><span class="k">E2 DAPO</span> — GRPO + 四件套（Clip-Higher / Dynamic Sampling / Overlong 惩罚 / 关 KL），靠压短长度跑最快。</li>
+        <li><span class="k">E3 Dr.GRPO</span> — GRPO 去两个偏置（不除 std + 分母换固定常数），长度不降反升。</li>
+        <li><span class="k">E4 RLOO</span> — 换 leave-one-out baseline，重新开 KL loss。</li>
+        <li><span class="k">E5 REINFORCE++</span> — 不搞组内 baseline，全 batch 白化 + mse 形式 KL。</li>
+      </ul>
+    </section>
+  </div>
+
+  <div class="tab-panel" id="panel-charts">
+  <p class="tertiary">Sources: archive/e1_grpo_2b, archive/e2_dapo_2b, archive/e3_drgrpo_2b（各自 logs/train_*.log）。训练动态曲线（pass rate / length / entropy / grad_norm）三组统一截取 step 1–129 对齐比较——E1 归档 canvas 快照止于该范围（实际训练已跑满 150 步）。AIME24 验证曲线不受此限制，覆盖全部 step 25–150。静态网页版，数据为归档时刻快照，与 Cursor Canvas 版本（archive/canvases/e1-e3-algorithm-comparison.canvas.tsx）内容一致。pass rate = (reward_mean+1)/2 over 32×8 samples/step。</p>
 
   <section>
     <div class="callout">
       <div class="title">三组最终 AIME24 acc@1 都落在噪声带内，训练动态上的差异更清晰</div>
       30 题验证集、单 seed，step150 三组 acc@1（33.3% / 30.0% / 40.0%）互相之间的差距都在这个样本量的噪声范围内，不能当定量结论——<strong>math_500（500 题）才是主判据</strong>，目前三组都还未补测。训练侧信号更一致：<strong>Dr.GRPO(E3) 起步最慢（step25 附近仅 ~39%）但末10步均值 pass rate 最高</strong>（67.9% vs E1 的 62.8%、E2 的 58.8%）——去掉组内 std 归一化似乎换来了更陡的后段爬升；<strong>DAPO(E2) 靠 Overlong Reward Shaping 把响应长度压得最短</strong>（末10步均值远低于 E1/E3），换来最快的墙钟时间（21h12m，比 E1/E3 快 ~20%），但这份数据下没有换来更高的 pass rate 或 AIME 分数。
     </div>
-  </section>
-
-  <section>
-    <h2>AIME24 验证 acc@1 对比（%，step 25/50/75/100/125/150）</h2>
-    <div class="chart-card">
-      <div class="legend" id="legend-aime"></div>
-      <div class="chart-wrap"><canvas id="chart-aime" height="280"></canvas><div class="tooltip" id="tip-aime"></div></div>
-    </div>
-    <p class="caption">X: training step（test_freq=25 处验证）· Y: aime24 acc/mean@1（30 题贪婪解码）。三组在 0.10–0.40 区间震荡，step150 最终值互相接近；E3 是唯一 step25 显著落后（10% vs E1/E2 的 23–27%）随后追平并反超的一组。</p>
   </section>
 
   <section>
@@ -228,6 +365,7 @@
   <section>
     <p class="tertiary">本页由 archive/canvases/e1-e3-algorithm-comparison.canvas.tsx 的数据静态渲染而成（纯 HTML/CSS/JS，零外部依赖，可离线打开）。用 <code>bash serve.sh</code> 起一个本地静态服务器后在浏览器访问，或直接双击/拖拽本文件到浏览器打开。</p>
   </section>
+  </div>
 
 </div>
 
@@ -235,11 +373,6 @@
 const COLORS = { e1: "#2563eb", e2: "#d97706", e3: "#059669", neutral: "#6b7280", danger: "#dc2626", grid: "#eef0f2", axis: "#9ca3af" };
 
 // ---- Data (identical to canvases/e1-e3-algorithm-comparison.canvas.tsx) ----
-const AIME_CATS = ["25","50","75","100","125","150"];
-const AIME_E1 = [26.7,30.0,33.3,40.0,30.0,33.3];
-const AIME_E2 = [23.3,36.7,30.0,40.0,30.0,30.0];
-const AIME_E3 = [10.0,33.3,33.3,33.3,33.3,40.0];
-
 const N = 129;
 const STEP_CATS = Array.from({length: N}, (_, i) => { const s = i+1; return (s === 1 || s % 10 === 0) ? String(s) : ""; });
 
@@ -435,19 +568,6 @@ function drawBarChart(canvasId, tipId, { categories, data, colors, valueSuffix =
 }
 
 function render() {
-  renderLegend(document.getElementById("legend-aime"), [
-    { name: "E1 GRPO", color: COLORS.e1 }, { name: "E2 DAPO", color: COLORS.e2 }, { name: "E3 Dr.GRPO", color: COLORS.e3 },
-  ]);
-  drawLineChart("chart-aime", "tip-aime", {
-    categories: AIME_CATS,
-    series: [
-      { name: "E1 GRPO", data: AIME_E1, color: COLORS.e1 },
-      { name: "E2 DAPO", data: AIME_E2, color: COLORS.e2 },
-      { name: "E3 Dr.GRPO", data: AIME_E3, color: COLORS.e3 },
-    ],
-    yMin: 0, yMax: 50, valueSuffix: "%", height: 280,
-  });
-
   renderLegend(document.getElementById("legend-pass"), [
     { name: "E1 GRPO", color: COLORS.e1 }, { name: "E2 DAPO", color: COLORS.e2 }, { name: "E3 Dr.GRPO", color: COLORS.e3 },
   ]);
@@ -514,6 +634,21 @@ let resizeTimer;
 window.addEventListener("resize", () => {
   clearTimeout(resizeTimer);
   resizeTimer = setTimeout(render, 120);
+});
+
+// ---- Tab switching (charts re-render on activation so canvases get a real width) ----
+const tabBtns = document.querySelectorAll(".tab-btn");
+const panels = {
+  overview: document.getElementById("panel-overview"),
+  charts: document.getElementById("panel-charts"),
+};
+tabBtns.forEach((btn) => {
+  btn.addEventListener("click", () => {
+    const tab = btn.dataset.tab;
+    tabBtns.forEach((b) => b.classList.toggle("active", b === btn));
+    Object.entries(panels).forEach(([k, el]) => el.classList.toggle("active", k === tab));
+    if (tab === "charts") render();
+  });
 });
 </script>
 </body>
