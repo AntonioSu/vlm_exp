@@ -17,6 +17,12 @@
   --algo-dr: #0f766e;
   --algo-rloo: #7c3aed;
   --algo-rpp: #be185d;
+  --algo-gdn: #0e7490;
+  --algo-kda: #c026d3;
+  --algo-hybrid: #1d4ed8;
+  --algo-full: #b45309;
+  --algo-delta: #4d7c0f;
+  --algo-moe: #6d28d9;
 }
 
 body.algo-body {
@@ -117,6 +123,24 @@ body.algo-body {
 .chip-dr { background: var(--algo-dr); }
 .chip-rloo { background: var(--algo-rloo); }
 .chip-rpp { background: var(--algo-rpp); }
+.chip-gdn { background: var(--algo-gdn); }
+.chip-kda { background: var(--algo-kda); }
+.chip-hybrid { background: var(--algo-hybrid); }
+.chip-full { background: var(--algo-full); }
+.chip-delta { background: var(--algo-delta); }
+.chip-moe { background: var(--algo-moe); }
+
+.family-card[data-f="gdn"] { --family-tone: var(--algo-gdn); }
+.family-card[data-f="kda"] { --family-tone: var(--algo-kda); }
+.family-card[data-f="full"] { --family-tone: var(--algo-full); }
+.family-card[data-f="hybrid"] { --family-tone: var(--algo-hybrid); }
+
+.family-grid.cols-2 {
+  grid-template-columns: 1fr 1fr;
+}
+@media (max-width: 840px) {
+  .family-grid.cols-2 { grid-template-columns: 1fr; }
+}
 
 /* 算法族分类 */
 .family-grid {
@@ -212,6 +236,12 @@ body.algo-body {
 .intro-item[data-a="dr"] { --intro-tone: var(--algo-dr); }
 .intro-item[data-a="rloo"] { --intro-tone: var(--algo-rloo); }
 .intro-item[data-a="rpp"] { --intro-tone: var(--algo-rpp); }
+.intro-item[data-a="gdn"] { --intro-tone: var(--algo-gdn); }
+.intro-item[data-a="kda"] { --intro-tone: var(--algo-kda); }
+.intro-item[data-a="delta"] { --intro-tone: var(--algo-delta); }
+.intro-item[data-a="full"] { --intro-tone: var(--algo-full); }
+.intro-item[data-a="hybrid"] { --intro-tone: var(--algo-hybrid); }
+.intro-item[data-a="moe"] { --intro-tone: var(--algo-moe); }
 .intro-meta .name {
   font-family: "Fraunces", Georgia, serif;
   font-size: 18px;
@@ -458,6 +488,12 @@ body.algo-body {
 .memo-list li[data-a="dr"] { border-left-color: var(--algo-dr); }
 .memo-list li[data-a="rloo"] { border-left-color: var(--algo-rloo); }
 .memo-list li[data-a="rpp"] { border-left-color: var(--algo-rpp); }
+.memo-list li[data-a="gdn"] { border-left-color: var(--algo-gdn); }
+.memo-list li[data-a="kda"] { border-left-color: var(--algo-kda); }
+.memo-list li[data-a="delta"] { border-left-color: var(--algo-delta); }
+.memo-list li[data-a="full"] { border-left-color: var(--algo-full); }
+.memo-list li[data-a="hybrid"] { border-left-color: var(--algo-hybrid); }
+.memo-list li[data-a="moe"] { border-left-color: var(--algo-moe); }
 .memo-list li[data-a="mm"] { border-left-color: var(--algo-accent); }
 .memo-list li .k { min-width: 0; }
 .memo-list li[data-wide] {

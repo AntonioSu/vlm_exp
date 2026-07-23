@@ -95,11 +95,11 @@
       </div>
       <div class="intro-item">
         <h4>看板怎么读</h4>
-        <p>「算法介绍」讲定义与权衡（含多模态配比说明）；「2B / 4B 训练」只放训练曲线与对比图；「多模态训练」是开跑后的监控占位。下方卡片按入口进入。</p>
+        <p>「算法介绍」讲定义与权衡（含多模态配比说明）；「2B / 4B 训练」放训练曲线与 evalscope 评测对比；「多模态训练」展示当前执行状态，并将在 M1–M3 数据齐备后补齐对比曲线。下方卡片按入口进入。</p>
       </div>
       <div class="intro-item">
         <h4>数据与复现</h4>
-        <p>2B 归档在 <span class="mono">archive/e*_2b/</span>；4B 日志在 <span class="mono">logs/exp2card/e*_4b/</span>；方案见 <span class="mono">exp_plan.md</span> / <span class="mono">4b_exp_plan.md</span> / 多模态 <span class="mono">exp_plan_mm.md</span>。本站为零依赖静态页，<span class="mono">bash serve.sh</span> 即可本地打开。</p>
+        <p>2B 归档在 <span class="mono">archive/e*_2b/</span>，评测汇总在 <span class="mono">archive/eval_2b/summary.md</span>；4B 训练日志在 <span class="mono">logs/exp2card/e*_4b/</span>，评测汇总在 <span class="mono">archive/eval_4b/summary.md</span>；方案见 <span class="mono">exp_plan.md</span> / <span class="mono">4b_exp_plan.md</span> / 多模态 <span class="mono">exp_plan_mm.md</span>。本站为零依赖静态页，<span class="mono">bash serve.sh</span> 即可本地打开。</p>
       </div>
     </div>
 
@@ -111,9 +111,9 @@
         <div class="go">进入 →</div>
         <div class="kicker">Shared · Algorithms</div>
         <h3>算法介绍</h3>
-        <p class="desc">按族分类：PPO（actor-critic）与五种 critic-free（GRPO 族 / RLOO / REINFORCE++）。含差异点、优缺点与配置表；训练曲线见各赛道页。</p>
+        <p class="desc">基座（GDN / KDA / Hybrid）· RL 算法（PPO 与五种 critic-free）· 多模态配比。训练曲线见各赛道页。</p>
         <div class="stat-row">
-          <span><b>PPO · GRPO / DAPO / Dr.GRPO · RLOO / REINFORCE++</b></span>
+          <span><b>基座 · RL · 多模态</b></span>
         </div>
       </a>
 
@@ -124,9 +124,9 @@
         <h3>2B 训练监控</h3>
         <p class="desc">Qwen3.5-2B · 2×A100-80GB · 16K 非思考模式 · E1–E5 五组算法对比，是本轮最先跑完、数据最完整的赛道。</p>
         <div class="stat-row">
-          <span><b>E1–E4</b> 已完成</span>
-          <span><b>E5</b> 训练中</span>
+          <span><b>E1–E5</b> 训练+评测均已完成</span>
           <span>最高 aime24@150步 <b>40.0%</b></span>
+          <span>最高 aime25（evalscope） <b>37.5%</b></span>
         </div>
       </a>
 
@@ -135,11 +135,11 @@
         <div class="go">进入 →</div>
         <div class="kicker">Track 2 · Language Model</div>
         <h3>4B 训练监控</h3>
-        <p class="desc">Qwen3.5-4B · 4×A100-80GB · 同一套算法对比在更大模型规模上复验；仅训练过程曲线（算法说明见「算法介绍」）。</p>
+        <p class="desc">Qwen3.5-4B · 4×A100-80GB · 同一套算法对比在更大模型规模上复验；训练曲线 + evalscope 评测（mmlu_temp / aime25）。</p>
         <div class="stat-row">
-          <span><b>E1–E4</b> 已完成</span>
-          <span><b>E5</b> 训练中</span>
+          <span><b>E1–E5</b> 训练+评测均已完成</span>
           <span>最高 aime24@150步 <b>76.7%</b></span>
+          <span>最高 aime25（evalscope） <b>59.6%</b></span>
         </div>
       </a>
 
@@ -160,7 +160,7 @@
 </div>
 
 <div class="footer-note">
-  数据来源：<code>archive/e*_2b/</code>、<code>logs/exp2card/e*_4b/</code>、<code>vlm_exp/exp_plan_mm.md</code> 各自的训练日志与方案文档。零依赖静态网页（无 CDN、无框架），<code>bash serve.sh</code> 起服务后浏览器访问，或直接拖入浏览器以 <code>file://</code> 方式打开。
+  数据来源：<code>archive/e*_2b/</code>、<code>archive/eval_2b/summary.md</code>、<code>archive/eval_4b/summary.md</code>、<code>logs/exp2card/e*_4b/</code>、<code>vlm_exp/exp_plan_mm.md</code> 各自的训练日志、评测结果与方案文档。零依赖静态网页（无 CDN、无框架），<code>bash serve.sh</code> 起服务后浏览器访问，或直接拖入浏览器以 <code>file://</code> 方式打开。
 </div>
 
 </body>
