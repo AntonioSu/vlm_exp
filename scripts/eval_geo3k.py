@@ -25,7 +25,8 @@ from typing import Any
 os.environ.setdefault("VLLM_WORKER_MULTIPROC_METHOD", "spawn")
 # This machine uses CUDA 13 userspace on a CUDA 12.4 kernel driver. Match the
 # training environment's forward-compatibility library for spawned workers.
-_CUDA_COMPAT = "/data/juicefs-white/5281-gpu-a100/lijunyi/cuda_compat/cuda-13.0/compat"
+_ROOT = Path(__file__).resolve().parents[2]
+_CUDA_COMPAT = str(_ROOT / "cuda_compat" / "cuda-13.0" / "compat")
 if Path(_CUDA_COMPAT).is_dir():
     _ld_paths = os.environ.get("LD_LIBRARY_PATH", "").split(":")
     if _CUDA_COMPAT not in _ld_paths:
@@ -39,9 +40,7 @@ from vllm import LLM, SamplingParams
 from reward_mm_mixed import _score_geo3k
 
 
-DEFAULT_DATA = Path(
-    "/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/parquet/mm/geo3k_raw/test.parquet"
-)
+DEFAULT_DATA = _ROOT / "vlm_exp" / "parquet" / "mm" / "geo3k_raw" / "test.parquet"
 
 
 def parse_args() -> argparse.Namespace:

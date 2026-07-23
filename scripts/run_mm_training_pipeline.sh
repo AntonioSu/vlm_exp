@@ -7,6 +7,7 @@ VLM_EXP=/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp
 PROJECT_DIR=${VLM_EXP}/model/exp2card_mm
 LOG_DIR=${VLM_EXP}/logs/exp2card_mm/pipeline
 mkdir -p "${LOG_DIR}"
+STALE_SECONDS=${STALE_SECONDS:-7200}
 
 experiments=(m1_geo3k100_2b m2_mix50_2b m3_mix20_2b)
 entrypoints=(run_m1_geo3k_2b.sh run_m2_mix50_2b.sh run_m3_mix20_2b.sh)
@@ -34,6 +35,44 @@ process_running() {
   [[ -n "${state}" && "${state}" != Z* ]]
 }
 
+latest_progress_mtime() {
+  local exp=$1
+  local latest=0
+  local candidate
+  for candidate in \
+    "${PROJECT_DIR}/${exp}/latest_checkpointed_iteration.txt" \
+    "${VLM_EXP}/logs/exp2card_mm/${exp}"/launcher_*.log \
+    "${VLM_EXP}/logs/exp2card_mm/${exp}"/train_*.log \
+    "${VLM_EXP}/logs/exp2card_mm/${exp}/rollout_dump"/*.jsonl; do
+    [[ -e "${candidate}" ]] || continue
+    local mtime
+    mtime=$(stat -c '%Y' "${candidate}" 2>/dev/null || printf '0')
+    if [[ ${mtime:-0} -gt ${latest} ]]; then
+      latest=${mtime}
+    fi
+  done
+  printf '%s' "${latest}"
+}
+
+maybe_stop_stale_process() {
+  local exp=$1
+  local pid=$2
+  local latest now age
+  latest=$(latest_progress_mtime "${exp}")
+  now=$(date +%s)
+  age=$((now - latest))
+  if [[ ${latest:-0} -gt 0 && ${age} -ge ${STALE_SECONDS} ]]; then
+    echo "[$(date -Is)] ${exp}: existing PID ${pid} has no file progress for ${age}s; sending TERM to process group"
+    kill -- "-${pid}" 2>/dev/null || kill "${pid}" 2>/dev/null || true
+    sleep 30
+    if process_running "${pid}"; then
+      echo "[$(date -Is)] ${exp}: existing PID ${pid} still alive after TERM; sending KILL to process group"
+      kill -KILL -- "-${pid}" 2>/dev/null || kill -KILL "${pid}" 2>/dev/null || true
+      sleep 5
+    fi
+  fi
+}
+
 for index in "${!experiments[@]}"; do
   exp=${experiments[$index]}
   entry=${entrypoints[$index]}
@@ -45,6 +84,11 @@ for index in "${!experiments[@]}"; do
     if [[ -f "${existing_pid_file}" ]]; then
       existing_pid=$(tr -cd '0-9' < "${existing_pid_file}")
       if [[ -n "${existing_pid}" ]] && process_running "${existing_pid}"; then
+        maybe_stop_stale_process "${exp}" "${existing_pid}"
+        if ! process_running "${existing_pid}"; then
+          echo "[$(date -Is)] ${exp}: stale PID ${existing_pid} stopped; relaunching via resume"
+          continue
+        fi
         echo "[$(date -Is)] ${exp}: waiting for existing PID ${existing_pid}; checkpoint=$(checkpoint_step "${exp}")"
         sleep 60
         continue
