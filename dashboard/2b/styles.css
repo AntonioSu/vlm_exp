@@ -98,6 +98,31 @@
     background: var(--panel);
     padding: 16px 18px 12px;
   }
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 10px;
+  }
+  @media (max-width: 900px) {
+    .stats-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+  .stats-row .stat {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+  }
+  .stats-row .stat-val {
+    font-size: 18px;
+    font-weight: 650;
+    color: var(--text);
+    line-height: 1.2;
+  }
+  .stats-row .stat-label {
+    margin-top: 4px;
+    font-size: 12px;
+    color: var(--text-tertiary);
+  }
   .legend {
     display: flex;
     gap: 16px;
