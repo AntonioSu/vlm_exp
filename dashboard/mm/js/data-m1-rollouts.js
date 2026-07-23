@@ -1,12 +1,12 @@
 window.MM_M1_ROLLOUT_SUMMARY = {
-  "source": "evaluation/mm_rollouts/m1_geo3k100_2b_rollout_summary.csv",
+  "source": "m1_geo3k100_2b rollout summary",
   "generatedFrom": "/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/logs/exp2card_mm/m1_geo3k100_2b/rollout_dump",
   "generatedBy": "scripts/summarize_mm_rollouts.py",
   "note": "Training rollout metrics; not Geo3K test-set evaluation.",
   "overall": {
-    "samples": 12288,
-    "accuracy": 0.6377766927083334,
-    "meanScore": 0.5740071614583334
+    "samples": 14080,
+    "accuracy": 0.6389914772727273,
+    "meanScore": 0.5750994318181819
   },
   "rows": [
     {
@@ -392,6 +392,62 @@ window.MM_M1_ROLLOUT_SUMMARY = {
       "accuracy": 0.6171875,
       "meanScore": 0.5554687500000001,
       "meanOutputChars": 14703.203125
+    },
+    {
+      "step": 49,
+      "source": "geo3k",
+      "samples": 256,
+      "accuracy": 0.6875,
+      "meanScore": 0.61875,
+      "meanOutputChars": 15409.8046875
+    },
+    {
+      "step": 50,
+      "source": "geo3k",
+      "samples": 256,
+      "accuracy": 0.69140625,
+      "meanScore": 0.622265625,
+      "meanOutputChars": 14005.0546875
+    },
+    {
+      "step": 51,
+      "source": "geo3k",
+      "samples": 256,
+      "accuracy": 0.60546875,
+      "meanScore": 0.544921875,
+      "meanOutputChars": 15224.44140625
+    },
+    {
+      "step": 52,
+      "source": "geo3k",
+      "samples": 256,
+      "accuracy": 0.68359375,
+      "meanScore": 0.615234375,
+      "meanOutputChars": 13955.6875
+    },
+    {
+      "step": 53,
+      "source": "geo3k",
+      "samples": 256,
+      "accuracy": 0.54296875,
+      "meanScore": 0.48867187500000003,
+      "meanOutputChars": 16078.8359375
+    },
+    {
+      "step": 54,
+      "source": "geo3k",
+      "samples": 256,
+      "accuracy": 0.58984375,
+      "meanScore": 0.530859375,
+      "meanOutputChars": 14185.6484375
+    },
+    {
+      "step": 55,
+      "source": "geo3k",
+      "samples": 256,
+      "accuracy": 0.73046875,
+      "meanScore": 0.657421875,
+      "meanOutputChars": 16064.29296875
     }
   ]
 };
