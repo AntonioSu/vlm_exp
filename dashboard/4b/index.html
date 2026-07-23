@@ -25,7 +25,7 @@
 <div class="page">
 
   <h1>4B 训练监控 — Qwen3.5-4B（E1–E5）</h1>
-  <p class="subtitle">4×A100-80GB · TP=4 · 关闭 offload · non-thinking · 16K response · E1–E4 已完成 150/150，E5 训练中。算法定义见 <a href="../algo/index.html">算法介绍</a>。</p>
+  <p class="subtitle">4×A100-80GB · TP=4 · 关闭 offload · non-thinking · 16K response · E1–E5 训练均已跑满 150/150 步；评测（mmlu_temp / aime25）已对 5 组 × 3 个 checkpoint 全部跑完。算法定义见 <a href="../algo/index.html">算法介绍</a>。</p>
 
 <div class="subtabs">
     <button class="subtab-btn active" data-subtab="compare">对比总览（E1–E4）</button>
@@ -33,7 +33,8 @@
     <button class="subtab-btn" data-subtab="e2">E2 DAPO 详细监控</button>
     <button class="subtab-btn" data-subtab="e3">E3 Dr.GRPO 详细监控</button>
     <button class="subtab-btn" data-subtab="e4">E4 RLOO 详细监控</button>
-    <button class="subtab-btn" data-subtab="e5">E5 REINFORCE++（训练中）</button>
+    <button class="subtab-btn" data-subtab="e5">E5 REINFORCE++ 详细监控</button>
+    <button class="subtab-btn" data-subtab="eval">评测结果（E1–E5）</button>
   </div>
 
   <div class="subpanel active" id="subpanel-compare">
@@ -128,6 +129,21 @@
       <div><h2>PPO 裁剪比例 pg_clipfrac（%）</h2><div class="chart-card"><div class="chart-wrap"><canvas id="chart-e1-clip" height="200"></canvas><div class="tooltip" id="tip-e1-clip"></div></div></div></div>
       <div><h2>rollout↔训练概率偏离度（(1−corr)×1e4）</h2><div class="chart-card"><div class="chart-wrap"><canvas id="chart-e1-corr" height="200"></canvas><div class="tooltip" id="tip-e1-corr"></div></div></div></div>
     </section>
+
+    <section style="margin-top:16px">
+      <h2>Evalscope 评测（mmlu_temp / aime24 / aime25，逐 checkpoint）</h2>
+      <p class="tertiary">与上方训练日志指标来源不同：本节为 <code>eval_exp4b.sh</code>（verl_qwen35 vLLM 0.24 serving）offline 评测，非训练时验证。aime24/aime25 各 30 题 × n=8=240 采样；mmlu_temp n=2；step 50/100/150 未评 aime24，曲线在该处断开。</p>
+      <section class="grid2" style="margin-top:10px">
+        <div><h2>mmlu_temp（%）</h2><div class="chart-card"><div class="chart-wrap"><canvas id="chart-e1-eval-mmlu" height="200"></canvas><div class="tooltip" id="tip-e1-eval-mmlu"></div></div></div></div>
+        <div>
+          <h2>aime24 / aime25（%）</h2>
+          <div class="chart-card">
+            <div class="legend" id="legend-e1-eval-aime"></div>
+            <div class="chart-wrap"><canvas id="chart-e1-eval-aime" height="200"></canvas><div class="tooltip" id="tip-e1-eval-aime"></div></div>
+          </div>
+        </div>
+      </section>
+    </section>
   </div>
 
   <div class="subpanel" id="subpanel-e2">
@@ -200,13 +216,28 @@
       <div><h2>PPO 裁剪比例 pg_clipfrac（%）</h2><div class="chart-card"><div class="chart-wrap"><canvas id="chart-e4-clip" height="200"></canvas><div class="tooltip" id="tip-e4-clip"></div></div></div></div>
       <div><h2>rollout↔训练概率偏离度（(1−corr)×1e4）</h2><div class="chart-card"><div class="chart-wrap"><canvas id="chart-e4-corr" height="200"></canvas><div class="tooltip" id="tip-e4-corr"></div></div></div></div>
     </section>
+
+    <section style="margin-top:16px">
+      <h2>Evalscope 评测（mmlu_temp / aime24 / aime25，逐 checkpoint）</h2>
+      <p class="tertiary">与上方训练日志指标来源不同：本节为 <code>eval_exp4b.sh</code>（verl_qwen35 vLLM 0.24 serving）offline 评测，非训练时验证。aime24/aime25 各 30 题 × n=8=240 采样；mmlu_temp n=2；step 50/100/150 未评 aime24，曲线在该处断开。</p>
+      <section class="grid2" style="margin-top:10px">
+        <div><h2>mmlu_temp（%）</h2><div class="chart-card"><div class="chart-wrap"><canvas id="chart-e4-eval-mmlu" height="200"></canvas><div class="tooltip" id="tip-e4-eval-mmlu"></div></div></div></div>
+        <div>
+          <h2>aime24 / aime25（%）</h2>
+          <div class="chart-card">
+            <div class="legend" id="legend-e4-eval-aime"></div>
+            <div class="chart-wrap"><canvas id="chart-e4-eval-aime" height="200"></canvas><div class="tooltip" id="tip-e4-eval-aime"></div></div>
+          </div>
+        </div>
+      </section>
+    </section>
   </div>
 
   <div class="subpanel" id="subpanel-e5">
-    <p class="tertiary">Source: logs/exp2card/e5_reinforce_pp_4b/train_20260720_063429.log（训练中，截至本页数据更新时完成 21/150 步，约 4h23m）。以下图表随训练推进只会展示已完成的 step，刷新数据需重跑 scripts/parse_4b_logs.py + gen_4b_js.py。</p>
+    <p class="tertiary">Source: logs/exp2card/e5_reinforce_pp_4b/train_20260720_063429.log（150/150 步一次性跑完）。</p>
     <div class="callout" style="margin-top:10px">
-      <div class="title">E5 · REINFORCE++ —— 刚起步，暂无异常信号</div>
-      不做组内 baseline，改为全 batch 白化折扣 return + mse 形式 KL loss。前 21 步 pass rate 在 73–94% 区间波动（与其它四组同规模起点一致），entropy 稳定在 0.22–0.28，未见梯度或 KL 异常。距首次 aime24 验证（test_freq=25）还差 4 步。
+      <div class="title">E5 · REINFORCE++ —— evalscope aime25 step150 第三（57.5%），mmlu 与 E1 并列</div>
+      不做组内 baseline，改为全 batch 白化折扣 return + mse 形式 KL loss。pass rate 末段与其它四组同处 88–91% 带；evalscope 侧 <strong>aime25 step150 达 57.5%</strong>（仅次于 E2-150 的 59.6% 与 E1-100 的 58.3%），mmlu_temp 三 checkpoint 都在 91.2–91.5% 窄带。
     </div>
     <section class="grid2" style="margin-top:16px">
       <div><h2>Pass rate（%，逐 step 原始值）</h2><div class="chart-card"><div class="chart-wrap"><canvas id="chart-e5-pass" height="200"></canvas><div class="tooltip" id="tip-e5-pass"></div></div></div></div>
@@ -226,9 +257,109 @@
     </section>
   </div>
 
+  <div class="subpanel" id="subpanel-eval">
+    <p class="tertiary">Source: <code>/data/lijunyi/evalscope</code>（<code>run_queue_4b.sh</code> + <code>eval_exp4b.sh</code>，verl_qwen35 vLLM 0.24 serving）。评测配置：aime25 <code>temperature=0.6, top_p=0.95, max_tokens=16384, n=8</code>；mmlu_temp <code>n=2</code>；<code>enable_thinking=False</code>。权重路径 <code>model/exp2card/&lt;exp&gt;/merged_&lt;step&gt;</code>。汇总表见 <code>archive/eval_4b/summary.md</code>。</p>
+    <div class="callout" style="margin-top:10px">
+      <div class="title">4B 底座强、mmlu 全组 90%+；aime25 上 E2 DAPO step150 领先，与训练侧 aime24 排序不完全一致</div>
+      <strong>mmlu_temp</strong> 五组都在 90–92% 高位，step100 最高是 <strong>E2 DAPO 的 92.38%</strong>，step150 最高是 <strong>E3 Dr.GRPO 的 91.97%</strong>——RL 算法间差距比 2B（78–82%）小一个量级。<strong>aime25</strong>（240 题 × n=8）step150 最高是 <strong>E2 DAPO 的 59.59%</strong>，其次 E1 GRPO step100（58.33%）与 E5 REINFORCE++ step150（57.50%）；这与训练时 aime24 上 E3/E4 step125 单点最高（80%/83.3%）的叙事并不完全对齐，再次说明 30 题验证与 evalscope 大样本评测应分开解读。本轮未跑 math_500 / base。
+    </div>
+
+    <table style="margin-top:16px">
+      <thead>
+        <tr><th>实验</th><th>step</th><th>mmlu_temp</th><th>aime25</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>E1 GRPO</td><td>50</td><td>90.43%</td><td>50.00%</td></tr>
+        <tr><td>E1 GRPO</td><td>100</td><td>91.01%</td><td>58.33%</td></tr>
+        <tr><td>E1 GRPO</td><td>150</td><td>91.25%</td><td>57.92%</td></tr>
+        <tr><td>E2 DAPO</td><td>50</td><td>91.17%</td><td>52.50%</td></tr>
+        <tr><td>E2 DAPO</td><td>100</td><td>92.38%</td><td>57.09%</td></tr>
+        <tr><td>E2 DAPO</td><td>150</td><td>91.17%</td><td>59.59%</td></tr>
+        <tr><td>E3 Dr.GRPO</td><td>50</td><td>90.84%</td><td>55.00%</td></tr>
+        <tr><td>E3 Dr.GRPO</td><td>100</td><td>91.49%</td><td>49.59%</td></tr>
+        <tr><td>E3 Dr.GRPO</td><td>150</td><td>91.97%</td><td>55.00%</td></tr>
+        <tr><td>E4 RLOO</td><td>50</td><td>90.35%</td><td>49.17%</td></tr>
+        <tr><td>E4 RLOO</td><td>100</td><td>91.08%</td><td>50.00%</td></tr>
+        <tr><td>E4 RLOO</td><td>150</td><td>90.68%</td><td>52.92%</td></tr>
+        <tr><td>E5 REINFORCE++</td><td>50</td><td>91.24%</td><td>52.50%</td></tr>
+        <tr><td>E5 REINFORCE++</td><td>100</td><td>91.49%</td><td>55.84%</td></tr>
+        <tr><td>E5 REINFORCE++</td><td>150</td><td>91.25%</td><td>57.50%</td></tr>
+      </tbody>
+    </table>
+
+    <section class="grid2" style="margin-top:20px">
+      <div>
+        <h2>step150 mmlu_temp 对比</h2>
+        <div class="chart-card">
+          <div class="chart-wrap"><canvas id="chart-eval-mmlu150" height="200"></canvas><div class="tooltip" id="tip-eval-mmlu150"></div></div>
+        </div>
+      </div>
+      <div>
+        <h2>step150 aime25 对比</h2>
+        <div class="chart-card">
+          <div class="chart-wrap"><canvas id="chart-eval-aime25-150" height="200"></canvas><div class="tooltip" id="tip-eval-aime25-150"></div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="grid2" style="margin-top:16px">
+      <div>
+        <h2>mmlu_temp 随 checkpoint 变化</h2>
+        <div class="chart-card">
+          <div class="legend" id="legend-eval-mmlu"></div>
+          <div class="chart-wrap"><canvas id="chart-eval-mmlu" height="240"></canvas><div class="tooltip" id="tip-eval-mmlu"></div></div>
+        </div>
+        <p class="caption">X: 评测 checkpoint（step 50/100/150） · Y: mmlu_temp acc（%）。</p>
+      </div>
+      <div>
+        <h2>aime25 随 checkpoint 变化</h2>
+        <div class="chart-card">
+          <div class="legend" id="legend-eval-aime25"></div>
+          <div class="chart-wrap"><canvas id="chart-eval-aime25" height="240"></canvas><div class="tooltip" id="tip-eval-aime25"></div></div>
+        </div>
+        <p class="caption">X: 评测 checkpoint（step 50/100/150） · Y: aime25 mean_acc（%，240 题 × n=8 采样均值）。</p>
+      </div>
+    </section>
+
+    <section style="margin-top:24px">
+      <h2>补充明细：E1 GRPO / E4 RLOO 全 step 曲线（含 aime24）</h2>
+      <div class="callout" style="margin-top:8px">
+        <div class="title">E1、E4 已跑完全部 checkpoint 的三项评测（mmlu_temp + aime24 + aime25）</div>
+        全 step（10–150，每 10 一档，每档取最新一次 report 的 score）。<strong>aime24</strong> 在被排除的 <strong>50/100/150</strong> 未评测，曲线在这些点断开。aime24/aime25 均为 30 题 × n=8=240 采样均值；mmlu_temp n=2；<code>batch_size=64</code>、<code>enable_thinking=False</code>。aime24 峰值：E1 step20 <strong>72.5%</strong>、E4 step140 <strong>76.67%</strong>；两组 mmlu_temp 全程稳定在 90–92%。
+      </div>
+      <div style="margin-top:12px">
+        <h2>mmlu_temp（E1 vs E4）</h2>
+        <div class="chart-card">
+          <div class="legend" id="legend-evalfull-mmlu"></div>
+          <div class="chart-wrap"><canvas id="chart-evalfull-mmlu" height="240"></canvas><div class="tooltip" id="tip-evalfull-mmlu"></div></div>
+        </div>
+        <p class="caption">X: checkpoint step（10–150） · Y: mmlu_temp acc（%）。</p>
+      </div>
+      <section class="grid2" style="margin-top:16px">
+        <div>
+          <h2>aime24（E1 vs E4）</h2>
+          <div class="chart-card">
+            <div class="legend" id="legend-evalfull-aime24"></div>
+            <div class="chart-wrap"><canvas id="chart-evalfull-aime24" height="240"></canvas><div class="tooltip" id="tip-evalfull-aime24"></div></div>
+          </div>
+          <p class="caption">X: step（50/100/150 未评，断开） · Y: aime24 mean_acc（%，240 题 × n=8）。</p>
+        </div>
+        <div>
+          <h2>aime25（E1 vs E4）</h2>
+          <div class="chart-card">
+            <div class="legend" id="legend-evalfull-aime25"></div>
+            <div class="chart-wrap"><canvas id="chart-evalfull-aime25" height="240"></canvas><div class="tooltip" id="tip-evalfull-aime25"></div></div>
+          </div>
+          <p class="caption">X: checkpoint step（10–150） · Y: aime25 mean_acc（%，240 题 × n=8）。</p>
+        </div>
+      </section>
+    </section>
+  </div>
+
 </div>
 
 <script src="js/data-compare.js"></script>
+<script src="js/data-eval.js"></script>
 <script src="js/data-e1.js"></script>
 <script src="js/data-e2.js"></script>
 <script src="js/data-e3.js"></script>

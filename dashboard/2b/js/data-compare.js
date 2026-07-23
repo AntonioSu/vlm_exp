@@ -1,4 +1,4 @@
-const COLORS = { e1: "#2563eb", e2: "#d97706", e3: "#059669", e4: "#9333ea", neutral: "#6b7280", danger: "#dc2626", grid: "#eef0f2", axis: "#9ca3af" };
+const COLORS = { e1: "#2563eb", e2: "#d97706", e3: "#059669", e4: "#9333ea", e5: "#db2777", neutral: "#6b7280", danger: "#dc2626", grid: "#eef0f2", axis: "#9ca3af" };
 
 // ---- Data (identical to canvases/e1-e3-algorithm-comparison.canvas.tsx) ----
 const N = 129;

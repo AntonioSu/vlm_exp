@@ -1,5 +1,21 @@
-function renderLegend(el, items) {
-  el.innerHTML = items.map(it => `<span><span class="dot" style="background:${it.color}"></span>${it.name}</span>`).join("");
+// Renders a clickable legend bound to a chart: clicking a series name toggles
+// it on/off and redraws with only the still-selected series (ECharts-style
+// legend select). `draw(visibleSeries)` is called once up front and again on
+// every toggle.
+function renderLegend(el, series, draw) {
+  const hidden = new Set();
+  el.innerHTML = series.map(s =>
+    `<span class="legend-item"><span class="dot" style="background:${s.color}"></span>${s.name}</span>`
+  ).join("");
+  el.querySelectorAll(".legend-item").forEach((span, i) => {
+    span.addEventListener("click", () => {
+      const name = series[i].name;
+      if (hidden.has(name)) hidden.delete(name); else hidden.add(name);
+      span.classList.toggle("legend-off", hidden.has(name));
+      draw(series.filter(s => !hidden.has(s.name)));
+    });
+  });
+  draw(series.slice());
 }
 
 function drawLineChart(canvasId, tipId, { categories, series, yMin, yMax, valueSuffix = "", height = 260, referenceLines = [] }) {
@@ -174,61 +190,49 @@ function drawBarChart(canvasId, tipId, { categories, data, colors, valueSuffix =
 
 function render() {
   renderLegend(document.getElementById("legend-pass"), [
-    { name: "E1 GRPO", color: COLORS.e1 }, { name: "E2 DAPO", color: COLORS.e2 }, { name: "E3 Dr.GRPO", color: COLORS.e3 }, { name: "E4 RLOO", color: COLORS.e4 },
-  ]);
-  drawLineChart("chart-pass", "tip-pass", {
+    { name: "E1 GRPO", data: E1_PASS_MA, color: COLORS.e1 },
+    { name: "E2 DAPO", data: E2_PASS_MA, color: COLORS.e2 },
+    { name: "E3 Dr.GRPO", data: E3_PASS_MA, color: COLORS.e3 },
+    { name: "E4 RLOO", data: E4_PASS_MA, color: COLORS.e4 },
+  ], (visible) => drawLineChart("chart-pass", "tip-pass", {
     categories: STEP_CATS,
-    series: [
-      { name: "E1 GRPO", data: E1_PASS_MA, color: COLORS.e1 },
-      { name: "E2 DAPO", data: E2_PASS_MA, color: COLORS.e2 },
-      { name: "E3 Dr.GRPO", data: E3_PASS_MA, color: COLORS.e3 },
-      { name: "E4 RLOO", data: E4_PASS_MA, color: COLORS.e4 },
-    ],
+    series: visible,
     yMin: 0, yMax: 80, valueSuffix: "%", height: 280,
-  });
+  }));
 
   renderLegend(document.getElementById("legend-len"), [
-    { name: "E1 GRPO", color: COLORS.e1 }, { name: "E2 DAPO", color: COLORS.e2 }, { name: "E3 Dr.GRPO", color: COLORS.e3 }, { name: "E4 RLOO", color: COLORS.e4 },
-  ]);
-  drawLineChart("chart-len", "tip-len", {
+    { name: "E1 GRPO", data: E1_LEN, color: COLORS.e1 },
+    { name: "E2 DAPO", data: E2_LEN, color: COLORS.e2 },
+    { name: "E3 Dr.GRPO", data: E3_LEN, color: COLORS.e3 },
+    { name: "E4 RLOO", data: E4_LEN, color: COLORS.e4 },
+  ], (visible) => drawLineChart("chart-len", "tip-len", {
     categories: STEP_CATS,
-    series: [
-      { name: "E1 GRPO", data: E1_LEN, color: COLORS.e1 },
-      { name: "E2 DAPO", data: E2_LEN, color: COLORS.e2 },
-      { name: "E3 Dr.GRPO", data: E3_LEN, color: COLORS.e3 },
-      { name: "E4 RLOO", data: E4_LEN, color: COLORS.e4 },
-    ],
+    series: visible,
     valueSuffix: " tok", height: 240,
     referenceLines: [{ value: 16384, label: "16K cap", tone: "danger" }],
-  });
+  }));
 
   renderLegend(document.getElementById("legend-ent"), [
-    { name: "E1 GRPO", color: COLORS.e1 }, { name: "E2 DAPO", color: COLORS.e2 }, { name: "E3 Dr.GRPO", color: COLORS.e3 }, { name: "E4 RLOO", color: COLORS.e4 },
-  ]);
-  drawLineChart("chart-ent", "tip-ent", {
+    { name: "E1 GRPO", data: E1_ENTROPY, color: COLORS.e1 },
+    { name: "E2 DAPO", data: E2_ENTROPY, color: COLORS.e2 },
+    { name: "E3 Dr.GRPO", data: E3_ENTROPY, color: COLORS.e3 },
+    { name: "E4 RLOO", data: E4_ENTROPY, color: COLORS.e4 },
+  ], (visible) => drawLineChart("chart-ent", "tip-ent", {
     categories: STEP_CATS,
-    series: [
-      { name: "E1 GRPO", data: E1_ENTROPY, color: COLORS.e1 },
-      { name: "E2 DAPO", data: E2_ENTROPY, color: COLORS.e2 },
-      { name: "E3 Dr.GRPO", data: E3_ENTROPY, color: COLORS.e3 },
-      { name: "E4 RLOO", data: E4_ENTROPY, color: COLORS.e4 },
-    ],
+    series: visible,
     height: 240,
-  });
+  }));
 
   renderLegend(document.getElementById("legend-grad"), [
-    { name: "E1 GRPO", color: COLORS.e1 }, { name: "E2 DAPO", color: COLORS.e2 }, { name: "E3 Dr.GRPO", color: COLORS.e3 }, { name: "E4 RLOO", color: COLORS.e4 },
-  ]);
-  drawLineChart("chart-grad", "tip-grad", {
+    { name: "E1 GRPO", data: E1_GRAD, color: COLORS.e1 },
+    { name: "E2 DAPO", data: E2_GRAD, color: COLORS.e2 },
+    { name: "E3 Dr.GRPO", data: E3_GRAD, color: COLORS.e3 },
+    { name: "E4 RLOO", data: E4_GRAD, color: COLORS.e4 },
+  ], (visible) => drawLineChart("chart-grad", "tip-grad", {
     categories: STEP_CATS,
-    series: [
-      { name: "E1 GRPO", data: E1_GRAD, color: COLORS.e1 },
-      { name: "E2 DAPO", data: E2_GRAD, color: COLORS.e2 },
-      { name: "E3 Dr.GRPO", data: E3_GRAD, color: COLORS.e3 },
-      { name: "E4 RLOO", data: E4_GRAD, color: COLORS.e4 },
-    ],
+    series: visible,
     height: 220,
-  });
+  }));
 
   drawBarChart("chart-dur", "tip-dur", {
     categories: DURATION_CATS,
@@ -286,6 +290,35 @@ function renderExpPanel(key) {
   });
 }
 
+function renderEvalPanel() {
+  renderLegend(document.getElementById("legend-eval-mmlu"), EVAL_ORDER.map(k => ({ name: EVAL[k].label, data: EVAL[k].mmlu, color: EVAL[k].color })),
+    (visible) => drawLineChart("chart-eval-mmlu", "tip-eval-mmlu", {
+      categories: EVAL_STEPS,
+      series: visible,
+      valueSuffix: "%", height: 240,
+    }));
+
+  renderLegend(document.getElementById("legend-eval-aime25"), EVAL_ORDER.map(k => ({ name: EVAL[k].label, data: EVAL[k].aime25, color: EVAL[k].color })),
+    (visible) => drawLineChart("chart-eval-aime25", "tip-eval-aime25", {
+      categories: EVAL_STEPS,
+      series: visible,
+      valueSuffix: "%", height: 240,
+    }));
+
+  drawBarChart("chart-eval-mmlu150", "tip-eval-mmlu150", {
+    categories: EVAL_ORDER.map(k => EVAL[k].label),
+    data: EVAL_ORDER.map(k => EVAL[k].mmlu[2]),
+    colors: EVAL_ORDER.map(k => EVAL[k].color),
+    valueSuffix: "%", height: 200,
+  });
+  drawBarChart("chart-eval-aime25-150", "tip-eval-aime25-150", {
+    categories: EVAL_ORDER.map(k => EVAL[k].label),
+    data: EVAL_ORDER.map(k => EVAL[k].aime25[2]),
+    colors: EVAL_ORDER.map(k => EVAL[k].color),
+    valueSuffix: "%", height: 200,
+  });
+}
+
 render();
 let resizeTimer;
 window.addEventListener("resize", () => {
@@ -293,11 +326,12 @@ window.addEventListener("resize", () => {
   resizeTimer = setTimeout(() => {
     const activeSub = document.querySelector(".subtab-btn.active");
     if (!activeSub || activeSub.dataset.subtab === "compare") render();
+    else if (activeSub.dataset.subtab === "eval") renderEvalPanel();
     else renderExpPanel(activeSub.dataset.subtab);
   }, 120);
 });
 
-// ---- Sub-tab switching: 对比总览 vs 单组详细监控 ----
+// ---- Sub-tab switching: 对比总览 vs 单组详细监控 vs 评测结果 ----
 const subtabBtns = document.querySelectorAll(".subtab-btn");
 const subpanels = {
   compare: document.getElementById("subpanel-compare"),
@@ -305,6 +339,7 @@ const subpanels = {
   e2: document.getElementById("subpanel-e2"),
   e3: document.getElementById("subpanel-e3"),
   e4: document.getElementById("subpanel-e4"),
+  eval: document.getElementById("subpanel-eval"),
 };
 subtabBtns.forEach((btn) => {
   btn.addEventListener("click", () => {
@@ -313,6 +348,8 @@ subtabBtns.forEach((btn) => {
     Object.entries(subpanels).forEach(([k, el]) => {
       if (el) el.classList.toggle("active", k === sub);
     });
-    sub === "compare" ? render() : renderExpPanel(sub);
+    if (sub === "compare") render();
+    else if (sub === "eval") renderEvalPanel();
+    else renderExpPanel(sub);
   });
 });
