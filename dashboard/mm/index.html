@@ -139,7 +139,7 @@
           <tr><td>数据准备（Geo3K 下载 + 文本子集切分 + 验证探针）</td><td><span class="badge"><span class="sdot" style="background:var(--e3)"></span>已完成</span></td><td>产物已落盘 <span class="mono">vlm_exp/parquet/mm/</span>，可直接被训练脚本引用</td></tr>
           <tr><td>Reward dispatcher / 训练脚本（M1–M3 + 烟测脚本）</td><td><span class="badge"><span class="sdot" style="background:var(--e3)"></span>已完成</span></td><td><span class="mono">run_m1_geo3k_2b.sh</span> / <span class="mono">run_m2_mix50_2b.sh</span> / <span class="mono">run_m3_mix20_2b.sh</span> / <span class="mono">run_smoke_mm.sh</span></td></tr>
           <tr><td>多模态链路烟测</td><td><span class="badge"><span class="sdot" style="background:var(--e3)"></span>已通过</span></td><td>2026-07-21 完成 2 step；多模态生成、图文混训、mixed reward 与双验证集指标均已验证</td></tr>
-          <tr><td>M1 → M2 → M3 正式训练</td><td><span class="badge"><span class="sdot" style="background:var(--e2)"></span>M1 运行中</span></td><td>M1 于 2026-07-22 启动，正式 rollout 已推进到 step 52；<span class="mono">global_step_50/actor</span> 已于 2026-07-23 13:05 落盘，包含 2 个 model shard、2 个 optimizer shard 与 2 个 extra_state shard，<span class="mono">latest_checkpointed_iteration.txt=50</span>；step10 后旧进程无 GPU compute 且日志停写，已终止并由 supervisor 于 17:06 从 step10 自动续跑；续跑已产出 <span class="mono">52.jsonl</span>，当前继续向 step60 checkpoint 推进；后台监督脚本已补充 7200s stale 保护，并在完成后顺序启动 M2、M3</td></tr>
+          <tr><td>M1 → M2 → M3 正式训练</td><td><span class="badge"><span class="sdot" style="background:var(--e2)"></span>M1 运行中</span></td><td>M1 于 2026-07-22 启动，正式 rollout 已推进到 step 48；<span class="mono">global_step_40/actor</span> 已于 2026-07-23 08:07 落盘，包含 2 个 model shard 与 2 个 optimizer shard，<span class="mono">latest_checkpointed_iteration.txt=40</span>；step10 后旧进程无 GPU compute 且日志停写，已终止并由 supervisor 于 17:06 从 step10 自动续跑；续跑已产出 <span class="mono">48.jsonl</span>，当前继续向 step50 checkpoint 推进；后台监督脚本已补充 7200s stale 保护，并在完成后顺序启动 M2、M3</td></tr>
           <tr><td>Geo3K 601 题离线评测脚本</td><td><span class="badge"><span class="sdot" style="background:var(--e3)"></span>已完成</span></td><td><span class="mono">scripts/eval_geo3k.py</span> 已通过 1 题端到端验证；M0 Geo3K 601 题正式基线评测已完成</td></tr>
           <tr><td>M0 正式基线评测</td><td><span class="badge"><span class="sdot" style="background:var(--e3)"></span>已完成</span></td><td>文本基线已完成：MMLU_TEMP AverageAccuracy=0.7834，AIME24 AveragePass@1=0.3542，AIME25 AveragePass@1=0.3250，MATH500 AveragePass@1=0.8635；Geo3K 601/601 已完成：sample_accuracy=0.5732、pass@8=0.8369；完成标记 <span class="mono">evaluation/completed/m0_e1_grpo_2b_text.done</span> 与 <span class="mono">evaluation/completed/m0_e1_grpo_2b_geo3k.done</span> 已写入</td></tr>
           <tr><td>M1–M3 自动评测接力 / 归档</td><td><span class="badge"><span class="sdot" style="background:var(--e2)"></span>等待 checkpoint</span></td><td><span class="mono">run_mm_evaluation_pipeline.sh</span> 已脱离会话运行，逐组自动合并、评测和失败重试；<span class="mono">archive_mm_results.sh</span> 已准备好在完成后生成归档快照</td></tr>
@@ -152,7 +152,7 @@
 
   <div class="tab-panel" id="panel-charts">
     <section>
-      <h2>M1 早期 rollout 汇总（step 1–52）</h2>
+      <h2>M1 早期 rollout 汇总（step 1–48）</h2>
       <table>
         <thead><tr><th>step</th><th>样本</th><th>Geo3K train acc</th><th>mean score</th><th>mean output chars</th></tr></thead>
         <tbody id="m1-rollout-summary-body"></tbody>
