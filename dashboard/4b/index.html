@@ -5,7 +5,323 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>4B 训练 — Qwen3.5-4B（E1–E5）</title>
 <link rel="stylesheet" href="../common/base.css">
-<link rel="stylesheet" href="../2b/styles.css">
+<link rel="stylesheet" href="../2b/styles.css?v=20260723201000">
+<style>
+  /* E1 stats strip — keep local so layout can't be lost to cached 2b/styles.css */
+  .stats-row {
+    display: grid !important;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 10px;
+  }
+  @media (max-width: 900px) {
+    .stats-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+  .stats-row .stat {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 12px 14px;
+    min-width: 0;
+  }
+  .stats-row .stat-val {
+    font-size: 18px;
+    font-weight: 650;
+    color: #111827;
+    line-height: 1.25;
+    word-break: break-word;
+  }
+  .stats-row .stat-label {
+    margin-top: 4px;
+    font-size: 12px;
+    color: #9ca3af;
+  }
+
+  /* Wider page so left TOC + charts fit (algo-style) */
+  .page { max-width: 1280px; }
+
+  /* Detail-page TOC (same pattern as algo/index.html 目录) */
+  .detail-layout {
+    display: grid;
+    grid-template-columns: 188px minmax(0, 1fr);
+    gap: 28px;
+    align-items: start;
+    margin-top: 14px;
+  }
+  .detail-toc {
+    position: sticky;
+    top: 16px;
+    align-self: start;
+    max-height: calc(100vh - 32px);
+    overflow-y: auto;
+    padding: 4px 0 8px;
+    scrollbar-width: thin;
+  }
+  .detail-toc .toc-heading {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #9ca3af;
+    margin: 0 0 10px 10px;
+  }
+  .detail-toc .toc-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 2px;
+  }
+  .detail-toc .toc-list a {
+    display: grid;
+    grid-template-columns: 22px 1fr;
+    gap: 8px;
+    align-items: baseline;
+    padding: 7px 10px;
+    text-decoration: none;
+    color: inherit;
+    border-radius: 8px;
+    border-left: 3px solid transparent;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .detail-toc .toc-list a:hover {
+    background: rgba(17, 24, 39, 0.04);
+    border-left-color: #1f6b4a;
+  }
+  .detail-toc .toc-list a.is-active {
+    background: rgba(31, 107, 74, 0.08);
+    border-left-color: #1f6b4a;
+  }
+  .detail-toc .toc-list a.is-active .toc-title {
+    color: #111827;
+    font-weight: 700;
+  }
+  .detail-toc .toc-num {
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+    font-size: 12px;
+    color: #1f6b4a;
+  }
+  .detail-toc .toc-title {
+    font-weight: 600;
+    font-size: 13px;
+    color: #6b7280;
+    line-height: 1.35;
+  }
+  .detail-main { min-width: 0; }
+  .detail-sec {
+    scroll-margin-top: 18px;
+    margin-top: 40px;
+    padding-top: 8px;
+    border-top: 1px solid #e5e7eb;
+  }
+  .detail-sec:first-child {
+    margin-top: 0;
+    border-top: none;
+    padding-top: 0;
+  }
+  .detail-sec > h2.sec-title {
+    font-size: 28px;
+    font-weight: 750;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+    margin: 0 0 8px;
+    color: #0f172a;
+    padding-left: 14px;
+    border-left: 4px solid #1f6b4a;
+  }
+  .detail-sec > .sec-sub {
+    font-size: 13.5px;
+    color: #9ca3af;
+    margin: 0 0 18px;
+    padding-left: 18px;
+  }
+
+  /* Merged overview intro + toggle points */
+  .intro-card {
+    background: #f0f6ff;
+    border: 1px solid #dbe7f8;
+    border-radius: 14px;
+    padding: 18px 20px 16px;
+  }
+  .intro-card .intro-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0 0 8px;
+    line-height: 1.4;
+  }
+  .intro-card .intro-body {
+    font-size: 14px;
+    color: #374151;
+    line-height: 1.65;
+    margin: 0 0 12px;
+  }
+  .intro-points {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 8px;
+  }
+  .intro-points li {
+    position: relative;
+    padding: 8px 12px 8px 28px;
+    background: rgba(255, 255, 255, 0.72);
+    border-radius: 8px;
+    font-size: 13.5px;
+    color: #374151;
+    line-height: 1.5;
+  }
+  .intro-points li::before {
+    content: "";
+    position: absolute;
+    left: 12px;
+    top: 14px;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #1f6b4a;
+  }
+  .intro-points li strong {
+    color: #0f172a;
+    font-weight: 650;
+  }
+
+  /* Timing summary metric grid */
+  .timing-box .timing-metrics {
+    display: grid;
+    gap: 8px;
+    margin-top: 4px;
+  }
+  .timing-box .t-row {
+    display: grid;
+    gap: 8px;
+  }
+  .timing-box .t-row-major {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .timing-box .t-row-minor {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+  .timing-box .t-metric {
+    background: rgba(255, 255, 255, 0.88);
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 10px 12px;
+    min-width: 0;
+  }
+  .timing-box .t-metric.is-major {
+    border-color: #c7e0d4;
+    background: linear-gradient(180deg, #f3faf6 0%, #fff 100%);
+    box-shadow: inset 3px 0 0 #1f6b4a;
+    padding: 12px 14px;
+  }
+  .timing-box .t-metric.is-major .t-val {
+    font-size: 20px;
+  }
+  .timing-box .t-metric.is-step {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    padding: 12px 14px;
+    background: #fff;
+    border-color: #d5e3f5;
+  }
+  .timing-box .t-metric.is-step .t-val {
+    font-size: 22px;
+    font-weight: 750;
+    color: #0f172a;
+    letter-spacing: -0.02em;
+  }
+  .timing-box .t-metric.is-step .t-label {
+    margin-top: 0;
+    font-size: 13px;
+    color: #64748b;
+  }
+  .timing-box .t-val {
+    font-size: 15px;
+    font-weight: 700;
+    color: #0f172a;
+    line-height: 1.25;
+    font-variant-numeric: tabular-nums;
+  }
+  .timing-box .t-pct {
+    margin-left: 6px;
+    font-size: 12px;
+    font-weight: 650;
+    color: #1f6b4a;
+  }
+  .timing-box .t-metric.is-muted .t-val {
+    color: #94a3b8;
+    font-weight: 600;
+  }
+  .timing-box .t-label {
+    margin-top: 3px;
+    font-size: 11.5px;
+    color: #94a3b8;
+    line-height: 1.3;
+    word-break: break-word;
+  }
+  @media (max-width: 900px) {
+    .timing-box .t-row-major,
+    .timing-box .t-row-minor { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+  .timing-box .stage-gloss {
+    margin-top: 12px;
+    padding-top: 4px;
+    border-top: 1px solid #d5e3f5;
+  }
+  .stage-gloss {
+    margin: 0;
+    border: none;
+    background: transparent;
+    padding: 0;
+  }
+  .stage-gloss > summary {
+    cursor: pointer;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 650;
+    color: #1f6b4a;
+    user-select: none;
+    padding: 8px 0;
+  }
+  .stage-gloss > summary::-webkit-details-marker { display: none; }
+  .stage-gloss > summary::before {
+    content: "▸";
+    display: inline-block;
+    transition: transform 0.15s;
+    font-size: 12px;
+  }
+  .stage-gloss[open] > summary::before { transform: rotate(90deg); }
+  .stage-gloss > summary:hover { color: #145338; }
+  .stage-gloss .intro-points {
+    margin: 0 0 4px;
+  }
+  .stage-gloss .intro-points li {
+    background: rgba(255, 255, 255, 0.75);
+  }
+  @media (max-width: 900px) {
+    .detail-layout { grid-template-columns: 1fr; gap: 16px; }
+    .detail-toc {
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      max-height: none;
+      background: #fafafa;
+      border-bottom: 1px solid #e5e7eb;
+      padding-bottom: 8px;
+    }
+    .detail-toc .toc-list {
+      grid-auto-flow: column;
+      grid-auto-columns: max-content;
+      overflow-x: auto;
+    }
+  }
+</style>
 </head>
 <body>
 
@@ -28,7 +344,7 @@
   <p class="subtitle">4×A100-80GB · TP=4 · 关闭 offload · non-thinking · 16K response · E1–E5 训练均已跑满 150/150 步；评测（mmlu_temp / aime25）已对 5 组 × 3 个 checkpoint 全部跑完。算法定义见 <a href="../algo/index.html">算法介绍</a>。</p>
 
 <div class="subtabs">
-    <button class="subtab-btn active" data-subtab="compare">对比总览（E1–E4）</button>
+    <button class="subtab-btn active" data-subtab="compare">对比总览（E1–E5）</button>
     <button class="subtab-btn" data-subtab="e1">E1 GRPO 详细监控</button>
     <button class="subtab-btn" data-subtab="e2">E2 DAPO 详细监控</button>
     <button class="subtab-btn" data-subtab="e3">E3 Dr.GRPO 详细监控</button>
@@ -38,12 +354,12 @@
   </div>
 
   <div class="subpanel active" id="subpanel-compare">
-  <p class="tertiary">Sources: logs/exp2card/e1_grpo_4b, e2_dapo_4b, e3_drgrpo_4b, e4_rloo_4b 各自的 train_*.log，逐 step 直接解析（脚本：scripts/parse_4b_logs.py），四组均为 150/150 步全量数据，无截断。pass rate = (reward_mean+1)/2 over 32×8 samples/step。</p>
+  <p class="tertiary">Sources: logs/exp2card/e1_grpo_4b, e2_dapo_4b, e3_drgrpo_4b, e4_rloo_4b, e5_reinforce_pp_4b 各自的 train_*.log，逐 step 直接解析（脚本：scripts/parse_4b_logs.py），五组均为 150/150 步全量数据，无截断。pass rate = (reward_mean+1)/2 over 32×8 samples/step。</p>
 
   <section>
     <div class="callout">
-      <div class="title">4B 上四组末段 pass rate 都在 88–91% 高位收敛，aime24 上 E2/E3/E4 并列领先</div>
-      四组首 5 步 pass rate 均值都在 79–81% 起步（4B 底座数学能力本身就强，起点远高于 2B 的 35–43%），末 10 步均值收敛到 88.8–91.1% 的窄区间，训练侧差异比 2B 更不明显。aime24 上 <strong>E3(Dr.GRPO)/E4(RLOO) 的 step125 分别摸到全场最高 0.800/0.833</strong>，E2(DAPO) 与 E4 在 step150 并列 0.767 最高；<strong>E1(GRPO) 是唯一 step150 明显回落到 0.633 的一组</strong>。<strong>E2(DAPO) 在 step43/59 附近出现两次瞬时 grad_norm 尖峰（0.96、1.13，其余步 0.1–0.3）</strong>，同期 entropy 也在持续走高（四组唯一没有收敛趋势的），是本赛道最值得留意的稳定性信号。
+      <div class="title">4B 上五组末段 pass rate 都在 88–91% 高位收敛；训练验证 aime24 上 E4 step125 最高</div>
+      五组首 5 步 pass rate 均值都在 79–81% 起步（4B 底座数学能力本身就强，起点远高于 2B 的 35–43%），末 10 步均值收敛到 88.7–91.1% 的窄区间，训练侧差异比 2B 更不明显。<strong>下方 AIME24 图是训练中验证（贪婪@1）</strong>，不是评测结果页的 evalscope offline（n=8）：训练验证上 <strong>E4 step125 摸到 0.833</strong>，E3/E5 step125 同达 0.800；E2/E3/E4/E5 step150 并列 0.767；<strong>E1 是唯一 step150 回落到 0.633 的一组</strong>。<strong>E2 在 step43/59 出现 grad_norm 尖峰（0.96/1.13）</strong>且 entropy 全程走高；E5 墙钟 33.7h，entropy 末段 ~0.09，grad_norm 基线偏高（~0.4–0.7）。
     </div>
   </section>
 
@@ -53,7 +369,7 @@
       <div class="legend" id="legend-pass"></div>
       <div class="chart-wrap"><canvas id="chart-pass" height="280"></canvas><div class="tooltip" id="tip-pass"></div></div>
     </div>
-    <p class="caption">X: training step · Y: batch pass rate（5-step 移动平均，降噪）。四组起步几乎重合，末段收敛到 88–91% 窄带，比 2B 赛道的算法间差异明显更小。</p>
+    <p class="caption">X: training step · Y: batch pass rate（5-step 移动平均，降噪）。五组起步几乎重合，末段收敛到 88–91% 窄带，比 2B 赛道的算法间差异明显更小。</p>
   </section>
 
   <section class="grid2">
@@ -63,7 +379,7 @@
         <div class="legend" id="legend-len"></div>
         <div class="chart-wrap"><canvas id="chart-len" height="240"></canvas><div class="tooltip" id="tip-len"></div></div>
       </div>
-      <p class="caption">X: step · Y: mean generated tokens/response. E1(GRPO) 涨幅最大（5.1k→9.7k），E3(Dr.GRPO) 涨幅最小（5.3k→7.3k）——与 2B 赛道的排序相反，见上方"规模变化"分析。（虚线 = 16K 生成上限）</p>
+      <p class="caption">X: step · Y: mean generated tokens/response. E1(GRPO) 涨幅最大（5.1k→9.7k），E3/E5 涨幅偏小（末段约 7k）；E5 起步长度较短后缓慢爬升。（虚线 = 16K 生成上限）</p>
     </div>
     <div>
       <h2>策略熵对比（entropy，全 150 步）</h2>
@@ -71,7 +387,7 @@
         <div class="legend" id="legend-ent"></div>
         <div class="chart-wrap"><canvas id="chart-ent" height="240"></canvas><div class="tooltip" id="tip-ent"></div></div>
       </div>
-      <p class="caption">X: step · Y: mean token entropy. E3 全场最低最紧（0.081→0.048）；E2(DAPO) 全程走高（0.256→0.417），是四组中唯一没有收敛的；E1/E4 都有 KL loss 拉住，走势接近且温和下降。</p>
+      <p class="caption">X: step · Y: mean token entropy. E3 全场最低最紧（0.081→0.048）；E5 末段也压到 ~0.09；E2(DAPO) 全程走高（0.256→0.417），是五组中唯一没有收敛的；E1/E4 都有 KL loss 拉住，走势接近且温和下降。</p>
     </div>
   </section>
 
@@ -82,24 +398,28 @@
         <div class="legend" id="legend-grad"></div>
         <div class="chart-wrap"><canvas id="chart-grad" height="220"></canvas><div class="tooltip" id="tip-grad"></div></div>
       </div>
-      <p class="caption">X: step · Y: 全局梯度范数。E3 基线最低最稳（0.03–0.23）；E2 在 step43/59 附近有两次瞬时尖峰（0.96/1.13，图中可见两个明显突起），其余步与 E1/E4 同处 0.1–0.3 区间。</p>
+      <p class="caption">X: step · Y: 全局梯度范数。E3 基线最低最稳（0.03–0.23）；E5 基线偏高（~0.4–0.7）；E2 在 step43/59 附近有两次瞬时尖峰（0.96/1.13），其余步与 E1/E4 同处 0.1–0.3 区间。</p>
     </div>
     <div>
       <h2>150 步总训练耗时（小时）</h2>
       <div class="chart-card">
         <div class="chart-wrap"><canvas id="chart-dur" height="220"></canvas><div class="tooltip" id="tip-dur"></div></div>
       </div>
-      <p class="caption">X: 实验 · Y: 150 步全程墙钟耗时。E2(DAPO) 仍最快（32.6h），但四组差距（31.7h–37.2h）比 2B 赛道（21.2h–26.8h）更接近，4 卡 + 关闭 offload 后算法本身对墙钟的影响被摊薄。</p>
+      <p class="caption">X: 实验 · Y: 150 步全程墙钟耗时。E3 最快（31.7h），E2 次之（32.6h），E5 33.7h，E4 35.8h，E1 最慢（37.2h）；五组差距比 2B 赛道更接近，4 卡 + 关闭 offload 后算法本身对墙钟的影响被摊薄。</p>
     </div>
   </section>
 
   <section>
-    <h2>AIME24 验证 acc@1 对比（%，step 25/50/75/100/125/150）</h2>
+    <h2>训练中验证 · AIME24 acc@1（%，step 25/50/75/100/125/150）</h2>
+    <div class="callout" style="margin-top:0;margin-bottom:8px">
+      <div class="title">⚠ 这是训练日志里的验证曲线，不是「评测结果」页的 evalscope offline</div>
+      来源：verl <code>trainer.test_freq=25</code>，30 题 · <strong>贪婪解码 mean@1</strong>。与评测结果页的 aime24（temp=0.6 · <strong>n=8 · 240 采样</strong>）协议不同，数值不可直接对比；offline 曲线见「评测结果」页（E1/E2/E4 已齐，E3/E5 少数点仍在补）。
+    </div>
     <div class="chart-card">
       <div class="legend" id="legend-aime"></div>
       <div class="chart-wrap"><canvas id="chart-aime" height="260"></canvas><div class="tooltip" id="tip-aime"></div></div>
     </div>
-    <p class="caption">X: training step（val at test_freq=25） · Y: aime24 acc/mean@1（30 题贪婪解码）。四组在 56.7–83.3% 区间震荡，E1 是唯一 step150 明显回落的一组。</p>
+    <p class="caption">X: training step（val at test_freq=25） · Y: 训练中 aime24 acc/mean@1（贪婪）。五组在 56.7–83.3% 区间震荡；E5 从 step25 的 60% 稳步升到 step125 的 80%；E1 是唯一 step150 明显回落的一组。</p>
   </section>
 
   <section>
@@ -108,182 +428,997 @@
   </div>
 
   <div class="subpanel" id="subpanel-e1">
-    <p class="tertiary">Source: logs/exp2card/e1_grpo_4b/train_20260714_125151.log（150/150 步一次性跑完，单个日志文件无 resume）。</p>
-    <div class="callout" style="margin-top:10px">
-      <div class="title">E1 · GRPO baseline —— 4B 上唯二保留 KL loss 的组之一</div>
-      组内均值 baseline + 除以组内 std；KL loss 系数 1e-3。pass rate 由首步 ~80% 稳步升到末段 90% 左右；entropy 0.25→0.22 平稳收敛；响应长度四组涨幅最大（5.1k→9.7k）；aime24 在 step150 回落到 0.633，是四组中唯一末段走低的。
-    </div>
-    <section class="grid2" style="margin-top:16px">
-      <div><h2>Pass rate（%，逐 step 原始值）</h2><div class="chart-card"><div class="chart-wrap"><canvas id="chart-e1-pass" height="200"></canvas><div class="tooltip" id="tip-e1-pass"></div></div></div></div>
-      <div><h2>响应长度（tokens）</h2><div class="chart-card"><div class="chart-wrap"><canvas id="chart-e1-len" height="200"></canvas><div class="tooltip" id="tip-e1-len"></div></div></div></div>
-    </section>
-    <section class="grid2" style="margin-top:16px">
-      <div><h2>策略熵 entropy</h2><div class="chart-card"><div class="chart-wrap"><canvas id="chart-e1-ent" height="200"></canvas><div class="tooltip" id="tip-e1-ent"></div></div></div></div>
-      <div><h2>梯度范数 grad_norm</h2><div class="chart-card"><div class="chart-wrap"><canvas id="chart-e1-grad" height="200"></canvas><div class="tooltip" id="tip-e1-grad"></div></div></div></div>
-    </section>
-    <section class="grid2" style="margin-top:16px">
-      <div><h2>actor/loss</h2><div class="chart-card"><div class="chart-wrap"><canvas id="chart-e1-loss" height="200"></canvas><div class="tooltip" id="tip-e1-loss"></div></div></div></div>
-      <div><h2>PPO KL（×1e5，带符号）</h2><div class="chart-card"><div class="chart-wrap"><canvas id="chart-e1-ppokl" height="200"></canvas><div class="tooltip" id="tip-e1-ppokl"></div></div></div></div>
-    </section>
-    <section class="grid2" style="margin-top:16px">
-      <div><h2>PPO 裁剪比例 pg_clipfrac（%）</h2><div class="chart-card"><div class="chart-wrap"><canvas id="chart-e1-clip" height="200"></canvas><div class="tooltip" id="tip-e1-clip"></div></div></div></div>
-      <div><h2>rollout↔训练概率偏离度（(1−corr)×1e4）</h2><div class="chart-card"><div class="chart-wrap"><canvas id="chart-e1-corr" height="200"></canvas><div class="tooltip" id="tip-e1-corr"></div></div></div></div>
-    </section>
+    <p class="tertiary">Source: logs/exp2card/e1_grpo_4b/train_20260714_125151.log（150/150 步 · 无 resume）。维度对齐 canvas <code>e1-grpo-training.canvas.tsx</code>。</p>
 
-    <section style="margin-top:16px">
-      <h2>Evalscope 评测（mmlu_temp / aime24 / aime25，逐 checkpoint）</h2>
-      <p class="tertiary">与上方训练日志指标来源不同：本节为 <code>eval_exp4b.sh</code>（verl_qwen35 vLLM 0.24 serving）offline 评测，非训练时验证。aime24/aime25 各 30 题 × n=8=240 采样；mmlu_temp n=2；step 50/100/150 未评 aime24，曲线在该处断开。</p>
-      <section class="grid2" style="margin-top:10px">
-        <div><h2>mmlu_temp（%）</h2><div class="chart-card"><div class="chart-wrap"><canvas id="chart-e1-eval-mmlu" height="200"></canvas><div class="tooltip" id="tip-e1-eval-mmlu"></div></div></div></div>
-        <div>
-          <h2>aime24 / aime25（%）</h2>
-          <div class="chart-card">
-            <div class="legend" id="legend-e1-eval-aime"></div>
-            <div class="chart-wrap"><canvas id="chart-e1-eval-aime" height="200"></canvas><div class="tooltip" id="tip-e1-eval-aime"></div></div>
+    <div class="detail-layout">
+      <nav class="detail-toc" aria-label="目录" id="e1-toc">
+        <p class="toc-heading">目录</p>
+        <ol class="toc-list">
+          <li><a href="#e1-sec-overview"><span class="toc-num">0</span><span class="toc-title">概览</span></a></li>
+          <li><a href="#e1-sec-learning"><span class="toc-num">1</span><span class="toc-title">学习曲线</span></a></li>
+          <li><a href="#e1-sec-stability"><span class="toc-num">2</span><span class="toc-title">稳定性</span></a></li>
+          <li><a href="#e1-sec-efficiency"><span class="toc-num">3</span><span class="toc-title">效率</span></a></li>
+          <li><a href="#e1-sec-timing"><span class="toc-num">4</span><span class="toc-title">耗时拆解</span></a></li>
+          <li><a href="#e1-sec-eval"><span class="toc-num">5</span><span class="toc-title">评测</span></a></li>
+        </ol>
+      </nav>
+
+      <div class="detail-main">
+
+        <section class="detail-sec" id="e1-sec-overview">
+          <h2 class="sec-title">概览</h2>
+          <p class="sec-sub">E1 GRPO baseline · 一页速览</p>
+          <div class="intro-card">
+            <p class="intro-title">E1 · GRPO baseline —— 4B 上唯二保留 KL loss 的组之一</p>
+            <p class="intro-body">
+              组内均值 baseline + 除以组内 std；KL loss 系数 1e-3。150 步一次跑完、无 resume。
+              训练侧 pass rate 由首步 ~80% 升到末段 ~90%。
+            </p>
+            <ul class="intro-points">
+              <li><strong>算法设定：</strong>组相对 advantage（均值 baseline ÷ 组内 std）；KL loss=1e-3，与 E5 同为保留 KL 的两组。</li>
+              <li><strong>学习信号：</strong>pass ~80%→~90%；entropy 0.25→0.22 平稳收敛；响应长度涨幅四组最大（5.1k→9.7k）。</li>
+              <li><strong>稳定性：</strong>lr=1e-6，ppo_kl ~1e-5、pg_clipfrac 极低；rollout↔训练皮尔逊相关始终接近 1。</li>
+              <li><strong>耗时：</strong>均值 ~14.7 min/step（gen ≈51%，update_actor ≈30%）；总墙钟约 37.2h。</li>
+              <li><strong>评测风险：</strong>训练验证 aime24 在 step150 回落到 0.633——四组中唯一次末段走低，需对照 offline evalscope。</li>
+            </ul>
           </div>
-        </div>
-      </section>
-    </section>
+        </section>
+
+        <section class="detail-sec" id="e1-sec-learning">
+          <h2 class="sec-title">学习曲线</h2>
+          <p class="sec-sub">pass rate · 响应长度 · 截断 · loss · entropy · kl_loss</p>
+
+          <h2>Pass rate（%）</h2>
+          <div class="chart-card">
+            <div class="legend" id="legend-e1-pass"></div>
+            <div class="chart-wrap"><canvas id="chart-e1-pass" height="240"></canvas><div class="tooltip" id="tip-e1-pass"></div></div>
+          </div>
+          <p class="caption">X: step · Y: batch pass rate（%）。细线=逐 step；粗线=5-step 移动平均。</p>
+
+          <section class="grid2" style="margin-top:16px">
+            <div>
+              <h2>平均响应长度（tokens）</h2>
+              <div class="chart-card"><div class="chart-wrap"><canvas id="chart-e1-len" height="200"></canvas><div class="tooltip" id="tip-e1-len"></div></div></div>
+              <p class="caption">虚线 = 16K cap。</p>
+            </div>
+            <div>
+              <h2>截断率 clip@16K（%）</h2>
+              <div class="chart-card"><div class="chart-wrap"><canvas id="chart-e1-trunc" height="200"></canvas><div class="tooltip" id="tip-e1-trunc"></div></div></div>
+              <p class="caption"><code>response_length/clip_ratio</code>（≠ pg_clipfrac）。</p>
+            </div>
+          </section>
+
+          <h2 style="margin-top:16px">整体损失 actor/loss</h2>
+          <div class="chart-card">
+            <div class="legend" id="legend-e1-loss"></div>
+            <div class="chart-wrap"><canvas id="chart-e1-loss" height="220"></canvas><div class="tooltip" id="tip-e1-loss"></div></div>
+          </div>
+          <p class="caption">RL loss 幅值波动，不是监督训练那种单调下降指标——进展看 pass rate。</p>
+
+          <section class="grid2" style="margin-top:16px">
+            <div>
+              <h2>策略熵 entropy</h2>
+              <div class="chart-card"><div class="chart-wrap"><canvas id="chart-e1-ent" height="200"></canvas><div class="tooltip" id="tip-e1-ent"></div></div></div>
+            </div>
+            <div>
+              <h2>KL 散度 loss（×100，对参考模型）</h2>
+              <div class="chart-card"><div class="chart-wrap"><canvas id="chart-e1-klloss" height="200"></canvas><div class="tooltip" id="tip-e1-klloss"></div></div></div>
+              <p class="caption"><code>actor/kl_loss</code>×100；≠ ppo_kl。</p>
+            </div>
+          </section>
+        </section>
+
+        <section class="detail-sec" id="e1-sec-stability">
+          <h2 class="sec-title">稳定性</h2>
+          <p class="sec-sub">grad_norm · ppo_kl · pg_clipfrac · rollout↔训练一致性</p>
+          <div class="callout">
+            <div class="title">更新保守、rollout↔训练高度一致</div>
+            lr=1e-6 下每步更新很小：ppo_kl ~1e-5、pg_clipfrac 极低；rollout(vLLM) 与训练(FSDP) 概率皮尔逊相关始终接近 1——重要性采样前提成立。
+          </div>
+          <section class="grid2" style="margin-top:12px">
+            <div><h2>梯度范数 grad_norm</h2><div class="chart-card"><div class="chart-wrap"><canvas id="chart-e1-grad" height="200"></canvas><div class="tooltip" id="tip-e1-grad"></div></div></div></div>
+            <div><h2>rollout↔训练概率偏离度（(1−corr)×1e4）</h2><div class="chart-card"><div class="chart-wrap"><canvas id="chart-e1-corr" height="200"></canvas><div class="tooltip" id="tip-e1-corr"></div></div></div></div>
+          </section>
+          <section class="grid2" style="margin-top:16px">
+            <div><h2>策略更新位移 ppo_kl（×1e5）</h2><div class="chart-card"><div class="chart-wrap"><canvas id="chart-e1-ppokl" height="200"></canvas><div class="tooltip" id="tip-e1-ppokl"></div></div></div></div>
+            <div><h2>PPO 裁剪比例 pg_clipfrac（%）</h2><div class="chart-card"><div class="chart-wrap"><canvas id="chart-e1-clip" height="200"></canvas><div class="tooltip" id="tip-e1-clip"></div></div></div></div>
+          </section>
+          <section style="margin-top:16px">
+            <h2>rollout_corr/kl（×1e4）</h2>
+            <div class="chart-card"><div class="chart-wrap"><canvas id="chart-e1-rollkl" height="200"></canvas><div class="tooltip" id="tip-e1-rollkl"></div></div></div>
+            <p class="caption">与皮尔逊偏离度互补的一致性指标。</p>
+          </section>
+        </section>
+
+        <section class="detail-sec" id="e1-sec-efficiency">
+          <h2 class="sec-title">效率</h2>
+          <p class="sec-sub">MFU · throughput</p>
+          <section class="grid2">
+            <div>
+              <h2>MFU（actor，%）</h2>
+              <div class="chart-card"><div class="chart-wrap"><canvas id="chart-e1-mfu" height="200"></canvas><div class="tooltip" id="tip-e1-mfu"></div></div></div>
+              <p class="caption"><code>perf/mfu/actor</code>，随序列长度波动。</p>
+            </div>
+            <div>
+              <h2>吞吐 throughput（tokens/s）</h2>
+              <div class="chart-card"><div class="chart-wrap"><canvas id="chart-e1-thru" height="200"></canvas><div class="tooltip" id="tip-e1-thru"></div></div></div>
+              <p class="caption"><code>perf/throughput</code>（采样+训练）。</p>
+            </div>
+          </section>
+        </section>
+
+        <section class="detail-sec" id="e1-sec-timing">
+          <h2 class="sec-title">耗时拆解</h2>
+          <p class="sec-sub">单步墙钟 · gen / update_actor / ref / old_log_prob 等 stage</p>
+          <div class="callout timing-box" id="e1-timing-summary">
+            <div class="title">加载中…</div>
+            <div class="timing-metrics tertiary">加载中…</div>
+            <details class="stage-gloss">
+              <summary>展开 stage 释义 · gen / update_actor / ref / adv …</summary>
+              <ul class="intro-points">
+                <li><strong>gen (rollout)：</strong>vLLM 采样生成响应，通常占一半以上时间；随响应变长而抬升。</li>
+                <li><strong>update_actor：</strong>FSDP 上策略网络反向与参数更新（PPO/GRPO clip 目标）。</li>
+                <li><strong>ref：</strong>参考模型前向算 logprob，供 KL loss；关闭 KL 的组（如 DAPO / Dr.GRPO）此项为 null/≈0。</li>
+                <li><strong>old_log_prob：</strong>用更新前策略再算一遍 logprob，供重要性采样 ratio。</li>
+                <li><strong>update_weights：</strong>把新权重同步回 rollout engine（vLLM），一般数秒。</li>
+                <li><strong>adv：</strong>advantage 计算阶段墙钟（含 reward 整理 + <code>compute_advantage</code>），不是 advantage 数值本身；通常 &lt;1s。</li>
+                <li><strong>reward：</strong>打分/奖励函数本身的计时；多数配置下几乎可忽略（≈0）。</li>
+              </ul>
+            </details>
+          </div>
+          <section style="margin-top:12px">
+            <h2>单步耗时（分钟）</h2>
+            <div class="chart-card"><div class="chart-wrap"><canvas id="chart-e1-stepmin" height="200"></canvas><div class="tooltip" id="tip-e1-stepmin"></div></div></div>
+            <p class="caption"><code>timing_s/step</code>/60；均值约 14.7 min/step。</p>
+          </section>
+          <section class="grid2" style="margin-top:12px">
+            <div>
+              <h2>主要 stage 曲线（秒）</h2>
+              <div class="chart-card">
+                <div class="legend" id="legend-e1-timing"></div>
+                <div class="chart-wrap"><canvas id="chart-e1-timing" height="240"></canvas><div class="tooltip" id="tip-e1-timing"></div></div>
+              </div>
+              <p class="caption">gen=rollout · update_actor=策略更新 · ref / old_log_prob。</p>
+            </div>
+            <div>
+              <h2>整步耗时 timing_s/step（秒）</h2>
+              <div class="chart-card">
+                <div class="chart-wrap"><canvas id="chart-e1-timing-step" height="240"></canvas><div class="tooltip" id="tip-e1-timing-step"></div></div>
+              </div>
+              <p class="caption">均值约 883s；与总训练 37.2h 一致。</p>
+            </div>
+          </section>
+          <section class="grid2" style="margin-top:12px">
+            <div>
+              <h2>次要 stage（秒）</h2>
+              <div class="chart-card">
+                <div class="legend" id="legend-e1-timing-minor"></div>
+                <div class="chart-wrap"><canvas id="chart-e1-timing-minor" height="200"></canvas><div class="tooltip" id="tip-e1-timing-minor"></div></div>
+              </div>
+            </div>
+            <div>
+              <h2>平均耗时占比（秒）</h2>
+              <div class="chart-card">
+                <div class="chart-wrap"><canvas id="chart-e1-timing-mean" height="200"></canvas><div class="tooltip" id="tip-e1-timing-mean"></div></div>
+              </div>
+              <p class="caption">gen ≈ 51%，update_actor ≈ 30%，ref+old_log_prob ≈ 17%。</p>
+            </div>
+          </section>
+        </section>
+
+        <section class="detail-sec" id="e1-sec-eval">
+          <h2 class="sec-title">评测</h2>
+          <p class="sec-sub">evalscope offline · mmlu_temp / aime24 / aime25（n=8）</p>
+          <p class="tertiary">与训练日志验证不同：<code>eval_exp4b.sh</code> + vLLM serving；E1 三项全 step 已齐。</p>
+          <section class="grid2" style="margin-top:10px">
+            <div><h2>mmlu_temp（%）</h2><div class="chart-card"><div class="chart-wrap"><canvas id="chart-e1-eval-mmlu" height="200"></canvas><div class="tooltip" id="tip-e1-eval-mmlu"></div></div></div></div>
+            <div>
+              <h2>aime24 / aime25（%）</h2>
+              <div class="chart-card">
+                <div class="legend" id="legend-e1-eval-aime"></div>
+                <div class="chart-wrap"><canvas id="chart-e1-eval-aime" height="200"></canvas><div class="tooltip" id="tip-e1-eval-aime"></div></div>
+              </div>
+            </div>
+          </section>
+        </section>
+
+      </div><!-- /.detail-main -->
+    </div><!-- /.detail-layout -->
   </div>
 
   <div class="subpanel" id="subpanel-e2">
-    <p class="tertiary">Source: logs/exp2card/e2_dapo_4b/train_20260716_02*.log（2 个日志文件，第一个仅含启动日志，实际 150 步数据都在第二个文件里）。</p>
-    <div class="callout" style="margin-top:10px">
-      <div class="title">E2 · DAPO —— 4B 上全场最快，但出现两次瞬时梯度尖峰</div>
-      Clip-Higher + Dynamic Sampling + Overlong Reward Shaping，关闭 KL loss，墙钟最快（32h33m）。<strong>step43 grad_norm 冲到 0.96、step59 冲到 1.13</strong>（其余步 0.1–0.3），下方梯度范数图上有两个明显尖峰；entropy 全程走高（0.256→0.417），四组中唯一没有收敛趋势，训练后期是否需要关注熵失控值得跟进。
-    </div>
-    <section class="grid2" style="margin-top:16px">
-      <div><h2>Pass rate（%，逐 step 原始值）</h2><div class="chart-card"><div class="chart-wrap"><canvas id="chart-e2-pass" height="200"></canvas><div class="tooltip" id="tip-e2-pass"></div></div></div></div>
-      <div><h2>响应长度（tokens）</h2><div class="chart-card"><div class="chart-wrap"><canvas id="chart-e2-len" height="200"></canvas><div class="tooltip" id="tip-e2-len"></div></div></div></div>
-    </section>
-    <section class="grid2" style="margin-top:16px">
-      <div><h2>策略熵 entropy</h2><div class="chart-card"><div class="chart-wrap"><canvas id="chart-e2-ent" height="200"></canvas><div class="tooltip" id="tip-e2-ent"></div></div></div></div>
-      <div><h2>梯度范数 grad_norm</h2><div class="chart-card"><div class="chart-wrap"><canvas id="chart-e2-grad" height="200"></canvas><div class="tooltip" id="tip-e2-grad"></div></div></div></div>
-    </section>
-    <section class="grid2" style="margin-top:16px">
-      <div><h2>actor/loss</h2><div class="chart-card"><div class="chart-wrap"><canvas id="chart-e2-loss" height="200"></canvas><div class="tooltip" id="tip-e2-loss"></div></div></div></div>
-      <div><h2>PPO KL（×1e5，带符号）</h2><div class="chart-card"><div class="chart-wrap"><canvas id="chart-e2-ppokl" height="200"></canvas><div class="tooltip" id="tip-e2-ppokl"></div></div></div></div>
-    </section>
-    <section class="grid2" style="margin-top:16px">
-      <div><h2>PPO 裁剪比例 pg_clipfrac / pg_clipfrac_lower（%）</h2><div class="chart-card"><div class="chart-wrap"><canvas id="chart-e2-clip" height="200"></canvas><div class="tooltip" id="tip-e2-clip"></div></div></div></div>
-      <div><h2>rollout↔训练概率偏离度（(1−corr)×1e4）</h2><div class="chart-card"><div class="chart-wrap"><canvas id="chart-e2-corr" height="200"></canvas><div class="tooltip" id="tip-e2-corr"></div></div></div></div>
-    </section>
+    <p class="tertiary">Source: logs/exp2card/e2_dapo_4b/train_20260716_02*.log（2 个日志文件，实际 150 步在第二个文件）。</p>
+
+    <div class="detail-layout">
+      <nav class="detail-toc" aria-label="目录" id="e2-toc">
+        <p class="toc-heading">目录</p>
+        <ol class="toc-list">
+          <li><a href="#e2-sec-overview"><span class="toc-num">0</span><span class="toc-title">概览</span></a></li>
+          <li><a href="#e2-sec-learning"><span class="toc-num">1</span><span class="toc-title">学习曲线</span></a></li>
+          <li><a href="#e2-sec-stability"><span class="toc-num">2</span><span class="toc-title">稳定性</span></a></li>
+          <li><a href="#e2-sec-efficiency"><span class="toc-num">3</span><span class="toc-title">效率</span></a></li>
+          <li><a href="#e2-sec-timing"><span class="toc-num">4</span><span class="toc-title">耗时拆解</span></a></li>
+          <li><a href="#e2-sec-eval"><span class="toc-num">5</span><span class="toc-title">评测</span></a></li>
+        </ol>
+      </nav>
+
+      <div class="detail-main">
+
+        <section class="detail-sec" id="e2-sec-overview">
+          <h2 class="sec-title">概览</h2>
+          <p class="sec-sub">E2 DAPO · 一页速览</p>
+          <div class="intro-card">
+            <p class="intro-title">E2 · DAPO —— 4B 上全场最快，但出现两次瞬时梯度尖峰</p>
+            <p class="intro-body">
+              Clip-Higher + Dynamic Sampling + Overlong Reward Shaping，关闭 KL loss；墙钟最快（32h33m）。训练侧 pass 末段与其它组同带，但 entropy 全程走高是本轮最突出的风险信号。
+            </p>
+            <ul class="intro-points">
+              <li><strong>算法设定：</strong>DAPO 三件套：Clip-Higher、Dynamic Sampling、Overlong Reward Shaping；关闭 KL loss（无 ref 前向）。</li>
+              <li><strong>学习信号：</strong>pass 末段与其它组同处高位；entropy 0.256→0.417 全程走高——四组中唯一没有收敛趋势。</li>
+              <li><strong>稳定性：</strong>step43 grad_norm→0.96、step59→1.13（其余 0.1–0.3），梯度图上两个尖峰；需关注后期是否熵失控。</li>
+              <li><strong>耗时：</strong>均值 ~12.9 min/step（gen ≈56%，update_actor ≈34%）；总墙钟约 32.6h，四组最快。</li>
+              <li><strong>评测亮点：</strong>offline aime24 峰值 E2@80=80.4%；aime25 峰值 E2@80=62.5%，step150 仍最高（59.6%）。</li>
+            </ul>
+          </div>
+        </section>
+
+        <section class="detail-sec" id="e2-sec-learning">
+          <h2 class="sec-title">学习曲线</h2>
+          <p class="sec-sub">pass rate · 响应长度 · 截断 · loss · entropy</p>
+
+          <h2>Pass rate（%）</h2>
+          <div class="chart-card">
+            <div class="legend" id="legend-e2-pass"></div>
+            <div class="chart-wrap"><canvas id="chart-e2-pass" height="240"></canvas><div class="tooltip" id="tip-e2-pass"></div></div>
+          </div>
+          <p class="caption">X: step · Y: batch pass rate（%）。细线=逐 step；粗线=5-step 移动平均。</p>
+
+          <section class="grid2" style="margin-top:16px">
+            <div>
+              <h2>平均响应长度（tokens）</h2>
+              <div class="chart-card"><div class="chart-wrap"><canvas id="chart-e2-len" height="200"></canvas><div class="tooltip" id="tip-e2-len"></div></div></div>
+              <p class="caption">虚线 = 16K cap。</p>
+            </div>
+            <div>
+              <h2>截断率 clip@16K（%）</h2>
+              <div class="chart-card"><div class="chart-wrap"><canvas id="chart-e2-trunc" height="200"></canvas><div class="tooltip" id="tip-e2-trunc"></div></div></div>
+              <p class="caption"><code>response_length/clip_ratio</code>（≠ pg_clipfrac）。</p>
+            </div>
+          </section>
+
+          <h2 style="margin-top:16px">整体损失 actor/loss</h2>
+          <div class="chart-card">
+            <div class="legend" id="legend-e2-loss"></div>
+            <div class="chart-wrap"><canvas id="chart-e2-loss" height="220"></canvas><div class="tooltip" id="tip-e2-loss"></div></div>
+          </div>
+          <p class="caption">RL loss 幅值波动，不是监督训练那种单调下降指标——进展看 pass rate。</p>
+
+          <section class="grid2" style="margin-top:16px">
+            <div>
+              <h2>策略熵 entropy</h2>
+              <div class="chart-card"><div class="chart-wrap"><canvas id="chart-e2-ent" height="200"></canvas><div class="tooltip" id="tip-e2-ent"></div></div></div>
+            </div>
+            <div>
+              <h2>说明</h2>
+              <div class="callout" style="margin-top:0">
+                <div class="title">本组关闭 KL loss</div>
+                无 <code>actor/kl_loss</code> 曲线。稳定性看下方 ppo_kl / clip / corr。
+              </div>
+            </div>
+          </section>
+        </section>
+
+        <section class="detail-sec" id="e2-sec-stability">
+          <h2 class="sec-title">稳定性</h2>
+          <p class="sec-sub">grad_norm · ppo_kl · pg_clipfrac · rollout↔训练一致性</p>
+          <section class="grid2" style="margin-top:12px">
+            <div><h2>梯度范数 grad_norm</h2><div class="chart-card"><div class="chart-wrap"><canvas id="chart-e2-grad" height="200"></canvas><div class="tooltip" id="tip-e2-grad"></div></div></div></div>
+            <div><h2>rollout↔训练概率偏离度（(1−corr)×1e4）</h2><div class="chart-card"><div class="chart-wrap"><canvas id="chart-e2-corr" height="200"></canvas><div class="tooltip" id="tip-e2-corr"></div></div></div></div>
+          </section>
+          <section class="grid2" style="margin-top:16px">
+            <div><h2>策略更新位移 ppo_kl（×1e5）</h2><div class="chart-card"><div class="chart-wrap"><canvas id="chart-e2-ppokl" height="200"></canvas><div class="tooltip" id="tip-e2-ppokl"></div></div></div></div>
+            <div><h2>PPO 裁剪比例 pg_clipfrac / pg_clipfrac_lower（%）</h2><div class="chart-card"><div class="chart-wrap"><canvas id="chart-e2-clip" height="200"></canvas><div class="tooltip" id="tip-e2-clip"></div></div></div></div>
+          </section>
+          <section style="margin-top:16px">
+            <h2>rollout_corr/kl（×1e4）</h2>
+            <div class="chart-card"><div class="chart-wrap"><canvas id="chart-e2-rollkl" height="200"></canvas><div class="tooltip" id="tip-e2-rollkl"></div></div></div>
+            <p class="caption">与皮尔逊偏离度互补的一致性指标。</p>
+          </section>
+        </section>
+
+        <section class="detail-sec" id="e2-sec-efficiency">
+          <h2 class="sec-title">效率</h2>
+          <p class="sec-sub">MFU · throughput</p>
+          <section class="grid2">
+            <div>
+              <h2>MFU（actor，%）</h2>
+              <div class="chart-card"><div class="chart-wrap"><canvas id="chart-e2-mfu" height="200"></canvas><div class="tooltip" id="tip-e2-mfu"></div></div></div>
+              <p class="caption"><code>perf/mfu/actor</code>，随序列长度波动。</p>
+            </div>
+            <div>
+              <h2>吞吐 throughput（tokens/s）</h2>
+              <div class="chart-card"><div class="chart-wrap"><canvas id="chart-e2-thru" height="200"></canvas><div class="tooltip" id="tip-e2-thru"></div></div></div>
+              <p class="caption"><code>perf/throughput</code>（采样+训练）。</p>
+            </div>
+          </section>
+        </section>
+
+        <section class="detail-sec" id="e2-sec-timing">
+          <h2 class="sec-title">耗时拆解</h2>
+          <p class="sec-sub">单步墙钟 · gen / update_actor / ref / old_log_prob 等 stage</p>
+          <div class="callout timing-box" id="e2-timing-summary">
+            <div class="title">加载中…</div>
+            <div class="timing-metrics tertiary">加载中…</div>
+            <details class="stage-gloss">
+              <summary>展开 stage 释义 · gen / update_actor / ref / adv …</summary>
+              <ul class="intro-points">
+                <li><strong>gen (rollout)：</strong>vLLM 采样生成响应，通常占一半以上时间；随响应变长而抬升。</li>
+                <li><strong>update_actor：</strong>FSDP 上策略网络反向与参数更新（PPO/GRPO clip 目标）。</li>
+                <li><strong>ref：</strong>参考模型前向算 logprob，供 KL loss；关闭 KL 的组（如 DAPO / Dr.GRPO）此项为 null/≈0。</li>
+                <li><strong>old_log_prob：</strong>用更新前策略再算一遍 logprob，供重要性采样 ratio。</li>
+                <li><strong>update_weights：</strong>把新权重同步回 rollout engine（vLLM），一般数秒。</li>
+                <li><strong>adv：</strong>advantage 计算阶段墙钟（含 reward 整理 + <code>compute_advantage</code>），不是 advantage 数值本身；通常 &lt;1s。</li>
+                <li><strong>reward：</strong>打分/奖励函数本身的计时；多数配置下几乎可忽略（≈0）。</li>
+              </ul>
+            </details>
+          </div>
+          <section style="margin-top:12px">
+            <h2>单步耗时（分钟）</h2>
+            <div class="chart-card"><div class="chart-wrap"><canvas id="chart-e2-stepmin" height="200"></canvas><div class="tooltip" id="tip-e2-stepmin"></div></div></div>
+            <p class="caption"><code>timing_s/step</code>/60；均值约 12.9 min/step。</p>
+          </section>
+          <section class="grid2" style="margin-top:12px">
+            <div>
+              <h2>主要 stage 曲线（秒）</h2>
+              <div class="chart-card">
+                <div class="legend" id="legend-e2-timing"></div>
+                <div class="chart-wrap"><canvas id="chart-e2-timing" height="240"></canvas><div class="tooltip" id="tip-e2-timing"></div></div>
+              </div>
+              <p class="caption">gen=rollout · update_actor=策略更新 · ref / old_log_prob。</p>
+            </div>
+            <div>
+              <h2>整步耗时 timing_s/step（秒）</h2>
+              <div class="chart-card">
+                <div class="chart-wrap"><canvas id="chart-e2-timing-step" height="240"></canvas><div class="tooltip" id="tip-e2-timing-step"></div></div>
+              </div>
+              <p class="caption">均值约 772s；与总训练 32.6h 一致。</p>
+            </div>
+          </section>
+          <section class="grid2" style="margin-top:12px">
+            <div>
+              <h2>次要 stage（秒）</h2>
+              <div class="chart-card">
+                <div class="legend" id="legend-e2-timing-minor"></div>
+                <div class="chart-wrap"><canvas id="chart-e2-timing-minor" height="200"></canvas><div class="tooltip" id="tip-e2-timing-minor"></div></div>
+              </div>
+            </div>
+            <div>
+              <h2>平均耗时占比（秒）</h2>
+              <div class="chart-card">
+                <div class="chart-wrap"><canvas id="chart-e2-timing-mean" height="200"></canvas><div class="tooltip" id="tip-e2-timing-mean"></div></div>
+              </div>
+              <p class="caption">gen ≈ 56%，update_actor ≈ 34%（本组无 ref）。</p>
+            </div>
+          </section>
+        </section>
+
+        <section class="detail-sec" id="e2-sec-eval">
+          <h2 class="sec-title">评测</h2>
+          <p class="sec-sub">evalscope offline · mmlu_temp / aime24 / aime25（n=8）</p>
+          <p class="tertiary">与训练日志验证不同：<code>eval_exp4b.sh</code> + vLLM serving；E2 三项全 step 已齐。</p>
+          <section class="grid2" style="margin-top:10px">
+            <div><h2>mmlu_temp（%）</h2><div class="chart-card"><div class="chart-wrap"><canvas id="chart-e2-eval-mmlu" height="200"></canvas><div class="tooltip" id="tip-e2-eval-mmlu"></div></div></div></div>
+            <div>
+              <h2>aime24 / aime25（%）</h2>
+              <div class="chart-card">
+                <div class="legend" id="legend-e2-eval-aime"></div>
+                <div class="chart-wrap"><canvas id="chart-e2-eval-aime" height="200"></canvas><div class="tooltip" id="tip-e2-eval-aime"></div></div>
+              </div>
+            </div>
+          </section>
+        </section>
+
+      </div><!-- /.detail-main -->
+    </div><!-- /.detail-layout -->
   </div>
 
   <div class="subpanel" id="subpanel-e3">
     <p class="tertiary">Source: logs/exp2card/e3_drgrpo_4b/train_20260717_105706.log（150/150 步一次性跑完）。</p>
-    <div class="callout" style="margin-top:10px">
-      <div class="title">E3 · Dr.GRPO —— 熵收得最紧、梯度最稳，但长度涨幅反而全场最小</div>
-      不除以组内 std + loss_agg_mode=seq-mean-token-sum-norm，关闭 KL loss。entropy 0.081→0.048 全场最低最紧；grad_norm 基线全场最低（0.03–0.23）；<strong>响应长度只从 5.3k 涨到 7.3k，涨幅四组最小</strong>——这与 2B 赛道"Dr.GRPO 长度涨得最多"的结论正好相反，是本轮最值得关注的规模效应。aime24 在 step125 摸到全场最高 0.800。
-    </div>
-    <section class="grid2" style="margin-top:16px">
-      <div><h2>Pass rate（%，逐 step 原始值）</h2><div class="chart-card"><div class="chart-wrap"><canvas id="chart-e3-pass" height="200"></canvas><div class="tooltip" id="tip-e3-pass"></div></div></div></div>
-      <div><h2>响应长度（tokens）</h2><div class="chart-card"><div class="chart-wrap"><canvas id="chart-e3-len" height="200"></canvas><div class="tooltip" id="tip-e3-len"></div></div></div></div>
-    </section>
-    <section class="grid2" style="margin-top:16px">
-      <div><h2>策略熵 entropy</h2><div class="chart-card"><div class="chart-wrap"><canvas id="chart-e3-ent" height="200"></canvas><div class="tooltip" id="tip-e3-ent"></div></div></div></div>
-      <div><h2>梯度范数 grad_norm</h2><div class="chart-card"><div class="chart-wrap"><canvas id="chart-e3-grad" height="200"></canvas><div class="tooltip" id="tip-e3-grad"></div></div></div></div>
-    </section>
-    <section class="grid2" style="margin-top:16px">
-      <div><h2>actor/loss</h2><div class="chart-card"><div class="chart-wrap"><canvas id="chart-e3-loss" height="200"></canvas><div class="tooltip" id="tip-e3-loss"></div></div></div></div>
-      <div><h2>PPO KL（×1e5，带符号）</h2><div class="chart-card"><div class="chart-wrap"><canvas id="chart-e3-ppokl" height="200"></canvas><div class="tooltip" id="tip-e3-ppokl"></div></div></div></div>
-    </section>
-    <section class="grid2" style="margin-top:16px">
-      <div><h2>PPO 裁剪比例 pg_clipfrac（%）</h2><div class="chart-card"><div class="chart-wrap"><canvas id="chart-e3-clip" height="200"></canvas><div class="tooltip" id="tip-e3-clip"></div></div></div></div>
-      <div><h2>rollout↔训练概率偏离度（(1−corr)×1e4）</h2><div class="chart-card"><div class="chart-wrap"><canvas id="chart-e3-corr" height="200"></canvas><div class="tooltip" id="tip-e3-corr"></div></div></div></div>
-    </section>
+
+    <div class="detail-layout">
+      <nav class="detail-toc" aria-label="目录" id="e3-toc">
+        <p class="toc-heading">目录</p>
+        <ol class="toc-list">
+          <li><a href="#e3-sec-overview"><span class="toc-num">0</span><span class="toc-title">概览</span></a></li>
+          <li><a href="#e3-sec-learning"><span class="toc-num">1</span><span class="toc-title">学习曲线</span></a></li>
+          <li><a href="#e3-sec-stability"><span class="toc-num">2</span><span class="toc-title">稳定性</span></a></li>
+          <li><a href="#e3-sec-efficiency"><span class="toc-num">3</span><span class="toc-title">效率</span></a></li>
+          <li><a href="#e3-sec-timing"><span class="toc-num">4</span><span class="toc-title">耗时拆解</span></a></li>
+          <li><a href="#e3-sec-eval"><span class="toc-num">5</span><span class="toc-title">评测</span></a></li>
+        </ol>
+      </nav>
+
+      <div class="detail-main">
+
+        <section class="detail-sec" id="e3-sec-overview">
+          <h2 class="sec-title">概览</h2>
+          <p class="sec-sub">E3 Dr.GRPO · 一页速览</p>
+          <div class="intro-card">
+            <p class="intro-title">E3 · Dr.GRPO —— 熵收得最紧、梯度最稳，但长度涨幅反而全场最小</p>
+            <p class="intro-body">
+              不除以组内 std + loss_agg_mode=seq-mean-token-sum-norm，关闭 KL loss。本轮最值得关注的是「2B 上长度涨最多 → 4B 上长度涨最少」的规模反转。
+            </p>
+            <ul class="intro-points">
+              <li><strong>算法设定：</strong>Dr.GRPO：advantage 不除组内 std；loss_agg=seq-mean-token-sum-norm；关闭 KL loss。</li>
+              <li><strong>学习信号：</strong>entropy 0.081→0.048 全场最低最紧；响应长度只 5.3k→7.3k，涨幅四组最小（与 2B 结论相反）。</li>
+              <li><strong>稳定性：</strong>grad_norm 基线全场最低（0.03–0.23）；更新保守、曲线最稳。</li>
+              <li><strong>耗时：</strong>均值 ~12.5 min/step（gen ≈55%，update_actor ≈35%）；总墙钟约 31.2h。</li>
+              <li><strong>评测进度：</strong>offline 已齐到 @120（aime24@120=75.0%）；仅剩 @130/@140 全任务在跑。训练验证 aime24 step125 曾摸到 0.800。</li>
+            </ul>
+          </div>
+        </section>
+
+        <section class="detail-sec" id="e3-sec-learning">
+          <h2 class="sec-title">学习曲线</h2>
+          <p class="sec-sub">pass rate · 响应长度 · 截断 · loss · entropy</p>
+
+          <h2>Pass rate（%）</h2>
+          <div class="chart-card">
+            <div class="legend" id="legend-e3-pass"></div>
+            <div class="chart-wrap"><canvas id="chart-e3-pass" height="240"></canvas><div class="tooltip" id="tip-e3-pass"></div></div>
+          </div>
+          <p class="caption">X: step · Y: batch pass rate（%）。细线=逐 step；粗线=5-step 移动平均。</p>
+
+          <section class="grid2" style="margin-top:16px">
+            <div>
+              <h2>平均响应长度（tokens）</h2>
+              <div class="chart-card"><div class="chart-wrap"><canvas id="chart-e3-len" height="200"></canvas><div class="tooltip" id="tip-e3-len"></div></div></div>
+              <p class="caption">虚线 = 16K cap。</p>
+            </div>
+            <div>
+              <h2>截断率 clip@16K（%）</h2>
+              <div class="chart-card"><div class="chart-wrap"><canvas id="chart-e3-trunc" height="200"></canvas><div class="tooltip" id="tip-e3-trunc"></div></div></div>
+              <p class="caption"><code>response_length/clip_ratio</code>（≠ pg_clipfrac）。</p>
+            </div>
+          </section>
+
+          <h2 style="margin-top:16px">整体损失 actor/loss</h2>
+          <div class="chart-card">
+            <div class="legend" id="legend-e3-loss"></div>
+            <div class="chart-wrap"><canvas id="chart-e3-loss" height="220"></canvas><div class="tooltip" id="tip-e3-loss"></div></div>
+          </div>
+          <p class="caption">RL loss 幅值波动，不是监督训练那种单调下降指标——进展看 pass rate。</p>
+
+          <section class="grid2" style="margin-top:16px">
+            <div>
+              <h2>策略熵 entropy</h2>
+              <div class="chart-card"><div class="chart-wrap"><canvas id="chart-e3-ent" height="200"></canvas><div class="tooltip" id="tip-e3-ent"></div></div></div>
+            </div>
+            <div>
+              <h2>说明</h2>
+              <div class="callout" style="margin-top:0">
+                <div class="title">本组关闭 KL loss</div>
+                无 <code>actor/kl_loss</code> 曲线。稳定性看下方 ppo_kl / clip / corr。
+              </div>
+            </div>
+          </section>
+        </section>
+
+        <section class="detail-sec" id="e3-sec-stability">
+          <h2 class="sec-title">稳定性</h2>
+          <p class="sec-sub">grad_norm · ppo_kl · pg_clipfrac · rollout↔训练一致性</p>
+          <section class="grid2" style="margin-top:12px">
+            <div><h2>梯度范数 grad_norm</h2><div class="chart-card"><div class="chart-wrap"><canvas id="chart-e3-grad" height="200"></canvas><div class="tooltip" id="tip-e3-grad"></div></div></div></div>
+            <div><h2>rollout↔训练概率偏离度（(1−corr)×1e4）</h2><div class="chart-card"><div class="chart-wrap"><canvas id="chart-e3-corr" height="200"></canvas><div class="tooltip" id="tip-e3-corr"></div></div></div></div>
+          </section>
+          <section class="grid2" style="margin-top:16px">
+            <div><h2>策略更新位移 ppo_kl（×1e5）</h2><div class="chart-card"><div class="chart-wrap"><canvas id="chart-e3-ppokl" height="200"></canvas><div class="tooltip" id="tip-e3-ppokl"></div></div></div></div>
+            <div><h2>PPO 裁剪比例 pg_clipfrac（%）</h2><div class="chart-card"><div class="chart-wrap"><canvas id="chart-e3-clip" height="200"></canvas><div class="tooltip" id="tip-e3-clip"></div></div></div></div>
+          </section>
+          <section style="margin-top:16px">
+            <h2>rollout_corr/kl（×1e4）</h2>
+            <div class="chart-card"><div class="chart-wrap"><canvas id="chart-e3-rollkl" height="200"></canvas><div class="tooltip" id="tip-e3-rollkl"></div></div></div>
+            <p class="caption">与皮尔逊偏离度互补的一致性指标。</p>
+          </section>
+        </section>
+
+        <section class="detail-sec" id="e3-sec-efficiency">
+          <h2 class="sec-title">效率</h2>
+          <p class="sec-sub">MFU · throughput</p>
+          <section class="grid2">
+            <div>
+              <h2>MFU（actor，%）</h2>
+              <div class="chart-card"><div class="chart-wrap"><canvas id="chart-e3-mfu" height="200"></canvas><div class="tooltip" id="tip-e3-mfu"></div></div></div>
+              <p class="caption"><code>perf/mfu/actor</code>，随序列长度波动。</p>
+            </div>
+            <div>
+              <h2>吞吐 throughput（tokens/s）</h2>
+              <div class="chart-card"><div class="chart-wrap"><canvas id="chart-e3-thru" height="200"></canvas><div class="tooltip" id="tip-e3-thru"></div></div></div>
+              <p class="caption"><code>perf/throughput</code>（采样+训练）。</p>
+            </div>
+          </section>
+        </section>
+
+        <section class="detail-sec" id="e3-sec-timing">
+          <h2 class="sec-title">耗时拆解</h2>
+          <p class="sec-sub">单步墙钟 · gen / update_actor / ref / old_log_prob 等 stage</p>
+          <div class="callout timing-box" id="e3-timing-summary">
+            <div class="title">加载中…</div>
+            <div class="timing-metrics tertiary">加载中…</div>
+            <details class="stage-gloss">
+              <summary>展开 stage 释义 · gen / update_actor / ref / adv …</summary>
+              <ul class="intro-points">
+                <li><strong>gen (rollout)：</strong>vLLM 采样生成响应，通常占一半以上时间；随响应变长而抬升。</li>
+                <li><strong>update_actor：</strong>FSDP 上策略网络反向与参数更新（PPO/GRPO clip 目标）。</li>
+                <li><strong>ref：</strong>参考模型前向算 logprob，供 KL loss；关闭 KL 的组（如 DAPO / Dr.GRPO）此项为 null/≈0。</li>
+                <li><strong>old_log_prob：</strong>用更新前策略再算一遍 logprob，供重要性采样 ratio。</li>
+                <li><strong>update_weights：</strong>把新权重同步回 rollout engine（vLLM），一般数秒。</li>
+                <li><strong>adv：</strong>advantage 计算阶段墙钟（含 reward 整理 + <code>compute_advantage</code>），不是 advantage 数值本身；通常 &lt;1s。</li>
+                <li><strong>reward：</strong>打分/奖励函数本身的计时；多数配置下几乎可忽略（≈0）。</li>
+              </ul>
+            </details>
+          </div>
+          <section style="margin-top:12px">
+            <h2>单步耗时（分钟）</h2>
+            <div class="chart-card"><div class="chart-wrap"><canvas id="chart-e3-stepmin" height="200"></canvas><div class="tooltip" id="tip-e3-stepmin"></div></div></div>
+            <p class="caption"><code>timing_s/step</code>/60；均值约 12.5 min/step。</p>
+          </section>
+          <section class="grid2" style="margin-top:12px">
+            <div>
+              <h2>主要 stage 曲线（秒）</h2>
+              <div class="chart-card">
+                <div class="legend" id="legend-e3-timing"></div>
+                <div class="chart-wrap"><canvas id="chart-e3-timing" height="240"></canvas><div class="tooltip" id="tip-e3-timing"></div></div>
+              </div>
+              <p class="caption">gen=rollout · update_actor=策略更新 · ref / old_log_prob。</p>
+            </div>
+            <div>
+              <h2>整步耗时 timing_s/step（秒）</h2>
+              <div class="chart-card">
+                <div class="chart-wrap"><canvas id="chart-e3-timing-step" height="240"></canvas><div class="tooltip" id="tip-e3-timing-step"></div></div>
+              </div>
+              <p class="caption">均值约 750s；与总训练约 31.2h 一致。</p>
+            </div>
+          </section>
+          <section class="grid2" style="margin-top:12px">
+            <div>
+              <h2>次要 stage（秒）</h2>
+              <div class="chart-card">
+                <div class="legend" id="legend-e3-timing-minor"></div>
+                <div class="chart-wrap"><canvas id="chart-e3-timing-minor" height="200"></canvas><div class="tooltip" id="tip-e3-timing-minor"></div></div>
+              </div>
+            </div>
+            <div>
+              <h2>平均耗时占比（秒）</h2>
+              <div class="chart-card">
+                <div class="chart-wrap"><canvas id="chart-e3-timing-mean" height="200"></canvas><div class="tooltip" id="tip-e3-timing-mean"></div></div>
+              </div>
+              <p class="caption">gen ≈ 55%，update_actor ≈ 35%（本组无 ref）。</p>
+            </div>
+          </section>
+        </section>
+
+        <section class="detail-sec" id="e3-sec-eval">
+          <h2 class="sec-title">评测</h2>
+          <p class="sec-sub">evalscope offline · mmlu_temp / aime24 / aime25（n=8）</p>
+          <p class="tertiary">与训练日志验证不同：<code>eval_exp4b.sh</code> + vLLM serving；目前仅缺 @130/@140（补跑中），曲线在缺口处断开。</p>
+          <section class="grid2" style="margin-top:10px">
+            <div><h2>mmlu_temp（%）</h2><div class="chart-card"><div class="chart-wrap"><canvas id="chart-e3-eval-mmlu" height="200"></canvas><div class="tooltip" id="tip-e3-eval-mmlu"></div></div></div></div>
+            <div>
+              <h2>aime24 / aime25（%）</h2>
+              <div class="chart-card">
+                <div class="legend" id="legend-e3-eval-aime"></div>
+                <div class="chart-wrap"><canvas id="chart-e3-eval-aime" height="200"></canvas><div class="tooltip" id="tip-e3-eval-aime"></div></div>
+              </div>
+            </div>
+          </section>
+        </section>
+
+      </div><!-- /.detail-main -->
+    </div><!-- /.detail-layout -->
   </div>
 
   <div class="subpanel" id="subpanel-e4">
     <p class="tertiary">Source: logs/exp2card/e4_rloo_4b/train_20260718_184125.log（150/150 步一次性跑完）。</p>
-    <div class="callout" style="margin-top:10px">
-      <div class="title">E4 · RLOO —— step125 单点 aime24 全场最高（0.833）</div>
-      留一法(leave-one-out) baseline，保留 KL loss（low_var_kl，1e-3），墙钟次高（35h47m）。entropy/grad_norm 走势与 E1 接近（都有 KL 拉住）；响应长度涨幅居中（5.0k→8.1k）；aime24 在 step125 摸到全场最高 0.833，step150 回落到 0.767，与 E2/E3 并列该步最高。
-    </div>
-    <section class="grid2" style="margin-top:16px">
-      <div><h2>Pass rate（%，逐 step 原始值）</h2><div class="chart-card"><div class="chart-wrap"><canvas id="chart-e4-pass" height="200"></canvas><div class="tooltip" id="tip-e4-pass"></div></div></div></div>
-      <div><h2>响应长度（tokens）</h2><div class="chart-card"><div class="chart-wrap"><canvas id="chart-e4-len" height="200"></canvas><div class="tooltip" id="tip-e4-len"></div></div></div></div>
-    </section>
-    <section class="grid2" style="margin-top:16px">
-      <div><h2>策略熵 entropy</h2><div class="chart-card"><div class="chart-wrap"><canvas id="chart-e4-ent" height="200"></canvas><div class="tooltip" id="tip-e4-ent"></div></div></div></div>
-      <div><h2>梯度范数 grad_norm</h2><div class="chart-card"><div class="chart-wrap"><canvas id="chart-e4-grad" height="200"></canvas><div class="tooltip" id="tip-e4-grad"></div></div></div></div>
-    </section>
-    <section class="grid2" style="margin-top:16px">
-      <div><h2>actor/loss</h2><div class="chart-card"><div class="chart-wrap"><canvas id="chart-e4-loss" height="200"></canvas><div class="tooltip" id="tip-e4-loss"></div></div></div></div>
-      <div><h2>PPO KL（×1e5，带符号）</h2><div class="chart-card"><div class="chart-wrap"><canvas id="chart-e4-ppokl" height="200"></canvas><div class="tooltip" id="tip-e4-ppokl"></div></div></div></div>
-    </section>
-    <section class="grid2" style="margin-top:16px">
-      <div><h2>PPO 裁剪比例 pg_clipfrac（%）</h2><div class="chart-card"><div class="chart-wrap"><canvas id="chart-e4-clip" height="200"></canvas><div class="tooltip" id="tip-e4-clip"></div></div></div></div>
-      <div><h2>rollout↔训练概率偏离度（(1−corr)×1e4）</h2><div class="chart-card"><div class="chart-wrap"><canvas id="chart-e4-corr" height="200"></canvas><div class="tooltip" id="tip-e4-corr"></div></div></div></div>
-    </section>
 
-    <section style="margin-top:16px">
-      <h2>Evalscope 评测（mmlu_temp / aime24 / aime25，逐 checkpoint）</h2>
-      <p class="tertiary">与上方训练日志指标来源不同：本节为 <code>eval_exp4b.sh</code>（verl_qwen35 vLLM 0.24 serving）offline 评测，非训练时验证。aime24/aime25 各 30 题 × n=8=240 采样；mmlu_temp n=2；step 50/100/150 未评 aime24，曲线在该处断开。</p>
-      <section class="grid2" style="margin-top:10px">
-        <div><h2>mmlu_temp（%）</h2><div class="chart-card"><div class="chart-wrap"><canvas id="chart-e4-eval-mmlu" height="200"></canvas><div class="tooltip" id="tip-e4-eval-mmlu"></div></div></div></div>
-        <div>
-          <h2>aime24 / aime25（%）</h2>
-          <div class="chart-card">
-            <div class="legend" id="legend-e4-eval-aime"></div>
-            <div class="chart-wrap"><canvas id="chart-e4-eval-aime" height="200"></canvas><div class="tooltip" id="tip-e4-eval-aime"></div></div>
+    <div class="detail-layout">
+      <nav class="detail-toc" aria-label="目录" id="e4-toc">
+        <p class="toc-heading">目录</p>
+        <ol class="toc-list">
+          <li><a href="#e4-sec-overview"><span class="toc-num">0</span><span class="toc-title">概览</span></a></li>
+          <li><a href="#e4-sec-learning"><span class="toc-num">1</span><span class="toc-title">学习曲线</span></a></li>
+          <li><a href="#e4-sec-stability"><span class="toc-num">2</span><span class="toc-title">稳定性</span></a></li>
+          <li><a href="#e4-sec-efficiency"><span class="toc-num">3</span><span class="toc-title">效率</span></a></li>
+          <li><a href="#e4-sec-timing"><span class="toc-num">4</span><span class="toc-title">耗时拆解</span></a></li>
+          <li><a href="#e4-sec-eval"><span class="toc-num">5</span><span class="toc-title">评测</span></a></li>
+        </ol>
+      </nav>
+
+      <div class="detail-main">
+
+        <section class="detail-sec" id="e4-sec-overview">
+          <h2 class="sec-title">概览</h2>
+          <p class="sec-sub">E4 RLOO · 一页速览</p>
+          <div class="intro-card">
+            <p class="intro-title">E4 · RLOO —— step125 单点 aime24 全场最高（0.833）</p>
+            <p class="intro-body">
+              留一法 (leave-one-out) baseline，保留 KL loss（low_var_kl，1e-3），墙钟次高（35h47m）。entropy/grad 走势与 E1 接近（都有 KL 拉住）。
+            </p>
+            <ul class="intro-points">
+              <li><strong>算法设定：</strong>RLOO：leave-one-out baseline；保留 KL loss（low_var_kl，1e-3）。</li>
+              <li><strong>学习信号：</strong>entropy/grad 走势接近 E1；响应长度涨幅居中（5.0k→8.1k）。</li>
+              <li><strong>稳定性：</strong>有 KL 约束，更新幅度与 E1 同量级；rollout↔训练一致性良好。</li>
+              <li><strong>耗时：</strong>均值 ~14.2 min/step（gen ≈50%，update_actor ≈31%，ref+old≈18%）；总墙钟约 35.8h。</li>
+              <li><strong>评测亮点：</strong>训练验证 aime24 step125=0.833（全场最高单点），step150 回落到 0.767；offline 三项全齐。</li>
+            </ul>
           </div>
-        </div>
-      </section>
-    </section>
+        </section>
+
+        <section class="detail-sec" id="e4-sec-learning">
+          <h2 class="sec-title">学习曲线</h2>
+          <p class="sec-sub">pass rate · 响应长度 · 截断 · loss · entropy · kl_loss</p>
+
+          <h2>Pass rate（%）</h2>
+          <div class="chart-card">
+            <div class="legend" id="legend-e4-pass"></div>
+            <div class="chart-wrap"><canvas id="chart-e4-pass" height="240"></canvas><div class="tooltip" id="tip-e4-pass"></div></div>
+          </div>
+          <p class="caption">X: step · Y: batch pass rate（%）。细线=逐 step；粗线=5-step 移动平均。</p>
+
+          <section class="grid2" style="margin-top:16px">
+            <div>
+              <h2>平均响应长度（tokens）</h2>
+              <div class="chart-card"><div class="chart-wrap"><canvas id="chart-e4-len" height="200"></canvas><div class="tooltip" id="tip-e4-len"></div></div></div>
+              <p class="caption">虚线 = 16K cap。</p>
+            </div>
+            <div>
+              <h2>截断率 clip@16K（%）</h2>
+              <div class="chart-card"><div class="chart-wrap"><canvas id="chart-e4-trunc" height="200"></canvas><div class="tooltip" id="tip-e4-trunc"></div></div></div>
+              <p class="caption"><code>response_length/clip_ratio</code>（≠ pg_clipfrac）。</p>
+            </div>
+          </section>
+
+          <h2 style="margin-top:16px">整体损失 actor/loss</h2>
+          <div class="chart-card">
+            <div class="legend" id="legend-e4-loss"></div>
+            <div class="chart-wrap"><canvas id="chart-e4-loss" height="220"></canvas><div class="tooltip" id="tip-e4-loss"></div></div>
+          </div>
+          <p class="caption">RL loss 幅值波动，不是监督训练那种单调下降指标——进展看 pass rate。</p>
+
+          <section class="grid2" style="margin-top:16px">
+            <div>
+              <h2>策略熵 entropy</h2>
+              <div class="chart-card"><div class="chart-wrap"><canvas id="chart-e4-ent" height="200"></canvas><div class="tooltip" id="tip-e4-ent"></div></div></div>
+            </div>
+            <div>
+              <h2>KL 散度 loss（×100，对参考模型）</h2>
+              <div class="chart-card"><div class="chart-wrap"><canvas id="chart-e4-klloss" height="200"></canvas><div class="tooltip" id="tip-e4-klloss"></div></div></div>
+              <p class="caption"><code>actor/kl_loss</code>×100；≠ ppo_kl。</p>
+            </div>
+          </section>
+        </section>
+
+        <section class="detail-sec" id="e4-sec-stability">
+          <h2 class="sec-title">稳定性</h2>
+          <p class="sec-sub">grad_norm · ppo_kl · pg_clipfrac · rollout↔训练一致性</p>
+          <section class="grid2" style="margin-top:12px">
+            <div><h2>梯度范数 grad_norm</h2><div class="chart-card"><div class="chart-wrap"><canvas id="chart-e4-grad" height="200"></canvas><div class="tooltip" id="tip-e4-grad"></div></div></div></div>
+            <div><h2>rollout↔训练概率偏离度（(1−corr)×1e4）</h2><div class="chart-card"><div class="chart-wrap"><canvas id="chart-e4-corr" height="200"></canvas><div class="tooltip" id="tip-e4-corr"></div></div></div></div>
+          </section>
+          <section class="grid2" style="margin-top:16px">
+            <div><h2>策略更新位移 ppo_kl（×1e5）</h2><div class="chart-card"><div class="chart-wrap"><canvas id="chart-e4-ppokl" height="200"></canvas><div class="tooltip" id="tip-e4-ppokl"></div></div></div></div>
+            <div><h2>PPO 裁剪比例 pg_clipfrac（%）</h2><div class="chart-card"><div class="chart-wrap"><canvas id="chart-e4-clip" height="200"></canvas><div class="tooltip" id="tip-e4-clip"></div></div></div></div>
+          </section>
+          <section style="margin-top:16px">
+            <h2>rollout_corr/kl（×1e4）</h2>
+            <div class="chart-card"><div class="chart-wrap"><canvas id="chart-e4-rollkl" height="200"></canvas><div class="tooltip" id="tip-e4-rollkl"></div></div></div>
+            <p class="caption">与皮尔逊偏离度互补的一致性指标。</p>
+          </section>
+        </section>
+
+        <section class="detail-sec" id="e4-sec-efficiency">
+          <h2 class="sec-title">效率</h2>
+          <p class="sec-sub">MFU · throughput</p>
+          <section class="grid2">
+            <div>
+              <h2>MFU（actor，%）</h2>
+              <div class="chart-card"><div class="chart-wrap"><canvas id="chart-e4-mfu" height="200"></canvas><div class="tooltip" id="tip-e4-mfu"></div></div></div>
+              <p class="caption"><code>perf/mfu/actor</code>，随序列长度波动。</p>
+            </div>
+            <div>
+              <h2>吞吐 throughput（tokens/s）</h2>
+              <div class="chart-card"><div class="chart-wrap"><canvas id="chart-e4-thru" height="200"></canvas><div class="tooltip" id="tip-e4-thru"></div></div></div>
+              <p class="caption"><code>perf/throughput</code>（采样+训练）。</p>
+            </div>
+          </section>
+        </section>
+
+        <section class="detail-sec" id="e4-sec-timing">
+          <h2 class="sec-title">耗时拆解</h2>
+          <p class="sec-sub">单步墙钟 · gen / update_actor / ref / old_log_prob 等 stage</p>
+          <div class="callout timing-box" id="e4-timing-summary">
+            <div class="title">加载中…</div>
+            <div class="timing-metrics tertiary">加载中…</div>
+            <details class="stage-gloss">
+              <summary>展开 stage 释义 · gen / update_actor / ref / adv …</summary>
+              <ul class="intro-points">
+                <li><strong>gen (rollout)：</strong>vLLM 采样生成响应，通常占一半以上时间；随响应变长而抬升。</li>
+                <li><strong>update_actor：</strong>FSDP 上策略网络反向与参数更新（PPO/GRPO clip 目标）。</li>
+                <li><strong>ref：</strong>参考模型前向算 logprob，供 KL loss；关闭 KL 的组（如 DAPO / Dr.GRPO）此项为 null/≈0。</li>
+                <li><strong>old_log_prob：</strong>用更新前策略再算一遍 logprob，供重要性采样 ratio。</li>
+                <li><strong>update_weights：</strong>把新权重同步回 rollout engine（vLLM），一般数秒。</li>
+                <li><strong>adv：</strong>advantage 计算阶段墙钟（含 reward 整理 + <code>compute_advantage</code>），不是 advantage 数值本身；通常 &lt;1s。</li>
+                <li><strong>reward：</strong>打分/奖励函数本身的计时；多数配置下几乎可忽略（≈0）。</li>
+              </ul>
+            </details>
+          </div>
+          <section style="margin-top:12px">
+            <h2>单步耗时（分钟）</h2>
+            <div class="chart-card"><div class="chart-wrap"><canvas id="chart-e4-stepmin" height="200"></canvas><div class="tooltip" id="tip-e4-stepmin"></div></div></div>
+            <p class="caption"><code>timing_s/step</code>/60；均值约 14.2 min/step。</p>
+          </section>
+          <section class="grid2" style="margin-top:12px">
+            <div>
+              <h2>主要 stage 曲线（秒）</h2>
+              <div class="chart-card">
+                <div class="legend" id="legend-e4-timing"></div>
+                <div class="chart-wrap"><canvas id="chart-e4-timing" height="240"></canvas><div class="tooltip" id="tip-e4-timing"></div></div>
+              </div>
+              <p class="caption">gen=rollout · update_actor=策略更新 · ref / old_log_prob。</p>
+            </div>
+            <div>
+              <h2>整步耗时 timing_s/step（秒）</h2>
+              <div class="chart-card">
+                <div class="chart-wrap"><canvas id="chart-e4-timing-step" height="240"></canvas><div class="tooltip" id="tip-e4-timing-step"></div></div>
+              </div>
+              <p class="caption">均值约 849s；与总训练 35.8h 一致。</p>
+            </div>
+          </section>
+          <section class="grid2" style="margin-top:12px">
+            <div>
+              <h2>次要 stage（秒）</h2>
+              <div class="chart-card">
+                <div class="legend" id="legend-e4-timing-minor"></div>
+                <div class="chart-wrap"><canvas id="chart-e4-timing-minor" height="200"></canvas><div class="tooltip" id="tip-e4-timing-minor"></div></div>
+              </div>
+            </div>
+            <div>
+              <h2>平均耗时占比（秒）</h2>
+              <div class="chart-card">
+                <div class="chart-wrap"><canvas id="chart-e4-timing-mean" height="200"></canvas><div class="tooltip" id="tip-e4-timing-mean"></div></div>
+              </div>
+              <p class="caption">gen ≈ 50%，update_actor ≈ 31%，ref+old_log_prob ≈ 18%。</p>
+            </div>
+          </section>
+        </section>
+
+        <section class="detail-sec" id="e4-sec-eval">
+          <h2 class="sec-title">评测</h2>
+          <p class="sec-sub">evalscope offline · mmlu_temp / aime24 / aime25（n=8）</p>
+          <p class="tertiary">与训练日志验证不同：<code>eval_exp4b.sh</code> + vLLM serving；E4 三项全 step 已齐。</p>
+          <section class="grid2" style="margin-top:10px">
+            <div><h2>mmlu_temp（%）</h2><div class="chart-card"><div class="chart-wrap"><canvas id="chart-e4-eval-mmlu" height="200"></canvas><div class="tooltip" id="tip-e4-eval-mmlu"></div></div></div></div>
+            <div>
+              <h2>aime24 / aime25（%）</h2>
+              <div class="chart-card">
+                <div class="legend" id="legend-e4-eval-aime"></div>
+                <div class="chart-wrap"><canvas id="chart-e4-eval-aime" height="200"></canvas><div class="tooltip" id="tip-e4-eval-aime"></div></div>
+              </div>
+            </div>
+          </section>
+        </section>
+
+      </div><!-- /.detail-main -->
+    </div><!-- /.detail-layout -->
   </div>
 
   <div class="subpanel" id="subpanel-e5">
     <p class="tertiary">Source: logs/exp2card/e5_reinforce_pp_4b/train_20260720_063429.log（150/150 步一次性跑完）。</p>
-    <div class="callout" style="margin-top:10px">
-      <div class="title">E5 · REINFORCE++ —— evalscope aime25 step150 第三（57.5%），mmlu 与 E1 并列</div>
-      不做组内 baseline，改为全 batch 白化折扣 return + mse 形式 KL loss。pass rate 末段与其它四组同处 88–91% 带；evalscope 侧 <strong>aime25 step150 达 57.5%</strong>（仅次于 E2-150 的 59.6% 与 E1-100 的 58.3%），mmlu_temp 三 checkpoint 都在 91.2–91.5% 窄带。
-    </div>
-    <section class="grid2" style="margin-top:16px">
-      <div><h2>Pass rate（%，逐 step 原始值）</h2><div class="chart-card"><div class="chart-wrap"><canvas id="chart-e5-pass" height="200"></canvas><div class="tooltip" id="tip-e5-pass"></div></div></div></div>
-      <div><h2>响应长度（tokens）</h2><div class="chart-card"><div class="chart-wrap"><canvas id="chart-e5-len" height="200"></canvas><div class="tooltip" id="tip-e5-len"></div></div></div></div>
-    </section>
-    <section class="grid2" style="margin-top:16px">
-      <div><h2>策略熵 entropy</h2><div class="chart-card"><div class="chart-wrap"><canvas id="chart-e5-ent" height="200"></canvas><div class="tooltip" id="tip-e5-ent"></div></div></div></div>
-      <div><h2>梯度范数 grad_norm</h2><div class="chart-card"><div class="chart-wrap"><canvas id="chart-e5-grad" height="200"></canvas><div class="tooltip" id="tip-e5-grad"></div></div></div></div>
-    </section>
-    <section class="grid2" style="margin-top:16px">
-      <div><h2>actor/loss</h2><div class="chart-card"><div class="chart-wrap"><canvas id="chart-e5-loss" height="200"></canvas><div class="tooltip" id="tip-e5-loss"></div></div></div></div>
-      <div><h2>PPO KL（×1e5，带符号）</h2><div class="chart-card"><div class="chart-wrap"><canvas id="chart-e5-ppokl" height="200"></canvas><div class="tooltip" id="tip-e5-ppokl"></div></div></div></div>
-    </section>
-    <section class="grid2" style="margin-top:16px">
-      <div><h2>PPO 裁剪比例 pg_clipfrac（%）</h2><div class="chart-card"><div class="chart-wrap"><canvas id="chart-e5-clip" height="200"></canvas><div class="tooltip" id="tip-e5-clip"></div></div></div></div>
-      <div><h2>rollout↔训练概率偏离度（(1−corr)×1e4）</h2><div class="chart-card"><div class="chart-wrap"><canvas id="chart-e5-corr" height="200"></canvas><div class="tooltip" id="tip-e5-corr"></div></div></div></div>
-    </section>
+
+    <div class="detail-layout">
+      <nav class="detail-toc" aria-label="目录" id="e5-toc">
+        <p class="toc-heading">目录</p>
+        <ol class="toc-list">
+          <li><a href="#e5-sec-overview"><span class="toc-num">0</span><span class="toc-title">概览</span></a></li>
+          <li><a href="#e5-sec-learning"><span class="toc-num">1</span><span class="toc-title">学习曲线</span></a></li>
+          <li><a href="#e5-sec-stability"><span class="toc-num">2</span><span class="toc-title">稳定性</span></a></li>
+          <li><a href="#e5-sec-efficiency"><span class="toc-num">3</span><span class="toc-title">效率</span></a></li>
+          <li><a href="#e5-sec-timing"><span class="toc-num">4</span><span class="toc-title">耗时拆解</span></a></li>
+          <li><a href="#e5-sec-eval"><span class="toc-num">5</span><span class="toc-title">评测</span></a></li>
+        </ol>
+      </nav>
+
+      <div class="detail-main">
+
+        <section class="detail-sec" id="e5-sec-overview">
+          <h2 class="sec-title">概览</h2>
+          <p class="sec-sub">E5 REINFORCE++ · 一页速览</p>
+          <div class="intro-card">
+            <p class="intro-title">E5 · REINFORCE++ —— evalscope aime25 step150 第三（57.5%），mmlu 与 E1 并列</p>
+            <p class="intro-body">
+              不做组内 baseline，改为全 batch 白化折扣 return + mse 形式 KL loss。pass 末段与其它组同处 88–91% 带；offline 侧 aime25 末步表现突出。
+            </p>
+            <ul class="intro-points">
+              <li><strong>算法设定：</strong>REINFORCE++：全 batch 白化折扣 return；mse 形式 KL loss（与 E1 同为保留 KL 的两组）。</li>
+              <li><strong>学习信号：</strong>pass 末段 88–91%；mmlu_temp 三 checkpoint 都在 91.2–91.5% 窄带。</li>
+              <li><strong>稳定性：</strong>有 KL 约束；曲线整体平稳，无 E2 式梯度尖峰。</li>
+              <li><strong>耗时：</strong>均值 ~13.3 min/step（gen ≈48%，update_actor ≈32%，ref+old≈18%）；总墙钟约 33.3h。</li>
+              <li><strong>评测亮点：</strong>offline aime25@150=57.5%（第三）；aime24@150=77.08%；mmlu 与 E1 并列高位；三项全 step 已齐。</li>
+            </ul>
+          </div>
+        </section>
+
+        <section class="detail-sec" id="e5-sec-learning">
+          <h2 class="sec-title">学习曲线</h2>
+          <p class="sec-sub">pass rate · 响应长度 · 截断 · loss · entropy · kl_loss</p>
+
+          <h2>Pass rate（%）</h2>
+          <div class="chart-card">
+            <div class="legend" id="legend-e5-pass"></div>
+            <div class="chart-wrap"><canvas id="chart-e5-pass" height="240"></canvas><div class="tooltip" id="tip-e5-pass"></div></div>
+          </div>
+          <p class="caption">X: step · Y: batch pass rate（%）。细线=逐 step；粗线=5-step 移动平均。</p>
+
+          <section class="grid2" style="margin-top:16px">
+            <div>
+              <h2>平均响应长度（tokens）</h2>
+              <div class="chart-card"><div class="chart-wrap"><canvas id="chart-e5-len" height="200"></canvas><div class="tooltip" id="tip-e5-len"></div></div></div>
+              <p class="caption">虚线 = 16K cap。</p>
+            </div>
+            <div>
+              <h2>截断率 clip@16K（%）</h2>
+              <div class="chart-card"><div class="chart-wrap"><canvas id="chart-e5-trunc" height="200"></canvas><div class="tooltip" id="tip-e5-trunc"></div></div></div>
+              <p class="caption"><code>response_length/clip_ratio</code>（≠ pg_clipfrac）。</p>
+            </div>
+          </section>
+
+          <h2 style="margin-top:16px">整体损失 actor/loss</h2>
+          <div class="chart-card">
+            <div class="legend" id="legend-e5-loss"></div>
+            <div class="chart-wrap"><canvas id="chart-e5-loss" height="220"></canvas><div class="tooltip" id="tip-e5-loss"></div></div>
+          </div>
+          <p class="caption">RL loss 幅值波动，不是监督训练那种单调下降指标——进展看 pass rate。</p>
+
+          <section class="grid2" style="margin-top:16px">
+            <div>
+              <h2>策略熵 entropy</h2>
+              <div class="chart-card"><div class="chart-wrap"><canvas id="chart-e5-ent" height="200"></canvas><div class="tooltip" id="tip-e5-ent"></div></div></div>
+            </div>
+            <div>
+              <h2>KL 散度 loss（×100，对参考模型）</h2>
+              <div class="chart-card"><div class="chart-wrap"><canvas id="chart-e5-klloss" height="200"></canvas><div class="tooltip" id="tip-e5-klloss"></div></div></div>
+              <p class="caption"><code>actor/kl_loss</code>×100；≠ ppo_kl。</p>
+            </div>
+          </section>
+        </section>
+
+        <section class="detail-sec" id="e5-sec-stability">
+          <h2 class="sec-title">稳定性</h2>
+          <p class="sec-sub">grad_norm · ppo_kl · pg_clipfrac · rollout↔训练一致性</p>
+          <section class="grid2" style="margin-top:12px">
+            <div><h2>梯度范数 grad_norm</h2><div class="chart-card"><div class="chart-wrap"><canvas id="chart-e5-grad" height="200"></canvas><div class="tooltip" id="tip-e5-grad"></div></div></div></div>
+            <div><h2>rollout↔训练概率偏离度（(1−corr)×1e4）</h2><div class="chart-card"><div class="chart-wrap"><canvas id="chart-e5-corr" height="200"></canvas><div class="tooltip" id="tip-e5-corr"></div></div></div></div>
+          </section>
+          <section class="grid2" style="margin-top:16px">
+            <div><h2>策略更新位移 ppo_kl（×1e5）</h2><div class="chart-card"><div class="chart-wrap"><canvas id="chart-e5-ppokl" height="200"></canvas><div class="tooltip" id="tip-e5-ppokl"></div></div></div></div>
+            <div><h2>PPO 裁剪比例 pg_clipfrac（%）</h2><div class="chart-card"><div class="chart-wrap"><canvas id="chart-e5-clip" height="200"></canvas><div class="tooltip" id="tip-e5-clip"></div></div></div></div>
+          </section>
+          <section style="margin-top:16px">
+            <h2>rollout_corr/kl（×1e4）</h2>
+            <div class="chart-card"><div class="chart-wrap"><canvas id="chart-e5-rollkl" height="200"></canvas><div class="tooltip" id="tip-e5-rollkl"></div></div></div>
+            <p class="caption">与皮尔逊偏离度互补的一致性指标。</p>
+          </section>
+        </section>
+
+        <section class="detail-sec" id="e5-sec-efficiency">
+          <h2 class="sec-title">效率</h2>
+          <p class="sec-sub">MFU · throughput</p>
+          <section class="grid2">
+            <div>
+              <h2>MFU（actor，%）</h2>
+              <div class="chart-card"><div class="chart-wrap"><canvas id="chart-e5-mfu" height="200"></canvas><div class="tooltip" id="tip-e5-mfu"></div></div></div>
+              <p class="caption"><code>perf/mfu/actor</code>，随序列长度波动。</p>
+            </div>
+            <div>
+              <h2>吞吐 throughput（tokens/s）</h2>
+              <div class="chart-card"><div class="chart-wrap"><canvas id="chart-e5-thru" height="200"></canvas><div class="tooltip" id="tip-e5-thru"></div></div></div>
+              <p class="caption"><code>perf/throughput</code>（采样+训练）。</p>
+            </div>
+          </section>
+        </section>
+
+        <section class="detail-sec" id="e5-sec-timing">
+          <h2 class="sec-title">耗时拆解</h2>
+          <p class="sec-sub">单步墙钟 · gen / update_actor / ref / old_log_prob 等 stage</p>
+          <div class="callout timing-box" id="e5-timing-summary">
+            <div class="title">加载中…</div>
+            <div class="timing-metrics tertiary">加载中…</div>
+            <details class="stage-gloss">
+              <summary>展开 stage 释义 · gen / update_actor / ref / adv …</summary>
+              <ul class="intro-points">
+                <li><strong>gen (rollout)：</strong>vLLM 采样生成响应，通常占一半以上时间；随响应变长而抬升。</li>
+                <li><strong>update_actor：</strong>FSDP 上策略网络反向与参数更新（PPO/GRPO clip 目标）。</li>
+                <li><strong>ref：</strong>参考模型前向算 logprob，供 KL loss；关闭 KL 的组（如 DAPO / Dr.GRPO）此项为 null/≈0。</li>
+                <li><strong>old_log_prob：</strong>用更新前策略再算一遍 logprob，供重要性采样 ratio。</li>
+                <li><strong>update_weights：</strong>把新权重同步回 rollout engine（vLLM），一般数秒。</li>
+                <li><strong>adv：</strong>advantage 计算阶段墙钟（含 reward 整理 + <code>compute_advantage</code>），不是 advantage 数值本身；通常 &lt;1s。</li>
+                <li><strong>reward：</strong>打分/奖励函数本身的计时；多数配置下几乎可忽略（≈0）。</li>
+              </ul>
+            </details>
+          </div>
+          <section style="margin-top:12px">
+            <h2>单步耗时（分钟）</h2>
+            <div class="chart-card"><div class="chart-wrap"><canvas id="chart-e5-stepmin" height="200"></canvas><div class="tooltip" id="tip-e5-stepmin"></div></div></div>
+            <p class="caption"><code>timing_s/step</code>/60；均值约 13.3 min/step。</p>
+          </section>
+          <section class="grid2" style="margin-top:12px">
+            <div>
+              <h2>主要 stage 曲线（秒）</h2>
+              <div class="chart-card">
+                <div class="legend" id="legend-e5-timing"></div>
+                <div class="chart-wrap"><canvas id="chart-e5-timing" height="240"></canvas><div class="tooltip" id="tip-e5-timing"></div></div>
+              </div>
+              <p class="caption">gen=rollout · update_actor=策略更新 · ref / old_log_prob。</p>
+            </div>
+            <div>
+              <h2>整步耗时 timing_s/step（秒）</h2>
+              <div class="chart-card">
+                <div class="chart-wrap"><canvas id="chart-e5-timing-step" height="240"></canvas><div class="tooltip" id="tip-e5-timing-step"></div></div>
+              </div>
+              <p class="caption">均值约 799s；与总训练约 33.3h 一致。</p>
+            </div>
+          </section>
+          <section class="grid2" style="margin-top:12px">
+            <div>
+              <h2>次要 stage（秒）</h2>
+              <div class="chart-card">
+                <div class="legend" id="legend-e5-timing-minor"></div>
+                <div class="chart-wrap"><canvas id="chart-e5-timing-minor" height="200"></canvas><div class="tooltip" id="tip-e5-timing-minor"></div></div>
+              </div>
+            </div>
+            <div>
+              <h2>平均耗时占比（秒）</h2>
+              <div class="chart-card">
+                <div class="chart-wrap"><canvas id="chart-e5-timing-mean" height="200"></canvas><div class="tooltip" id="tip-e5-timing-mean"></div></div>
+              </div>
+              <p class="caption">gen ≈ 48%，update_actor ≈ 32%，ref+old_log_prob ≈ 18%。</p>
+            </div>
+          </section>
+        </section>
+
+        <section class="detail-sec" id="e5-sec-eval">
+          <h2 class="sec-title">评测</h2>
+          <p class="sec-sub">evalscope offline · mmlu_temp / aime24 / aime25（n=8）</p>
+          <p class="tertiary">与训练日志验证不同：<code>eval_exp4b.sh</code> + vLLM serving；E5 三项全 step 已齐。</p>
+          <section class="grid2" style="margin-top:10px">
+            <div><h2>mmlu_temp（%）</h2><div class="chart-card"><div class="chart-wrap"><canvas id="chart-e5-eval-mmlu" height="200"></canvas><div class="tooltip" id="tip-e5-eval-mmlu"></div></div></div></div>
+            <div>
+              <h2>aime24 / aime25（%）</h2>
+              <div class="chart-card">
+                <div class="legend" id="legend-e5-eval-aime"></div>
+                <div class="chart-wrap"><canvas id="chart-e5-eval-aime" height="200"></canvas><div class="tooltip" id="tip-e5-eval-aime"></div></div>
+              </div>
+            </div>
+          </section>
+        </section>
+
+      </div><!-- /.detail-main -->
+    </div><!-- /.detail-layout -->
   </div>
 
   <div class="subpanel" id="subpanel-eval">
     <p class="tertiary">Source: <code>/data/lijunyi/evalscope</code>（<code>run_queue_4b.sh</code> + <code>eval_exp4b.sh</code>，verl_qwen35 vLLM 0.24 serving）。评测配置：aime25 <code>temperature=0.6, top_p=0.95, max_tokens=16384, n=8</code>；mmlu_temp <code>n=2</code>；<code>enable_thinking=False</code>。权重路径 <code>model/exp2card/&lt;exp&gt;/merged_&lt;step&gt;</code>。汇总表见 <code>archive/eval_4b/summary.md</code>。</p>
     <div class="callout" style="margin-top:10px">
-      <div class="title">4B 底座强、mmlu 全组 90%+；aime25 上 E2 DAPO step150 领先，与训练侧 aime24 排序不完全一致</div>
-      <strong>mmlu_temp</strong> 五组都在 90–92% 高位，step100 最高是 <strong>E2 DAPO 的 92.38%</strong>，step150 最高是 <strong>E3 Dr.GRPO 的 91.97%</strong>——RL 算法间差距比 2B（78–82%）小一个量级。<strong>aime25</strong>（240 题 × n=8）step150 最高是 <strong>E2 DAPO 的 59.59%</strong>，其次 E1 GRPO step100（58.33%）与 E5 REINFORCE++ step150（57.50%）；这与训练时 aime24 上 E3/E4 step125 单点最高（80%/83.3%）的叙事并不完全对齐，再次说明 30 题验证与 evalscope 大样本评测应分开解读。本轮未跑 math_500 / base。
+      <div class="title">已同步最新 offline 报告（73/75 完成；E1/E2/E4/E5 全齐）</div>
+      <strong>mmlu_temp</strong> 全程 90–92%；峰值 <strong>E3@120 = 92.47%</strong>（其次 E2@100 = 92.38%）。<strong>offline aime24（n=8）</strong> 峰值仍是 <strong>E2@80 = 80.42%</strong>，其次 E5@140（78.75%）、E4@140（76.67%）。<strong>aime25</strong> 峰值 <strong>E2@80 = 62.50%</strong>，step150 最高仍是 E2（59.59%）。仅剩 <strong>E3@130 / @140</strong> 三项任务（GPU0 队列正在跑 @130）。刷新：<code>python3 scripts/sync_4b_eval_dashboard.py</code>。
     </div>
 
     <table style="margin-top:16px">
       <thead>
-        <tr><th>实验</th><th>step</th><th>mmlu_temp</th><th>aime25</th></tr>
+        <tr><th>实验</th><th>step</th><th>mmlu_temp</th><th>aime24</th><th>aime25</th></tr>
       </thead>
-      <tbody>
-        <tr><td>E1 GRPO</td><td>50</td><td>90.43%</td><td>50.00%</td></tr>
-        <tr><td>E1 GRPO</td><td>100</td><td>91.01%</td><td>58.33%</td></tr>
-        <tr><td>E1 GRPO</td><td>150</td><td>91.25%</td><td>57.92%</td></tr>
-        <tr><td>E2 DAPO</td><td>50</td><td>91.17%</td><td>52.50%</td></tr>
-        <tr><td>E2 DAPO</td><td>100</td><td>92.38%</td><td>57.09%</td></tr>
-        <tr><td>E2 DAPO</td><td>150</td><td>91.17%</td><td>59.59%</td></tr>
-        <tr><td>E3 Dr.GRPO</td><td>50</td><td>90.84%</td><td>55.00%</td></tr>
-        <tr><td>E3 Dr.GRPO</td><td>100</td><td>91.49%</td><td>49.59%</td></tr>
-        <tr><td>E3 Dr.GRPO</td><td>150</td><td>91.97%</td><td>55.00%</td></tr>
-        <tr><td>E4 RLOO</td><td>50</td><td>90.35%</td><td>49.17%</td></tr>
-        <tr><td>E4 RLOO</td><td>100</td><td>91.08%</td><td>50.00%</td></tr>
-        <tr><td>E4 RLOO</td><td>150</td><td>90.68%</td><td>52.92%</td></tr>
-        <tr><td>E5 REINFORCE++</td><td>50</td><td>91.24%</td><td>52.50%</td></tr>
-        <tr><td>E5 REINFORCE++</td><td>100</td><td>91.49%</td><td>55.84%</td></tr>
-        <tr><td>E5 REINFORCE++</td><td>150</td><td>91.25%</td><td>57.50%</td></tr>
+      <tbody id="eval-summary-tbody">
+        <!-- filled from EVAL_FULL by charts.js -->
       </tbody>
     </table>
 
@@ -322,13 +1457,13 @@
     </section>
 
     <section style="margin-top:24px">
-      <h2>补充明细：E1 GRPO / E4 RLOO 全 step 曲线（含 aime24）</h2>
+      <h2>补充明细：E1 / E2 / E4 / E5 · evalscope offline 全 step</h2>
       <div class="callout" style="margin-top:8px">
-        <div class="title">E1、E4 已跑完全部 checkpoint 的三项评测（mmlu_temp + aime24 + aime25）</div>
-        全 step（10–150，每 10 一档，每档取最新一次 report 的 score）。<strong>aime24</strong> 在被排除的 <strong>50/100/150</strong> 未评测，曲线在这些点断开。aime24/aime25 均为 30 题 × n=8=240 采样均值；mmlu_temp n=2；<code>batch_size=64</code>、<code>enable_thinking=False</code>。aime24 峰值：E1 step20 <strong>72.5%</strong>、E4 step140 <strong>76.67%</strong>；两组 mmlu_temp 全程稳定在 90–92%。
+        <div class="title">⚠ 这是 evalscope offline（n=8），不是对比总览里的「训练中验证」</div>
+        协议：temp=0.6 · top_p=0.95 · max_tokens=16384 · <strong>n=8（30 题×8=240 采样）</strong> · enable_thinking=False · batch_size=64。<strong>E1/E2/E4 三项全 step 已齐</strong>；E5 仅差 @150 aime24；E3 仍在主队列中，暂不画进本组对比。offline aime24 峰值：<strong>E2@80 = 80.42%</strong>、E5@140 = 78.75%、E4@140 = 76.67%。
       </div>
       <div style="margin-top:12px">
-        <h2>mmlu_temp（E1 vs E4）</h2>
+        <h2>mmlu_temp（E1 / E2 / E4 / E5）</h2>
         <div class="chart-card">
           <div class="legend" id="legend-evalfull-mmlu"></div>
           <div class="chart-wrap"><canvas id="chart-evalfull-mmlu" height="240"></canvas><div class="tooltip" id="tip-evalfull-mmlu"></div></div>
@@ -337,15 +1472,15 @@
       </div>
       <section class="grid2" style="margin-top:16px">
         <div>
-          <h2>aime24（E1 vs E4）</h2>
+          <h2>evalscope offline · aime24（n=8）</h2>
           <div class="chart-card">
             <div class="legend" id="legend-evalfull-aime24"></div>
             <div class="chart-wrap"><canvas id="chart-evalfull-aime24" height="240"></canvas><div class="tooltip" id="tip-evalfull-aime24"></div></div>
           </div>
-          <p class="caption">X: step（50/100/150 未评，断开） · Y: aime24 mean_acc（%，240 题 × n=8）。</p>
+          <p class="caption">X: step（缺 report 处断开；≠ 训练验证） · Y: aime24 mean_acc（%，240 题 × n=8）。</p>
         </div>
         <div>
-          <h2>aime25（E1 vs E4）</h2>
+          <h2>aime25（E1 / E2 / E4 / E5）</h2>
           <div class="chart-card">
             <div class="legend" id="legend-evalfull-aime25"></div>
             <div class="chart-wrap"><canvas id="chart-evalfull-aime25" height="240"></canvas><div class="tooltip" id="tip-evalfull-aime25"></div></div>
@@ -358,13 +1493,70 @@
 
 </div>
 
-<script src="js/data-compare.js"></script>
-<script src="js/data-eval.js"></script>
-<script src="js/data-e1.js"></script>
-<script src="js/data-e2.js"></script>
-<script src="js/data-e3.js"></script>
-<script src="js/data-e4.js"></script>
-<script src="js/data-e5.js"></script>
-<script src="js/charts.js"></script>
+<script src="js/data-compare.js?v=20260723200354"></script>
+<script src="js/data-eval.js?v=20260723205548"></script>
+<script src="js/data-e1.js?v=20260723200354"></script>
+<script src="js/data-e2.js?v=20260723200354"></script>
+<script src="js/data-e3.js?v=20260723200354"></script>
+<script src="js/data-e4.js?v=20260723200354"></script>
+<script src="js/data-e5.js?v=20260723200354"></script>
+<script src="js/charts.js?v=20260723205500"></script>
+<script>
+(function () {
+  document.querySelectorAll(".detail-toc").forEach((toc) => {
+    const links = Array.from(toc.querySelectorAll("a[href^='#']"));
+    if (!links.length) return;
+    const sections = links
+      .map((a) => document.querySelector(a.getAttribute("href")))
+      .filter(Boolean);
+
+    function setActive(id) {
+      links.forEach((a) => {
+        a.classList.toggle("is-active", a.getAttribute("href") === "#" + id);
+      });
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((e) => e.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
+        if (visible[0]) setActive(visible[0].target.id);
+      },
+      { rootMargin: "-20% 0px -60% 0px", threshold: [0, 0.25, 0.5, 1] }
+    );
+    sections.forEach((s) => observer.observe(s));
+
+    links.forEach((a) => {
+      a.addEventListener("click", (ev) => {
+        const id = a.getAttribute("href").slice(1);
+        const el = document.getElementById(id);
+        if (!el) return;
+        ev.preventDefault();
+        setActive(id);
+        el.scrollIntoView({ behavior: "smooth", block: "start" });
+        history.replaceState(null, "", "#" + id);
+      });
+    });
+
+    if (sections[0]) setActive(sections[0].id);
+  });
+
+  const hash = location.hash.slice(1);
+  if (hash) {
+    const el = document.getElementById(hash);
+    const a = document.querySelector('.detail-toc a[href="#' + hash + '"]');
+    if (el && a) {
+      a.classList.add("is-active");
+      const m = hash.match(/^(e[1-5])-sec-/);
+      if (m) {
+        const btn = document.querySelector('.subtab-btn[data-subtab="' + m[1] + '"]');
+        if (btn) btn.click();
+        setTimeout(() => el.scrollIntoView({ behavior: "smooth", block: "start" }), 80);
+      }
+    }
+  }
+})();
+</script>
 </body>
 </html>
