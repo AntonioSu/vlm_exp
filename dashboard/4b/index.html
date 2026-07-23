@@ -853,7 +853,7 @@
               <li><strong>学习信号：</strong>entropy 0.081→0.048 全场最低最紧；响应长度只 5.3k→7.3k，涨幅四组最小（与 2B 结论相反）。</li>
               <li><strong>稳定性：</strong>grad_norm 基线全场最低（0.03–0.23）；更新保守、曲线最稳。</li>
               <li><strong>耗时：</strong>均值 ~12.5 min/step（gen ≈55%，update_actor ≈35%）；总墙钟约 31.2h。</li>
-              <li><strong>评测进度：</strong>offline 已齐到 @120（aime24@120=75.0%）；仅剩 @130/@140 全任务在跑。训练验证 aime24 step125 曾摸到 0.800。</li>
+              <li><strong>评测亮点：</strong>offline 三项全 step 已齐；mmlu 峰值 E3@120=92.47%；aime24@120=75.0%、@140=73.3%。训练验证 aime24 step125 曾摸到 0.800。</li>
             </ul>
           </div>
         </section>
@@ -1001,7 +1001,7 @@
         <section class="detail-sec" id="e3-sec-eval">
           <h2 class="sec-title">评测</h2>
           <p class="sec-sub">evalscope offline · mmlu_temp / aime24 / aime25（n=8）</p>
-          <p class="tertiary">与训练日志验证不同：<code>eval_exp4b.sh</code> + vLLM serving；目前仅缺 @130/@140（补跑中），曲线在缺口处断开。</p>
+          <p class="tertiary">与训练日志验证不同：<code>eval_exp4b.sh</code> + vLLM serving；E3 三项全 step 已齐。</p>
           <section class="grid2" style="margin-top:10px">
             <div><h2>mmlu_temp（%）</h2><div class="chart-card"><div class="chart-wrap"><canvas id="chart-e3-eval-mmlu" height="200"></canvas><div class="tooltip" id="tip-e3-eval-mmlu"></div></div></div></div>
             <div>
@@ -1409,18 +1409,9 @@
   <div class="subpanel" id="subpanel-eval">
     <p class="tertiary">Source: <code>/data/lijunyi/evalscope</code>（<code>run_queue_4b.sh</code> + <code>eval_exp4b.sh</code>，verl_qwen35 vLLM 0.24 serving）。评测配置：aime25 <code>temperature=0.6, top_p=0.95, max_tokens=16384, n=8</code>；mmlu_temp <code>n=2</code>；<code>enable_thinking=False</code>。权重路径 <code>model/exp2card/&lt;exp&gt;/merged_&lt;step&gt;</code>。汇总表见 <code>archive/eval_4b/summary.md</code>。</p>
     <div class="callout" style="margin-top:10px">
-      <div class="title">已同步最新 offline 报告（73/75 完成；E1/E2/E4/E5 全齐）</div>
-      <strong>mmlu_temp</strong> 全程 90–92%；峰值 <strong>E3@120 = 92.47%</strong>（其次 E2@100 = 92.38%）。<strong>offline aime24（n=8）</strong> 峰值仍是 <strong>E2@80 = 80.42%</strong>，其次 E5@140（78.75%）、E4@140（76.67%）。<strong>aime25</strong> 峰值 <strong>E2@80 = 62.50%</strong>，step150 最高仍是 E2（59.59%）。仅剩 <strong>E3@130 / @140</strong> 三项任务（GPU0 队列正在跑 @130）。刷新：<code>python3 scripts/sync_4b_eval_dashboard.py</code>。
+      <div class="title">已同步最新 offline 报告（75/75 完成 · E1–E5 全齐）</div>
+      <strong>mmlu_temp</strong> 全程 90–92%；峰值 <strong>E3@120 = 92.47%</strong>（其次 E2@100 = 92.38%）。<strong>offline aime24（n=8）</strong> 峰值 <strong>E2@80 = 80.42%</strong>，其次 E5@140（78.75%）、E4@140（76.67%）。<strong>aime25</strong> 峰值 <strong>E2@80 = 62.50%</strong>，step150 最高仍是 E2（59.59%）。GPU0/GPU1 队列均已 DONE。刷新：<code>python3 scripts/sync_4b_eval_dashboard.py</code>。
     </div>
-
-    <table style="margin-top:16px">
-      <thead>
-        <tr><th>实验</th><th>step</th><th>mmlu_temp</th><th>aime24</th><th>aime25</th></tr>
-      </thead>
-      <tbody id="eval-summary-tbody">
-        <!-- filled from EVAL_FULL by charts.js -->
-      </tbody>
-    </table>
 
     <section class="grid2" style="margin-top:20px">
       <div>
@@ -1457,13 +1448,8 @@
     </section>
 
     <section style="margin-top:24px">
-      <h2>补充明细：E1 / E2 / E4 / E5 · evalscope offline 全 step</h2>
-      <div class="callout" style="margin-top:8px">
-        <div class="title">⚠ 这是 evalscope offline（n=8），不是对比总览里的「训练中验证」</div>
-        协议：temp=0.6 · top_p=0.95 · max_tokens=16384 · <strong>n=8（30 题×8=240 采样）</strong> · enable_thinking=False · batch_size=64。<strong>E1/E2/E4 三项全 step 已齐</strong>；E5 仅差 @150 aime24；E3 仍在主队列中，暂不画进本组对比。offline aime24 峰值：<strong>E2@80 = 80.42%</strong>、E5@140 = 78.75%、E4@140 = 76.67%。
-      </div>
       <div style="margin-top:12px">
-        <h2>mmlu_temp（E1 / E2 / E4 / E5）</h2>
+        <h2>mmlu_temp（E1–E5）</h2>
         <div class="chart-card">
           <div class="legend" id="legend-evalfull-mmlu"></div>
           <div class="chart-wrap"><canvas id="chart-evalfull-mmlu" height="240"></canvas><div class="tooltip" id="tip-evalfull-mmlu"></div></div>
@@ -1480,7 +1466,7 @@
           <p class="caption">X: step（缺 report 处断开；≠ 训练验证） · Y: aime24 mean_acc（%，240 题 × n=8）。</p>
         </div>
         <div>
-          <h2>aime25（E1 / E2 / E4 / E5）</h2>
+          <h2>aime25（E1–E5）</h2>
           <div class="chart-card">
             <div class="legend" id="legend-evalfull-aime25"></div>
             <div class="chart-wrap"><canvas id="chart-evalfull-aime25" height="240"></canvas><div class="tooltip" id="tip-evalfull-aime25"></div></div>
@@ -1494,13 +1480,13 @@
 </div>
 
 <script src="js/data-compare.js?v=20260723200354"></script>
-<script src="js/data-eval.js?v=20260723205548"></script>
+<script src="js/data-eval.js?v=20260723224334"></script>
 <script src="js/data-e1.js?v=20260723200354"></script>
 <script src="js/data-e2.js?v=20260723200354"></script>
 <script src="js/data-e3.js?v=20260723200354"></script>
 <script src="js/data-e4.js?v=20260723200354"></script>
 <script src="js/data-e5.js?v=20260723200354"></script>
-<script src="js/charts.js?v=20260723205500"></script>
+<script src="js/charts.js?v=20260723224700"></script>
 <script>
 (function () {
   document.querySelectorAll(".detail-toc").forEach((toc) => {

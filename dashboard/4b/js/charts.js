@@ -554,33 +554,7 @@ function renderExpPanel(key) {
   }
 }
 
-function fmtEvalPct(v) {
-  return v == null ? "—" : Number(v).toFixed(2) + "%";
-}
-
-function fillEvalSummaryTable() {
-  const tbody = document.getElementById("eval-summary-tbody");
-  if (!tbody || typeof EVAL_FULL === "undefined") return;
-  const steps = [50, 100, 150];
-  const idxs = steps.map((s) => EVAL_FULL_STEPS.indexOf(String(s)));
-  const rows = [];
-  for (const k of EVAL_ORDER) {
-    const ev = EVAL_FULL[k];
-    if (!ev) continue;
-    idxs.forEach((i, j) => {
-      rows.push(
-        `<tr><td>${ev.label}</td><td>${steps[j]}</td>` +
-        `<td>${fmtEvalPct(ev.mmlu[i])}</td>` +
-        `<td>${fmtEvalPct(ev.aime24[i])}</td>` +
-        `<td>${fmtEvalPct(ev.aime25[i])}</td></tr>`
-      );
-    });
-  }
-  tbody.innerHTML = rows.join("");
-}
-
 function renderEvalPanel() {
-  fillEvalSummaryTable();
   renderLegend(document.getElementById("legend-eval-mmlu"), EVAL_ORDER.map(k => ({ name: EVAL[k].label, data: EVAL[k].mmlu, color: EVAL[k].color })),
     (visible) => drawLineChart("chart-eval-mmlu", "tip-eval-mmlu", {
       categories: EVAL_STEPS,
