@@ -604,6 +604,26 @@ function renderEvalPanel() {
         valueSuffix: "%", yMin: 40, yMax: 65, height: 240,
       }));
   }
+
+  // ---- Agent / 工具调用能力（BFCL-v3 + tau-bench）：每个 index 一条曲线 ----
+  if (typeof AGENT !== "undefined" && document.getElementById("chart-agent-bfcl")) {
+    const items = (dataKey) => AGENT_ORDER.map(k => ({ name: AGENT[k].label, data: AGENT[k][dataKey], color: AGENT[k].color }));
+    renderLegend(document.getElementById("legend-agent-bfcl"), items("bfcl"),
+      (visible) => drawLineChart("chart-agent-bfcl", "tip-agent-bfcl", {
+        categories: AGENT_STEPS, series: visible,
+        valueSuffix: "%", yMin: 38, yMax: 50, height: 240,
+      }));
+    renderLegend(document.getElementById("legend-agent-mt"), items("bfcl_mt"),
+      (visible) => drawLineChart("chart-agent-mt", "tip-agent-mt", {
+        categories: AGENT_STEPS, series: visible,
+        valueSuffix: "%", yMin: 0, yMax: 14, height: 240,
+      }));
+    renderLegend(document.getElementById("legend-agent-tau"), items("tau"),
+      (visible) => drawLineChart("chart-agent-tau", "tip-agent-tau", {
+        categories: AGENT_STEPS, series: visible,
+        valueSuffix: "%", yMin: 38, yMax: 82, height: 240,
+      }));
+  }
 }
 
 render();

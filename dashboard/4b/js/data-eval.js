@@ -55,3 +55,46 @@ const EVAL_FULL = {
 
 // 全 step 曲线：E1–E5
 const EVAL_FULL_ORDER = ["e1", "e2", "e3", "e4", "e5"];
+
+// ---- Agent / tool-use benchmarks (evalscope, generated 2026-07-24) ----
+// 已完成 8 个 checkpoint（10/30/50/70/90/110/130/150，均匀间隔 20 步）；
+// 20/40/60/80/100/120/140 尚未跑。以下每个 index 均以曲线呈现。
+// BFCL-v3: 10 subset ×30/subset；bfcl=加权 OVERALL，bfcl_mt=MULTI_TURN category（多轮 agentic 工具调用）。
+// tau-bench: retail+airline 各 20（共 40），user-simulator=gpt-5p5-apipro。
+// Served w/ verl_qwen35 vLLM（--tool-call-parser qwen3_xml）。
+const AGENT_STEPS = ["10", "30", "50", "70", "90", "110", "130", "150"];
+
+const AGENT = {
+  e1: {
+    label: "E1 GRPO", color: COLORS.e1,
+    bfcl:   [43.7, 41.0, 43.0, 43.9, 45.2, 44.5, 45.9, 42.9],
+    bfcl_mt:[9.4, 6.7, 7.8, 8.9, 7.2, 10.6, 9.4, 5.6],
+    tau:    [57.5, 72.5, 60.0, 67.5, 65.0, 55.0, 65.0, 65.0],
+  },
+  e2: {
+    label: "E2 DAPO", color: COLORS.e2,
+    bfcl:   [45.7, 45.2, 47.5, 41.8, 45.8, 42.8, 43.3, 42.1],
+    bfcl_mt:[8.3, 7.2, 10.0, 7.2, 10.0, 5.6, 8.9, 8.3],
+    tau:    [55.0, 42.5, 55.0, 52.5, 60.0, 55.0, 65.0, 70.0],
+  },
+  e3: {
+    label: "E3 Dr.GRPO", color: COLORS.e3,
+    bfcl:   [45.5, 43.5, 45.3, 44.5, 47.8, 44.7, 45.2, 46.9],
+    bfcl_mt:[9.4, 7.2, 7.2, 6.7, 5.6, 7.8, 8.9, 6.7],
+    tau:    [55.0, 65.0, 62.5, 50.0, 62.5, 60.0, 65.0, 55.0],
+  },
+  e4: {
+    label: "E4 RLOO", color: COLORS.e4,
+    bfcl:   [43.0, 47.4, 45.9, 47.4, 44.8, 46.8, 43.1, 47.0],
+    bfcl_mt:[6.7, 7.8, 9.4, 3.3, 6.1, 7.2, 6.1, 8.9],
+    tau:    [55.0, 55.0, 57.5, 62.5, 60.0, 62.5, 52.5, 57.5],
+  },
+  e5: {
+    label: "E5 REINFORCE++", color: COLORS.e5,
+    bfcl:   [44.0, 44.2, 45.7, 42.5, 41.3, 41.5, 42.1, 41.5],
+    bfcl_mt:[8.3, 11.1, 8.9, 10.0, 7.2, 3.9, 4.4, 7.2],
+    tau:    [55.0, 57.5, 55.0, 60.0, 77.5, 70.0, 52.5, 55.0],
+  },
+};
+
+const AGENT_ORDER = ["e1", "e2", "e3", "e4", "e5"];
