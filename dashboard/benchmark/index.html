@@ -9,21 +9,139 @@
 <style>
   .bench-sample {
     margin: 12px 0 0;
-    padding: 14px 16px;
-    background: #fff;
+    background: var(--algo-panel, #fff);
     border: 1px solid var(--algo-line, #e4e7ec);
-    border-radius: 10px;
-    font-size: 13px;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 1px 0 rgba(20, 24, 31, 0.03);
+  }
+  .bench-row {
+    display: grid;
+    grid-template-columns: 52px minmax(0, 1fr);
+    gap: 14px;
+    padding: 14px 16px;
+    align-items: start;
+  }
+  .bench-row + .bench-row {
+    border-top: 1px solid var(--algo-line, #e4e7ec);
+  }
+  .bench-row .lbl {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    height: 24px;
+    margin-top: 1px;
+    padding: 0 8px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--algo-accent, #1f6b4a);
+    background: var(--algo-accent-soft, rgba(31, 107, 74, 0.08));
+  }
+  .bench-row.judge .lbl {
+    color: #0f766e;
+    background: rgba(15, 118, 110, 0.1);
+  }
+  .bench-body {
+    min-width: 0;
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--algo-ink, #14181f);
+  }
+  .bench-q {
+    font-weight: 600;
+    margin: 0 0 10px;
+  }
+  .bench-opts {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 6px;
+  }
+  .bench-opts li {
+    display: grid;
+    grid-template-columns: 1.6em 1fr;
+    gap: 8px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    background: #f4f5f7;
+    color: var(--algo-muted, #5c6570);
+    font-size: 13.5px;
+  }
+  .bench-opts li .key {
+    font-weight: 700;
+    color: var(--algo-faint, #8b949e);
+  }
+  .bench-opts li.ok {
+    background: var(--algo-accent-soft, rgba(31, 107, 74, 0.08));
+    color: var(--algo-ink, #14181f);
+    outline: 1px solid rgba(31, 107, 74, 0.22);
+  }
+  .bench-opts li.ok .key {
+    color: var(--algo-accent, #1f6b4a);
+  }
+  .bench-answer {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+    font-size: 15px;
+  }
+  .bench-answer .pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 28px;
+    height: 28px;
+    padding: 0 10px;
+    border-radius: 8px;
+    background: var(--algo-accent, #1f6b4a);
+    color: #fff;
+    font-size: 14px;
+  }
+  .bench-note {
+    color: var(--algo-muted, #5c6570);
+    font-size: 13.5px;
+  }
+  .bench-code {
+    margin: 0;
+    padding: 10px 12px;
+    border-radius: 8px;
+    background: #f4f5f7;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 12.5px;
     line-height: 1.55;
     color: var(--algo-ink, #14181f);
     white-space: pre-wrap;
     word-break: break-word;
   }
-  .bench-sample .lbl {
-    display: inline-block;
-    min-width: 3.2em;
-    font-weight: 650;
+  .bench-steps {
+    margin: 8px 0 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 6px;
+  }
+  .bench-steps li {
+    position: relative;
+    padding: 6px 10px 6px 14px;
+    border-left: 2px solid var(--algo-line, #e4e7ec);
     color: var(--algo-muted, #5c6570);
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  .bench-row.judge .bench-body {
+    color: #0f5c56;
+    font-weight: 550;
+  }
+  @media (max-width: 560px) {
+    .bench-row {
+      grid-template-columns: 1fr;
+      gap: 8px;
+    }
   }
 </style>
 </head>
@@ -108,11 +226,25 @@
     <p><strong>输出</strong>：模型给出最终数值答案（常约定用 <span class="mono">\boxed{}</span> 等格式便于抽取）。</p>
     <p><strong>验证</strong>：抽取答案后与标准答案比对是否相等。可用贪婪解码（mean@1），也可用温度采样多次再算 mean 或 pass@k；协议不同，分数不可直接对比。</p>
     <h3>样例</h3>
-    <div class="bench-sample"><span class="lbl">题</span> Find the number of positive integers \( n \le 2024 \) such that \( n \) is divisible by 3 or 5 but not both.
-
-<span class="lbl">答</span> （示意）模型输出推理过程，并以 <span class="mono">\boxed{945}</span> 等形式给出整数答案。
-
-<span class="lbl">判</span> 抽取数字后与标准答案比对；相等 → 对。</div>
+    <div class="bench-sample">
+      <div class="bench-row">
+        <span class="lbl">题</span>
+        <div class="bench-body">
+          <p class="bench-q">Find the number of positive integers \( n \le 2024 \) such that \( n \) is divisible by 3 or 5 but not both.</p>
+        </div>
+      </div>
+      <div class="bench-row">
+        <span class="lbl">答</span>
+        <div class="bench-body">
+          <p class="bench-note">模型输出推理过程，并以整数形式给出最终答案：</p>
+          <pre class="bench-code">\boxed{945}</pre>
+        </div>
+      </div>
+      <div class="bench-row judge">
+        <span class="lbl">判</span>
+        <div class="bench-body">抽取数字后与标准答案比对；相等 → 对。</div>
+      </div>
+    </div>
   </section>
 
   <section class="algo-section" id="mod-mmlu">
@@ -123,15 +255,30 @@
     <p><strong>输出</strong>：模型选择的选项（或对应字母）。</p>
     <p><strong>验证</strong>：选项是否与标准答案一致，通常报告准确率（accuracy）。</p>
     <h3>样例</h3>
-    <div class="bench-sample"><span class="lbl">题</span> Which of the following is a noble gas?
-  A. Nitrogen
-  B. Oxygen
-  C. Argon
-  D. Chlorine
-
-<span class="lbl">答</span> C
-
-<span class="lbl">判</span> 选项与标准答案一致 → 对。</div>
+    <div class="bench-sample">
+      <div class="bench-row">
+        <span class="lbl">题</span>
+        <div class="bench-body">
+          <p class="bench-q">Which of the following is a noble gas?</p>
+          <ul class="bench-opts">
+            <li><span class="key">A</span><span>Nitrogen</span></li>
+            <li><span class="key">B</span><span>Oxygen</span></li>
+            <li class="ok"><span class="key">C</span><span>Argon</span></li>
+            <li><span class="key">D</span><span>Chlorine</span></li>
+          </ul>
+        </div>
+      </div>
+      <div class="bench-row">
+        <span class="lbl">答</span>
+        <div class="bench-body">
+          <div class="bench-answer"><span class="pill">C</span><span>Argon</span></div>
+        </div>
+      </div>
+      <div class="bench-row judge">
+        <span class="lbl">判</span>
+        <div class="bench-body">选项与标准答案一致 → 对。</div>
+      </div>
+    </div>
   </section>
 
   <section class="algo-section" id="mod-bfcl">
@@ -148,13 +295,30 @@
     </ul>
     <p><strong>汇总指标</strong>：常报告 <strong>OVERALL</strong>（如 non_live / live / multi_turn 等类别再平均），以及单独的 <strong>MULTI_TURN</strong> 类别分。</p>
     <h3>样例（AST / simple）</h3>
-    <div class="bench-sample"><span class="lbl">问</span> Find the area of a triangle with a base of 10 units and height of 5 units.
-
-<span class="lbl">工具</span> calculate_triangle_area(base, height, unit?)
-
-<span class="lbl">答</span> [calculate_triangle_area(base=10, height=5)]
-
-<span class="lbl">判</span> 解析 AST：函数名与参数（base=10, height=5）落在 GT 允许集合 → 对；不执行、不算面积数值。</div>
+    <div class="bench-sample">
+      <div class="bench-row">
+        <span class="lbl">问</span>
+        <div class="bench-body">
+          <p class="bench-q">Find the area of a triangle with a base of 10 units and height of 5 units.</p>
+        </div>
+      </div>
+      <div class="bench-row">
+        <span class="lbl">工具</span>
+        <div class="bench-body">
+          <pre class="bench-code">calculate_triangle_area(base, height, unit?)</pre>
+        </div>
+      </div>
+      <div class="bench-row">
+        <span class="lbl">答</span>
+        <div class="bench-body">
+          <pre class="bench-code">[calculate_triangle_area(base=10, height=5)]</pre>
+        </div>
+      </div>
+      <div class="bench-row judge">
+        <span class="lbl">判</span>
+        <div class="bench-body">解析 AST：函数名与参数（base=10, height=5）落在 GT 允许集合 → 对；不执行、不算面积数值。</div>
+      </div>
+    </div>
   </section>
 
   <section class="algo-section" id="mod-tau">
@@ -165,14 +329,29 @@
     <p><strong>输出</strong>：多轮工具调用 + 对用户的自然语言回复。</p>
     <p><strong>验证</strong>：任务结束时比对数据库（及必要口头输出）是否达到 gold 状态——成功则 reward/acc = 1，否则 0。看的是<strong>任务是否完成</strong>，不是单次调用的 AST 字面匹配。</p>
     <h3>样例（retail）</h3>
-    <div class="bench-sample"><span class="lbl">用户</span> Hi, I received order #W2378156 and I’d like to handle a couple of exchanges from it.
-
-<span class="lbl">Agent</span> 先按政策做身份认证，再查订单……
-  → tool: find_user_id_by_name_zip(first_name="Yusuf", last_name="Rossi", zip="19122")
-  → tool: get_order_details(order_id="#W2378156")
-  → …（继续换货相关 API，并在改库前取得用户确认）
-
-<span class="lbl">判</span> 对话结束后，数据库状态与 gold 一致（及必要口头输出齐全）→ reward = 1。</div>
+    <div class="bench-sample">
+      <div class="bench-row">
+        <span class="lbl">用户</span>
+        <div class="bench-body">
+          <p class="bench-q">Hi, I received order #W2378156 and I’d like to handle a couple of exchanges from it.</p>
+        </div>
+      </div>
+      <div class="bench-row">
+        <span class="lbl">Agent</span>
+        <div class="bench-body">
+          <p class="bench-note">先按政策做身份认证，再查订单……</p>
+          <ul class="bench-steps">
+            <li>tool: find_user_id_by_name_zip(first_name="Yusuf", last_name="Rossi", zip="19122")</li>
+            <li>tool: get_order_details(order_id="#W2378156")</li>
+            <li>…（继续换货相关 API，并在改库前取得用户确认）</li>
+          </ul>
+        </div>
+      </div>
+      <div class="bench-row judge">
+        <span class="lbl">判</span>
+        <div class="bench-body">对话结束后，数据库状态与 gold 一致（及必要口头输出齐全）→ reward = 1。</div>
+      </div>
+    </div>
   </section>
 
   </div><!-- /.algo-main -->
