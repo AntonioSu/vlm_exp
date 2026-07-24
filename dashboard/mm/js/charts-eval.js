@@ -316,47 +316,114 @@
       valueSuffix: "%",
     });
 
-    // Mid-step offline curves (4B E1 EVAL_FULL style)
+    // Mid-step offline curves: only draw when a series has ≥2 points; otherwise show checkpoint cards.
     const fullSteps = evalData.fullSteps || [];
-    if (fullSteps.length) {
+    const geoSeries = fullSeries("geo3kAcc");
+    const maxPts = Math.max(0, ...geoSeries.map((s) => s.data.filter((v) => v != null).length));
+    const canDrawCurves = maxPts >= 2;
+
+    const sparseEl = document.getElementById("mm-eval-mid-sparse");
+    const curvesEl = document.getElementById("mm-eval-mid-curves");
+    const midCaption = document.getElementById("mm-eval-mid-caption");
+    if (midCaption) {
+      midCaption.innerHTML = canDrawCurves
+        ? "与 4B「E1 GRPO」离线曲线同一套 step 轴（10–150 /10）；缺测为断点。"
+        : "当前每组只有 <strong>1 个</strong>离线点，画不出曲线。上方柱状图 / 对照表是主视图；下面列出已完成 checkpoint。";
+    }
+    if (sparseEl) {
+      if (!canDrawCurves && ready.length) {
+        sparseEl.style.display = "block";
+        sparseEl.innerHTML = ready.map((g) => {
+          const t = g.text || {};
+          const geo = g.geo3k || {};
+          return `
+            <div style="margin-bottom:14px">
+              <div style="font-weight:700; color:${g.color}; margin-bottom:4px">${g.label}</div>
+              <div style="font-size:13px; line-height:1.7; color:var(--text)">
+                Geo3K <strong>${fmt(geo.sampleAccuracy)}</strong>
+                · pass@n <strong>${fmt(geo.passAtN)}</strong>
+                · MATH-500 <strong>${fmt(t.math500)}</strong>
+                · MMLU <strong>${fmt(t.mmlu)}</strong>
+                · AIME24 <strong>${fmt(t.aime24)}</strong>
+                · AIME25 <strong>${fmt(t.aime25)}</strong>
+              </div>
+              <div style="font-size:12px; color:var(--text-secondary); margin-top:2px">${g.configNote || ""}</div>
+            </div>`;
+        }).join("") +
+          `<div style="font-size:12.5px; color:var(--text-secondary); border-top:1px dashed var(--border); padding-top:12px; margin-top:4px">
+            同组再补 ≥1 个 mid ckpt（如 M1@100 / M1@150）后，这里会自动切换成 4B 风格全 step 曲线。
+          </div>`;
+      } else {
+        sparseEl.style.display = "none";
+        sparseEl.innerHTML = "";
+      }
+    }
+    if (curvesEl) curvesEl.style.display = canDrawCurves ? "block" : "none";
+
+    if (canDrawCurves && fullSteps.length) {
+      const legend = document.getElementById("mm-eval-mid-legend");
+      if (legend) {
+        legend.innerHTML = geoSeries.map((s) =>
+          `<span style="margin-right:14px"><span style="color:${s.color}">●</span> ${s.name}</span>`
+        ).join("");
+      }
       drawLineChart("chart-mm-full-geo3k", "tip-mm-full-geo3k", {
         categories: fullSteps,
-        series: fullSeries("geo3kAcc"),
+        series: geoSeries,
         valueSuffix: "%",
         height: 240,
+        yMin: 0,
+        yMax: 100,
       });
       drawLineChart("chart-mm-full-math500", "tip-mm-full-math500", {
         categories: fullSteps,
         series: fullSeries("math500"),
         valueSuffix: "%",
         height: 240,
+        yMin: 0,
+        yMax: 100,
       });
       drawLineChart("chart-mm-full-mmlu", "tip-mm-full-mmlu", {
         categories: fullSteps,
         series: fullSeries("mmlu"),
         valueSuffix: "%",
         height: 220,
+        yMin: 0,
+        yMax: 100,
       });
       drawLineChart("chart-mm-full-aime25", "tip-mm-full-aime25", {
         categories: fullSteps,
         series: fullSeries("aime25"),
         valueSuffix: "%",
         height: 220,
+        yMin: 0,
+        yMax: 100,
       });
     }
 
     const midBody = document.getElementById("mm-eval-mid-body");
-    if (midBody && evalData.full) {
-      midBody.innerHTML = fullSteps.map((step, i) => {
-        const cells = (evalData.fullOrder || []).map((key) => {
-          const g = evalData.full[key];
-          const geo = g.geo3kAcc[i];
-          const math = g.math500[i];
-          if (geo == null && math == null) return `<td class="mono" style="color:#9ca3af">—</td>`;
-          return `<td><span style="color:${g.color}">${fmt(geo)}</span> / ${fmt(math)}</td>`;
-        }).join("");
-        return `<tr><td class="mono">${step}</td>${cells}</tr>`;
-      }).join("");
+    if (midBody) {
+      const rows = ready
+        .slice()
+        .sort((a, b) => (a.step ?? 1e9) - (b.step ?? 1e9));
+      midBody.innerHTML = rows.length
+        ? rows.map((g) => {
+            const t = g.text || {};
+            const geo = g.geo3k || {};
+            const cfg = g.config || "—";
+            return `
+              <tr>
+                <td><strong style="color:${g.color}">${g.shortLabel}</strong></td>
+                <td class="mono">${g.step == null ? "—" : g.step}</td>
+                <td>${cfg}</td>
+                <td>${fmt(geo.sampleAccuracy)}</td>
+                <td>${fmt(t.math500)}</td>
+                <td>${fmt(t.mmlu)}</td>
+                <td>${fmt(t.aime24)}</td>
+                <td>${fmt(t.aime25)}</td>
+              </tr>`;
+          }).join("")
+        : `<tr><td colspan="8" style="color:#9ca3af">尚无离线评测结果</td></tr>`;
     }
   }
 

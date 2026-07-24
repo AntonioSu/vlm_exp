@@ -15,14 +15,26 @@ from datetime import date
 from pathlib import Path
 from typing import Any
 
-VLM_EXP = Path("/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp")
-EVALSCOPE_MM = Path("/data/juicefs-white/5281-gpu-a100/lijunyi/evalscope/outputs/exp2card_mm")
-
-# Prefer juicefs paths; fall back to short /data/lijunyi symlinks used in some runs.
-GEO3K_DIR_CANDIDATES = [
-    VLM_EXP / "evaluation" / "geo3k",
-    Path("/data/lijunyi/vlm_exp/evaluation/geo3k"),
+REPO_ROOT = Path(__file__).resolve().parents[1]
+# Eval artifacts often live in the sibling /data/lijunyi/vlm_exp tree (gitignored),
+# while this script refreshes the git-tracked dashboard under REPO_ROOT.
+VLM_EXP_DATA = Path("/data/lijunyi/vlm_exp")
+EVALSCOPE_MM_CANDIDATES = [
+    Path("/data/lijunyi/evalscope/outputs/exp2card_mm"),
+    Path("/data/juicefs-white/5281-gpu-a100/lijunyi/evalscope/outputs/exp2card_mm"),
 ]
+GEO3K_DIR_CANDIDATES = [
+    VLM_EXP_DATA / "evaluation" / "geo3k",
+    REPO_ROOT / "evaluation" / "geo3k",
+    Path("/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/evaluation/geo3k"),
+]
+
+
+def evalscope_mm_root() -> Path:
+    for root in EVALSCOPE_MM_CANDIDATES:
+        if root.exists():
+            return root
+    return EVALSCOPE_MM_CANDIDATES[0]
 
 
 def pct(score: float | None, digits: int = 2) -> float | None:
@@ -80,7 +92,7 @@ def load_geo3k(summary_name: str) -> dict[str, Any] | None:
 
 def load_text(exp_dirname: str, tasks: dict[str, str]) -> dict[str, Any]:
     """tasks maps dashboard key -> report filename stem (without .json)."""
-    base = EVALSCOPE_MM / exp_dirname
+    base = evalscope_mm_root() / exp_dirname
     out: dict[str, Any] = {"sourceDir": str(base), "scores": {}, "sources": {}}
     for key, stem in tasks.items():
         path = latest_report(base, stem)
@@ -296,7 +308,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--output",
         type=Path,
-        default=VLM_EXP / "dashboard" / "mm" / "js" / "data-eval.js",
+        default=REPO_ROOT / "dashboard" / "mm" / "js" / "data-eval.js",
         help="output dashboard JS path",
     )
     return parser.parse_args()

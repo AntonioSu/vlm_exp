@@ -215,53 +215,59 @@
       </div>
     </section>
 
-    <section style="margin-top:28px">
-      <h2>全 step 中间点（对齐 4B E1 EVAL_FULL · 10–150 /10）</h2>
-      <p class="caption">
-        与 4B「E1 GRPO」离线曲线同一套 step 轴：有结果的 checkpoint 打点，缺测为断点。
-        当前仅 <strong>M1@70 light</strong> 与 <strong>M0@150 formal</strong>；后续每补一个 mid ckpt 评测即可自动连成曲线。
+    <section style="margin-top:28px" id="mm-eval-mid-section">
+      <h2>已完成 checkpoint 明细</h2>
+      <p class="caption" id="mm-eval-mid-caption">
+        当前离线评测还不够画「全 step 曲线」（同组需要 ≥2 个 mid ckpt）。先列出已完成点；上方柱状图是主视图。
       </p>
-      <section class="grid2" style="margin-top:10px">
-        <div>
-          <h2>Geo3K sample acc · mid steps（%）</h2>
-          <div class="chart-card">
-            <div class="chart-wrap"><canvas id="chart-mm-full-geo3k" height="240"></canvas><div class="tooltip" id="tip-mm-full-geo3k"></div></div>
+      <div id="mm-eval-mid-sparse" class="empty-state" style="display:none; text-align:left; padding:20px 22px"></div>
+      <div id="mm-eval-mid-curves" style="display:none">
+        <p class="caption" id="mm-eval-mid-legend" style="margin:8px 0 4px"></p>
+        <section class="grid2" style="margin-top:10px">
+          <div>
+            <h2>Geo3K sample acc · mid steps（%）</h2>
+            <div class="chart-card">
+              <div class="chart-wrap"><canvas id="chart-mm-full-geo3k" height="240"></canvas><div class="tooltip" id="tip-mm-full-geo3k"></div></div>
+            </div>
           </div>
-        </div>
-        <div>
-          <h2>MATH-500 · mid steps（%）</h2>
-          <div class="chart-card">
-            <div class="chart-wrap"><canvas id="chart-mm-full-math500" height="240"></canvas><div class="tooltip" id="tip-mm-full-math500"></div></div>
+          <div>
+            <h2>MATH-500 · mid steps（%）</h2>
+            <div class="chart-card">
+              <div class="chart-wrap"><canvas id="chart-mm-full-math500" height="240"></canvas><div class="tooltip" id="tip-mm-full-math500"></div></div>
+            </div>
           </div>
-        </div>
-      </section>
-      <section class="grid2" style="margin-top:16px">
-        <div>
-          <h2>MMLU · mid steps（%）</h2>
-          <div class="chart-card">
-            <div class="chart-wrap"><canvas id="chart-mm-full-mmlu" height="220"></canvas><div class="tooltip" id="tip-mm-full-mmlu"></div></div>
+        </section>
+        <section class="grid2" style="margin-top:16px">
+          <div>
+            <h2>MMLU · mid steps（%）</h2>
+            <div class="chart-card">
+              <div class="chart-wrap"><canvas id="chart-mm-full-mmlu" height="220"></canvas><div class="tooltip" id="tip-mm-full-mmlu"></div></div>
+            </div>
           </div>
-        </div>
-        <div>
-          <h2>AIME25 · mid steps（%）</h2>
-          <div class="chart-card">
-            <div class="chart-wrap"><canvas id="chart-mm-full-aime25" height="220"></canvas><div class="tooltip" id="tip-mm-full-aime25"></div></div>
+          <div>
+            <h2>AIME25 · mid steps（%）</h2>
+            <div class="chart-card">
+              <div class="chart-wrap"><canvas id="chart-mm-full-aime25" height="220"></canvas><div class="tooltip" id="tip-mm-full-aime25"></div></div>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      </div>
       <table style="margin-top:16px">
         <thead>
           <tr>
+            <th>组</th>
             <th>step</th>
-            <th>M0 Geo3K / MATH-500</th>
-            <th>M1 Geo3K / MATH-500</th>
-            <th>M2</th>
-            <th>M3</th>
+            <th>配置</th>
+            <th>Geo3K acc</th>
+            <th>MATH-500</th>
+            <th>MMLU</th>
+            <th>AIME24</th>
+            <th>AIME25</th>
           </tr>
         </thead>
         <tbody id="mm-eval-mid-body"></tbody>
       </table>
-      <p class="caption">单元格格式：Geo3K sample acc / MATH-500。null 显示为 —。</p>
+      <p class="caption">只显示已有离线结果的 checkpoint；M2/M3 与未测 mid step 不占行。</p>
     </section>
   </div>
 
@@ -405,10 +411,10 @@
 
 </div>
 
-<script src="js/data-eval.js"></script>
+<script src="js/data-eval.js?v=20260724162416"></script>
 <script src="js/data-m1-train.js"></script>
 <script src="js/data-m1-rollouts.js"></script>
-<script src="js/charts-eval.js"></script>
+<script src="js/charts-eval.js?v=20260724162416"></script>
 <script>
   const tabBtns = document.querySelectorAll(".tab-btn");
   const panels = {

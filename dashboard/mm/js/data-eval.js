@@ -48,7 +48,7 @@ window.MM_EVAL = {
       "config": "formal",
       "configNote": "正式口径：Geo3K n=8 max_tokens=16384；文本 evalscope 正式配置",
       "geo3k": {
-        "source": "/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/evaluation/geo3k/m0_e1_grpo_2b_step150.jsonl.summary.json",
+        "source": "/data/lijunyi/vlm_exp/evaluation/geo3k/m0_e1_grpo_2b_step150.jsonl.summary.json",
         "questions": 601,
         "samples": 4808,
         "n": 8,
@@ -65,11 +65,11 @@ window.MM_EVAL = {
         "math500": 86.35
       },
       "sources": {
-        "geo3k": "/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/evaluation/geo3k/m0_e1_grpo_2b_step150.jsonl.summary.json",
-        "mmlu": "/data/juicefs-white/5281-gpu-a100/lijunyi/evalscope/outputs/exp2card_mm/m0_e1_grpo_2b/20260722_124641/reports/models/mmlu.json",
-        "aime24": "/data/juicefs-white/5281-gpu-a100/lijunyi/evalscope/outputs/exp2card_mm/m0_e1_grpo_2b/20260722_133001/reports/models/aime24.json",
-        "aime25": "/data/juicefs-white/5281-gpu-a100/lijunyi/evalscope/outputs/exp2card_mm/m0_e1_grpo_2b/20260722_133001/reports/models/aime25.json",
-        "math500": "/data/juicefs-white/5281-gpu-a100/lijunyi/evalscope/outputs/exp2card_mm/m0_e1_grpo_2b/20260722_133001/reports/models/math_500.json"
+        "geo3k": "/data/lijunyi/vlm_exp/evaluation/geo3k/m0_e1_grpo_2b_step150.jsonl.summary.json",
+        "mmlu": "/data/lijunyi/evalscope/outputs/exp2card_mm/m0_e1_grpo_2b/20260722_124641/reports/models/mmlu.json",
+        "aime24": "/data/lijunyi/evalscope/outputs/exp2card_mm/m0_e1_grpo_2b/20260722_133001/reports/models/aime24.json",
+        "aime25": "/data/lijunyi/evalscope/outputs/exp2card_mm/m0_e1_grpo_2b/20260722_133001/reports/models/aime25.json",
+        "math500": "/data/lijunyi/evalscope/outputs/exp2card_mm/m0_e1_grpo_2b/20260722_133001/reports/models/math_500.json"
       }
     },
     {
@@ -82,7 +82,7 @@ window.MM_EVAL = {
       "config": "light",
       "configNote": "轻量探查：Geo3K n=1 max_tokens=512；文本 max_tokens 很低（mmlu_temp=16，math=512），与 M0 正式结果不可直接比绝对值",
       "geo3k": {
-        "source": "/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/evaluation/geo3k/m1_geo3k100_2b_step70_light.jsonl.summary.json",
+        "source": "/data/lijunyi/vlm_exp/evaluation/geo3k/m1_geo3k100_2b_step70_light.jsonl.summary.json",
         "questions": 601,
         "samples": 601,
         "n": 1,
@@ -93,7 +93,7 @@ window.MM_EVAL = {
         "passAtN": 13.64
       },
       "geo3kQuick": {
-        "source": "/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/evaluation/geo3k/m1_geo3k100_2b_step70_quick.jsonl.summary.json",
+        "source": "/data/lijunyi/vlm_exp/evaluation/geo3k/m1_geo3k100_2b_step70_quick.jsonl.summary.json",
         "questions": 10,
         "samples": 10,
         "n": 1,
@@ -110,11 +110,11 @@ window.MM_EVAL = {
         "math500": 23.6
       },
       "sources": {
-        "geo3k": "/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/evaluation/geo3k/m1_geo3k100_2b_step70_light.jsonl.summary.json",
-        "mmlu": "/data/juicefs-white/5281-gpu-a100/lijunyi/evalscope/outputs/exp2card_mm/m1_geo3k100_2b_step70_text_light/20260724_000305/reports/models/mmlu_temp.json",
-        "aime24": "/data/juicefs-white/5281-gpu-a100/lijunyi/evalscope/outputs/exp2card_mm/m1_geo3k100_2b_step70_math_light/20260724_001013/reports/models/aime24.json",
-        "aime25": "/data/juicefs-white/5281-gpu-a100/lijunyi/evalscope/outputs/exp2card_mm/m1_geo3k100_2b_step70_math_light/20260724_001013/reports/models/aime25.json",
-        "math500": "/data/juicefs-white/5281-gpu-a100/lijunyi/evalscope/outputs/exp2card_mm/m1_geo3k100_2b_step70_math_light/20260724_001013/reports/models/math_500.json"
+        "geo3k": "/data/lijunyi/vlm_exp/evaluation/geo3k/m1_geo3k100_2b_step70_light.jsonl.summary.json",
+        "mmlu": "/data/lijunyi/evalscope/outputs/exp2card_mm/m1_geo3k100_2b_step70_text_light/20260724_000305/reports/models/mmlu_temp.json",
+        "aime24": "/data/lijunyi/evalscope/outputs/exp2card_mm/m1_geo3k100_2b_step70_math_light/20260724_001013/reports/models/aime24.json",
+        "aime25": "/data/lijunyi/evalscope/outputs/exp2card_mm/m1_geo3k100_2b_step70_math_light/20260724_001013/reports/models/aime25.json",
+        "math500": "/data/lijunyi/evalscope/outputs/exp2card_mm/m1_geo3k100_2b_step70_math_light/20260724_001013/reports/models/math_500.json"
       }
     },
     {
