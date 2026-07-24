@@ -37,3 +37,5 @@ htmlcov/
 
 model
 parquet
+evaluation
+tensorboard
