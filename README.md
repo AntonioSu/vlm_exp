@@ -68,6 +68,7 @@ vlm_exp/
 │   ├── summarize_mm_rollouts.py
 │   ├── gen_mm_rollout_dashboard_data.py
 │   ├── gen_mm_eval_dashboard_data.py
+│   ├── gen_mm_train_dashboard_data.py   # timing / stability / efficiency from train logs
 │   └── archive_mm_results.sh
 ├── parquet/mm/                 # gitignored: Geo3K + mix slices
 ├── model/exp2card_mm/          # gitignored: checkpoints
@@ -181,6 +182,7 @@ python scripts/summarize_mm_rollouts.py ...
 # Feed static MM dashboard JS
 python scripts/gen_mm_rollout_dashboard_data.py
 python scripts/gen_mm_eval_dashboard_data.py
+python scripts/gen_mm_train_dashboard_data.py   # timing / stability / efficiency
 ```
 
 ### 6. Archive (metadata only; no large ckpts)
@@ -256,7 +258,9 @@ Root `./start.sh` / `./stop.sh` also serve the repo tree on port 3000; prefer `d
 
 ## Status & deeper docs
 
-Living checklist and measured timings: [`exp_plan_mm.md`](./exp_plan_mm.md) (sections 6–9).
+**Snapshot 2026-07-24:** M1 `m1_geo3k100_2b` training **97/150** (checkpoint `global_step_90`); rollout dashboard through step 97 (overall train acc≈0.665). M0 formal Geo3K+text eval done; M1@70 light probe on dashboard「评测结果」. M2/M3 not started. Eval pipeline waiting for step-150.
+
+Living checklist and measured timings: [`exp_plan_mm.md`](./exp_plan_mm.md) (sections 6–9). Dashboard: [`dashboard/mm/`](./dashboard/mm/).
 
 Eval status notes (runtime, not always in git): `evaluation/mm_eval_status_*.md`.
 
