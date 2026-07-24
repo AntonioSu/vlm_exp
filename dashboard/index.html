@@ -53,11 +53,14 @@
   <div class="site-header-inner">
     <a class="site-brand" href="index.html"><span class="dot">●</span> RL 实验看板</a>
             <div class="site-nav">
+      
       <a href="index.html" class="active">总览</a>
       <a href="algo/index.html">算法介绍</a>
+      <a href="benchmark/index.html">Benchmark 介绍</a>
       <a href="2b/index.html">2B 训练</a>
       <a href="4b/index.html">4B 训练</a>
       <a href="mm/index.html">多模态训练</a>
+    
     </div>
   </div>
 </div>
@@ -95,7 +98,7 @@
       </div>
       <div class="intro-item">
         <h4>看板怎么读</h4>
-        <p>「算法介绍」讲定义与权衡（含多模态配比说明）；「2B / 4B 训练」放训练曲线与 evalscope 评测对比；「多模态训练」展示执行状态、M0 正式评测与 M1 light 探查结果（M2/M3 齐备后继续补齐）。下方卡片按入口进入。</p>
+        <p>「算法介绍」讲定义与权衡；「Benchmark 介绍」说明 AIME / MMLU / BFCL / tau-bench 怎么判分；「2B / 4B 训练」放训练曲线与评测对比；「多模态训练」展示执行状态与评测。下方卡片按入口进入。</p>
       </div>
       <div class="intro-item">
         <h4>数据与复现</h4>
@@ -114,6 +117,17 @@
         <p class="desc">基座（GDN / KDA / Hybrid）· RL 算法（PPO 与五种 critic-free）· 多模态配比。训练曲线见各赛道页。</p>
         <div class="stat-row">
           <span><b>基座 · RL · 多模态</b></span>
+        </div>
+      </a>
+
+      <a class="track-card" href="benchmark/index.html">
+        <div class="bar" style="background:var(--e3)"></div>
+        <div class="go">进入 →</div>
+        <div class="kicker">Shared · Benchmarks</div>
+        <h3>Benchmark 介绍</h3>
+        <p class="desc">AIME / MMLU / BFCL-v3 / tau-bench：各自测什么、输入输出是什么、怎么判对错。评测曲线见各赛道「评测结果」页。</p>
+        <div class="stat-row">
+          <span><b>Math · Knowledge · Agent</b></span>
         </div>
       </a>
 
@@ -143,14 +157,14 @@
         </div>
       </a>
 
-      <a class="track-card" href="algo/mm.html">
+      <a class="track-card" href="mm/index.html">
         <div class="bar" style="background:var(--tl-green)"></div>
         <div class="go">进入 →</div>
-        <div class="kicker">Under 算法介绍 · Multimodal</div>
-        <h3>多模态配比说明</h3>
-        <p class="desc">在「算法介绍」下的「多模态」页签：固定 GRPO，只改图文占比（0/20/50/100%）。训练监控见「多模态训练」。</p>
+        <div class="kicker">Track 3 · Multimodal</div>
+        <h3>多模态训练</h3>
+        <p class="desc">固定 GRPO，只改图文占比（0/20/50/100%）。含执行状态、M0 正式评测与 M1 light 探查。</p>
         <div class="stat-row">
-          <span><b>算法介绍 → 多模态</b></span>
+          <span><b>M0 / M1 · 配比扫描</b></span>
         </div>
       </a>
 

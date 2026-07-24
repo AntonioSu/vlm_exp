@@ -13,16 +13,19 @@
   <div class="site-header-inner">
     <a class="site-brand" href="../index.html"><span class="dot">●</span> RL 实验看板</a>
     <div class="site-nav">
+      
       <a href="../index.html">总览</a>
       <a href="../algo/index.html" class="active">算法介绍</a>
+      <a href="../benchmark/index.html">Benchmark 介绍</a>
       <a href="../2b/index.html">2B 训练</a>
       <a href="../4b/index.html">4B 训练</a>
       <a href="../mm/index.html">多模态训练</a>
+    
     </div>
   </div>
 </div>
 
-<div class="algo-page algo-page-with-toc">
+<div class="algo-page">
   <div class="algo-subnav">
     <a href="base.html" class="active">基座</a>
     <a href="index.html">RL 算法</a>
@@ -48,26 +51,7 @@
     </div>
   </header>
 
-  <div class="algo-layout">
-  <nav class="algo-toc" aria-label="目录">
-    <p class="toc-heading">目录</p>
-    <ol class="toc-list">
-      <li><a href="#sec-rl"><span class="toc-num">0</span><span class="toc-title">和 RL 的关系</span></a></li>
-      <li data-a="gdn"><a href="#mod-gdn"><span class="toc-num">1</span><span class="toc-title">GDN</span></a></li>
-      <li data-a="kda"><a href="#mod-kda"><span class="toc-num">2</span><span class="toc-title">KDA</span></a></li>
-      <li data-a="delta"><a href="#mod-delta"><span class="toc-num">3</span><span class="toc-title">Delta Rule</span></a></li>
-      <li data-a="full"><a href="#mod-full"><span class="toc-num">4</span><span class="toc-title">Full Attention</span></a></li>
-      <li data-a="sink"><a href="#mod-sink"><span class="toc-num">5</span><span class="toc-title">Attention Sink</span></a></li>
-      <li data-a="hybrid"><a href="#mod-hybrid"><span class="toc-num">6</span><span class="toc-title">Hybrid</span></a></li>
-      <li data-a="moe"><a href="#mod-moe"><span class="toc-num">7</span><span class="toc-title">MoE</span></a></li>
-      <li><a href="#sec-compare"><span class="toc-num">8</span><span class="toc-title">GDN vs KDA</span></a></li>
-      <li><a href="#sec-eng"><span class="toc-num">9</span><span class="toc-title">工程含义</span></a></li>
-      <li><a href="#sec-memo"><span class="toc-num">10</span><span class="toc-title">一句话记忆</span></a></li>
-    </ol>
-  </nav>
-
-  <div class="algo-main">
-  <section class="algo-section" id="sec-rl">
+  <section class="algo-section">
     <h2>和 RL 算法的关系</h2>
     <p class="sec-sub">一层骨架，一层训练目标</p>
     <ol class="diff-list">
@@ -236,7 +220,7 @@
     </div>
   </section>
 
-  <section class="algo-section" id="sec-compare">
+  <section class="algo-section">
     <h2>GDN vs KDA</h2>
     <p class="sec-sub">同属 gated delta 一脉，差在门控粒度</p>
     <div class="table-wrap">
@@ -256,7 +240,7 @@
     </div>
   </section>
 
-  <section class="algo-section" id="sec-eng">
+  <section class="algo-section">
     <h2>工程含义（对本实验）</h2>
     <p class="sec-sub">读日志 / 配环境时会碰到的几点</p>
     <div class="table-wrap">
@@ -276,7 +260,7 @@
     </div>
   </section>
 
-  <section class="algo-section" id="sec-memo">
+  <section class="algo-section">
     <h2>一句话记忆</h2>
     <ul class="memo-list">
       <li data-a="gdn"><span class="k">GDN</span><span>粗门控 + delta；Qwen3.5 主路径，本轮底座</span></li>
@@ -288,40 +272,7 @@
       <li data-a="moe"><span class="k">MoE</span><span>大规格才有；本轮 2B/4B 为 dense</span></li>
     </ul>
   </section>
-  </div><!-- /.algo-main -->
-  </div><!-- /.algo-layout -->
 </div>
 
-<script>
-(function () {
-  const links = Array.from(document.querySelectorAll(".algo-toc a[href^='#']"));
-  if (!links.length) return;
-  const sections = links
-    .map((a) => document.querySelector(a.getAttribute("href")))
-    .filter(Boolean);
-
-  function setActive(id) {
-    links.forEach((a) => {
-      a.classList.toggle("is-active", a.getAttribute("href") === "#" + id);
-    });
-  }
-
-  const observer = new IntersectionObserver(
-    (entries) => {
-      const visible = entries
-        .filter((e) => e.isIntersecting)
-        .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
-      if (visible[0]) setActive(visible[0].target.id);
-    },
-    { rootMargin: "-20% 0px -60% 0px", threshold: [0, 0.25, 0.5, 1] }
-  );
-  sections.forEach((s) => observer.observe(s));
-
-  // initial hash / first section
-  const hash = location.hash.slice(1);
-  if (hash && document.getElementById(hash)) setActive(hash);
-  else if (sections[0]) setActive(sections[0].id);
-})();
-</script>
 </body>
 </html>

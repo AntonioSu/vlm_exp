@@ -59,8 +59,8 @@ const EVAL_FULL_ORDER = ["e1", "e2", "e3", "e4", "e5"];
 // ---- Agent / tool-use benchmarks (evalscope, generated 2026-07-24) ----
 // 已完成 8 个 checkpoint（10/30/50/70/90/110/130/150，均匀间隔 20 步）；
 // 20/40/60/80/100/120/140 尚未跑。以下每个 index 均以曲线呈现。
-// BFCL-v3: 10 subset ×30/subset；bfcl=加权 OVERALL，bfcl_mt=MULTI_TURN category（多轮 agentic 工具调用）。
-// tau-bench: retail+airline 各 20（共 40），user-simulator=gpt-5p5-apipro。
+// BFCL-v3: 10 subset ×30；bfcl=OVERALL（mean non_live/live/multi_turn，单轮 AST 比对不 exec）；
+// bfcl_mt=MULTI_TURN（多轮 exec + 每轮状态验收）。tau-bench: retail+airline×20，user-sim=gpt-5p5-apipro，看最终 DB。
 // Served w/ verl_qwen35 vLLM（--tool-call-parser qwen3_xml）。
 const AGENT_STEPS = ["10", "30", "50", "70", "90", "110", "130", "150"];
 

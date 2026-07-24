@@ -13,11 +13,14 @@
   <div class="site-header-inner">
     <a class="site-brand" href="../index.html"><span class="dot">●</span> RL 实验看板</a>
     <div class="site-nav">
+      
       <a href="../index.html">总览</a>
       <a href="../algo/index.html" class="active">算法介绍</a>
+      <a href="../benchmark/index.html">Benchmark 介绍</a>
       <a href="../2b/index.html">2B 训练</a>
       <a href="../4b/index.html">4B 训练</a>
       <a href="../mm/index.html">多模态训练</a>
+    
     </div>
   </div>
 </div>
@@ -268,6 +271,11 @@
         <div class="diff-num">2</div>
         <h3>生成型：VAE / VQ-VAE → 生成头</h3>
         <p>像素压到 latent 或离散码，再扩散 / 自回归生成。与「图→文理解」栈不同，但共享「视觉要先进紧凑表征」这一层。</p>
+      </li>
+      <li class="diff-item">
+        <div class="diff-num">3</div>
+        <h3>和本看板的关系</h3>
+        <p>多模态训练页跑的是<strong>理解型栈 + GRPO</strong>；本页只讲视觉–语言构件，不改 RL 算法变量。底座语言侧见 <a href="base.html">基座</a>。</p>
       </li>
     </ol>
   </section>

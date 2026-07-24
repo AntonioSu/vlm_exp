@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Benchmark 介绍 — AIME / MMLU / BFCL / tau-bench</title>
+<link rel="stylesheet" href="../common/base.css">
+<link rel="stylesheet" href="../algo/algo.css">
+<style>
+  .bench-sample {
+    margin: 12px 0 0;
+    padding: 14px 16px;
+    background: #fff;
+    border: 1px solid var(--algo-line, #e4e7ec);
+    border-radius: 10px;
+    font-size: 13px;
+    line-height: 1.55;
+    color: var(--algo-ink, #14181f);
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  .bench-sample .lbl {
+    display: inline-block;
+    min-width: 3.2em;
+    font-weight: 650;
+    color: var(--algo-muted, #5c6570);
+  }
+</style>
+</head>
+<body class="algo-body">
+
+<div class="site-header">
+  <div class="site-header-inner">
+    <a class="site-brand" href="../index.html"><span class="dot">●</span> RL 实验看板</a>
+    <div class="site-nav">
+      <a href="../index.html">总览</a>
+      <a href="../algo/index.html">算法介绍</a>
+      <a href="../benchmark/index.html" class="active">Benchmark 介绍</a>
+      <a href="../2b/index.html">2B 训练</a>
+      <a href="../4b/index.html">4B 训练</a>
+      <a href="../mm/index.html">多模态训练</a>
+    </div>
+  </div>
+</div>
+
+<div class="algo-page algo-page-with-toc">
+  <header class="algo-hero">
+    <p class="algo-kicker">Eval · Benchmark Primer</p>
+    <h1>常见评测基准简介</h1>
+    <p class="lede">
+      只说明各基准本身：测什么、输入输出长什么样、怎么判对错。
+      不同基准协议不同，分数不能直接横比。
+    </p>
+    <div class="algo-chips">
+      <a class="chip-grpo" href="#mod-math">AIME</a>
+      <a class="chip-dapo" href="#mod-mmlu">MMLU</a>
+      <a class="chip-dr" href="#mod-bfcl">BFCL-v3</a>
+      <a class="chip-rloo" href="#mod-tau">tau-bench</a>
+    </div>
+  </header>
+
+  <div class="algo-layout">
+  <nav class="algo-toc" aria-label="目录">
+    <p class="toc-heading">目录</p>
+    <ol class="toc-list">
+      <li><a href="#sec-map"><span class="toc-num">0</span><span class="toc-title">评测地图</span></a></li>
+      <li><a href="#mod-math"><span class="toc-num">1</span><span class="toc-title">AIME</span></a></li>
+      <li><a href="#mod-mmlu"><span class="toc-num">2</span><span class="toc-title">MMLU</span></a></li>
+      <li><a href="#mod-bfcl"><span class="toc-num">3</span><span class="toc-title">BFCL-v3</span></a></li>
+      <li><a href="#mod-tau"><span class="toc-num">4</span><span class="toc-title">tau-bench</span></a></li>
+    </ol>
+  </nav>
+
+  <div class="algo-main">
+
+  <section class="algo-section" id="sec-map">
+    <h2>评测地图</h2>
+    <p class="sec-sub">能力维度不同，协议也不同</p>
+    <div class="family-grid cols-2">
+      <div class="family-card" data-f="group">
+        <p class="family-label">Math</p>
+        <h3>AIME24 / AIME25</h3>
+        <p class="family-desc">美国数学邀请赛风格竞赛题，测整数答案解题正确率。常见报告 pass@1 或多次采样的 mean / pass@k。</p>
+      </div>
+      <div class="family-card" data-f="other">
+        <p class="family-label">Knowledge</p>
+        <h3>MMLU</h3>
+        <p class="family-desc">多学科选择题基准，覆盖人文、社科、STEM 等，测通识与学科知识。</p>
+      </div>
+      <div class="family-card" data-f="actor">
+        <p class="family-label">Function Calling</p>
+        <h3>BFCL-v3</h3>
+        <p class="family-desc">测函数调用是否写对：解析调用结构，比对函数名与参数；含单轮 AST、该不该调、以及多轮工具使用。</p>
+      </div>
+      <div class="family-card" data-f="mm">
+        <p class="family-label">Agent</p>
+        <h3>tau-bench</h3>
+        <p class="family-desc">测多轮对话中能否用领域 API 完成任务：用户模拟器交互，按最终环境/数据库状态判成功。</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="algo-section" id="mod-math">
+    <h2>AIME</h2>
+    <p class="sec-sub">竞赛数学解题</p>
+    <p><strong>测什么</strong>：中等难度竞赛数学（如 AIME 2024 / 2025），答案通常是 0–999 的整数。</p>
+    <p><strong>输入</strong>：一道完整题目（文字，偶含公式）。</p>
+    <p><strong>输出</strong>：模型给出最终数值答案（常约定用 <span class="mono">\boxed{}</span> 等格式便于抽取）。</p>
+    <p><strong>验证</strong>：抽取答案后与标准答案比对是否相等。可用贪婪解码（mean@1），也可用温度采样多次再算 mean 或 pass@k；协议不同，分数不可直接对比。</p>
+    <h3>样例</h3>
+    <div class="bench-sample"><span class="lbl">题</span> Find the number of positive integers \( n \le 2024 \) such that \( n \) is divisible by 3 or 5 but not both.
+
+<span class="lbl">答</span> （示意）模型输出推理过程，并以 <span class="mono">\boxed{945}</span> 等形式给出整数答案。
+
+<span class="lbl">判</span> 抽取数字后与标准答案比对；相等 → 对。</div>
+  </section>
+
+  <section class="algo-section" id="mod-mmlu">
+    <h2>MMLU</h2>
+    <p class="sec-sub">Massive Multitask Language Understanding</p>
+    <p><strong>测什么</strong>：57 个学科左右的多选题，覆盖从初等到专业水平的通识与领域知识。</p>
+    <p><strong>输入</strong>：题干 + 若干选项（常见 4 选 1）。</p>
+    <p><strong>输出</strong>：模型选择的选项（或对应字母）。</p>
+    <p><strong>验证</strong>：选项是否与标准答案一致，通常报告准确率（accuracy）。</p>
+    <h3>样例</h3>
+    <div class="bench-sample"><span class="lbl">题</span> Which of the following is a noble gas?
+  A. Nitrogen
+  B. Oxygen
+  C. Argon
+  D. Chlorine
+
+<span class="lbl">答</span> C
+
+<span class="lbl">判</span> 选项与标准答案一致 → 对。</div>
+  </section>
+
+  <section class="algo-section" id="mod-bfcl">
+    <h2>BFCL-v3</h2>
+    <p class="sec-sub">Berkeley Function Calling Leaderboard</p>
+    <p><strong>测什么</strong>：模型能否根据用户请求与函数 schema，正确发起函数调用（含并行、多选一、该不该调、多轮工具使用等）。</p>
+    <p><strong>输入</strong>：用户查询 + 可用函数/工具描述；多轮子集还有对话历史与可执行环境。</p>
+    <p><strong>输出</strong>：函数调用（prompt 模式写成文本；也可走模型原生 tool-calling）。</p>
+    <h3>常见子集与判分</h3>
+    <ul>
+      <li><strong>AST（simple / multiple / parallel…）</strong>：把输出解析成抽象语法树，比对函数名、必填参数、类型、取值是否落在标准答案允许集合里。<em>一般不执行函数</em>。</li>
+      <li><strong>RELEVANCE</strong>：测「该不该调」——无关请求不应产生有效调用；相关请求应产生有效调用。</li>
+      <li><strong>MULTI_TURN</strong>：多轮 sandbox（如文件系统）。生成过程中会执行工具；评分按轮检查环境状态与工具返回是否覆盖标准轨迹，不要求每一步调用字面完全一致。</li>
+    </ul>
+    <p><strong>汇总指标</strong>：常报告 <strong>OVERALL</strong>（如 non_live / live / multi_turn 等类别再平均），以及单独的 <strong>MULTI_TURN</strong> 类别分。</p>
+    <h3>样例（AST / simple）</h3>
+    <div class="bench-sample"><span class="lbl">问</span> Find the area of a triangle with a base of 10 units and height of 5 units.
+
+<span class="lbl">工具</span> calculate_triangle_area(base, height, unit?)
+
+<span class="lbl">答</span> [calculate_triangle_area(base=10, height=5)]
+
+<span class="lbl">判</span> 解析 AST：函数名与参数（base=10, height=5）落在 GT 允许集合 → 对；不执行、不算面积数值。</div>
+  </section>
+
+  <section class="algo-section" id="mod-tau">
+    <h2>tau-bench（τ-bench）</h2>
+    <p class="sec-sub">多轮工具 agent · 任务完成</p>
+    <p><strong>测什么</strong>：在模拟客服场景中，agent 能否依据政策文档与领域 API，与用户多轮交互并完成任务（常见域：retail、airline）。</p>
+    <p><strong>输入</strong>：任务说明、领域 wiki、可调用工具列表；用户侧通常由另一个 LLM 扮演（user simulator）。</p>
+    <p><strong>输出</strong>：多轮工具调用 + 对用户的自然语言回复。</p>
+    <p><strong>验证</strong>：任务结束时比对数据库（及必要口头输出）是否达到 gold 状态——成功则 reward/acc = 1，否则 0。看的是<strong>任务是否完成</strong>，不是单次调用的 AST 字面匹配。</p>
+    <h3>样例（retail）</h3>
+    <div class="bench-sample"><span class="lbl">用户</span> Hi, I received order #W2378156 and I’d like to handle a couple of exchanges from it.
+
+<span class="lbl">Agent</span> 先按政策做身份认证，再查订单……
+  → tool: find_user_id_by_name_zip(first_name="Yusuf", last_name="Rossi", zip="19122")
+  → tool: get_order_details(order_id="#W2378156")
+  → …（继续换货相关 API，并在改库前取得用户确认）
+
+<span class="lbl">判</span> 对话结束后，数据库状态与 gold 一致（及必要口头输出齐全）→ reward = 1。</div>
+  </section>
+
+  </div><!-- /.algo-main -->
+  </div><!-- /.algo-layout -->
+</div>
+
+</body>
+</html>

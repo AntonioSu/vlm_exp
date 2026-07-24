@@ -329,11 +329,14 @@
   <div class="site-header-inner">
     <a class="site-brand" href="../index.html"><span class="dot">●</span> RL 实验看板</a>
     <div class="site-nav">
+      
       <a href="../index.html">总览</a>
       <a href="../algo/index.html">算法介绍</a>
+      <a href="../benchmark/index.html">Benchmark 介绍</a>
       <a href="../2b/index.html">2B 训练</a>
       <a href="../4b/index.html" class="active">4B 训练</a>
       <a href="../mm/index.html">多模态训练</a>
+    
     </div>
   </div>
 </div>
@@ -341,7 +344,7 @@
 <div class="page">
 
   <h1>4B 训练监控 — Qwen3.5-4B（E1–E5）</h1>
-  <p class="subtitle">4×A100-80GB · TP=4 · 关闭 offload · non-thinking · 16K response · E1–E5 训练均已跑满 150/150 步；评测（mmlu_temp / aime25）已对 5 组 × 3 个 checkpoint 全部跑完。算法定义见 <a href="../algo/index.html">算法介绍</a>。</p>
+  <p class="subtitle">4×A100-80GB · TP=4 · 关闭 offload · non-thinking · 16K response · E1–E5 训练均已跑满 150/150 步；评测见下方「评测结果」。算法定义见 <a href="../algo/index.html">算法介绍</a> · 评测协议见 <a href="../benchmark/index.html">Benchmark 介绍</a>。</p>
 
 <div class="subtabs">
     <button class="subtab-btn active" data-subtab="compare">对比总览（E1–E5）</button>
@@ -1499,7 +1502,7 @@
         <section class="detail-sec" id="eval-sec-agent">
           <h2 class="sec-title">Agent / 工具调用能力</h2>
           <p class="sec-sub">BFCL-v3 + tau-bench</p>
-          <p class="tertiary">Source: <code>/data/lijunyi/evalscope/outputs/agent2</code>（<code>run_agent2_queue_4b.sh</code>，verl_qwen35 vLLM，<code>--tool-call-parser qwen3_xml</code>）。<strong>BFCL-v3</strong>：10 个 subset × 30 题（AST / MULTI_TURN / RELEVANCE），prompt 模式；<strong>tau-bench</strong>：retail+airline 各 20 条（共 40），user-simulator 与 judge 均为 <code>gpt-5p5-apipro</code>。已评测 checkpoint：10/30/50/70/90/110/130/150（均匀间隔 20 步，20/40/60/80/100/120/140 尚未跑）。</p>
+          <p class="tertiary">Source: <code>/data/lijunyi/evalscope/outputs/agent2</code>（<code>run_agent2_queue_4b.sh</code>，vLLM <code>qwen3_xml</code>）。BFCL-v3：10 subset × 30、prompt 模式；tau-bench：retail+airline 共 40、user-sim=<code>gpt-5p5-apipro</code>。已评测 step：10/30/…/150。协议说明见 <a href="../benchmark/index.html">Benchmark 介绍</a>。</p>
           <div class="callout" style="margin-top:10px">
             <div class="title">数学 RL 对 agent 能力几乎无增益</div>
             <strong>BFCL 总体持平</strong>：各算法各 step 都落在 41–48%，训练步几乎不改变函数调用能力。<strong>多轮 agentic（MULTI_TURN）普遍趴在 4–11%</strong>——这是数学 RL 模型最弱的一环，换算法也救不回来。<strong>tau-bench 区分度最高</strong>：8 步均值 E1 GRPO 领先（63.4%）、E2 DAPO 垫底（56.9%）；但每点仅 40 条、噪声约 ±8pt，step 间抖动需谨慎解读。
@@ -1510,7 +1513,7 @@
               <div class="legend" id="legend-agent-bfcl"></div>
               <div class="chart-wrap"><canvas id="chart-agent-bfcl" height="240"></canvas><div class="tooltip" id="tip-agent-bfcl"></div></div>
             </div>
-            <p class="caption">X: 已评测 checkpoint step · Y: BFCL-v3 加权 OVERALL acc（%）。</p>
+            <p class="caption">X: 已评测 checkpoint step · Y: BFCL-v3 OVERALL acc（%，mean of non_live / live / multi_turn）。单轮为主时靠 AST 比对调用，不 exec。</p>
           </div>
           <section class="grid2" style="margin-top:16px">
             <div>
@@ -1519,7 +1522,7 @@
                 <div class="legend" id="legend-agent-mt"></div>
                 <div class="chart-wrap"><canvas id="chart-agent-mt" height="240"></canvas><div class="tooltip" id="tip-agent-mt"></div></div>
               </div>
-              <p class="caption">X: step · Y: MULTI_TURN category acc（%，4 个多轮 subset × 30 题）。数学 RL 模型此项普遍 &lt;12%。</p>
+              <p class="caption">X: step · Y: MULTI_TURN acc（%，4 subset × 30）。多轮会 exec 工具，按每轮环境状态验收（非逐步 AST 硬比对）。数学 RL 普遍 &lt;12%。</p>
             </div>
             <div>
               <h2>tau-bench 随 checkpoint 变化（E1–E5）</h2>
@@ -1527,7 +1530,7 @@
                 <div class="legend" id="legend-agent-tau"></div>
                 <div class="chart-wrap"><canvas id="chart-agent-tau" height="240"></canvas><div class="tooltip" id="tip-agent-tau"></div></div>
               </div>
-              <p class="caption">X: step · Y: tau-bench mean_acc（%，40 条 · user-sim=gpt-5p5-apipro）。每点噪声约 ±8pt。</p>
+              <p class="caption">X: step · Y: tau-bench mean_acc（%，40 条 · user-sim=gpt-5p5-apipro）。任务完成看最终 DB；每点噪声约 ±8pt。</p>
             </div>
           </section>
         </section>
