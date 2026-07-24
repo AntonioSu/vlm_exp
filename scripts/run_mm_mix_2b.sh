@@ -23,8 +23,9 @@ POLARIS=/data/juicefs-white/5281-gpu-a100/lijunyi/polaris          # 主仓库�
 VLM_EXP=/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp             # 本实验独立仓库：脚本、数据、产出都落在这里
 
 # ---- 稳定性环境变量 ----
+# Default to the original 2-GPU lane, but allow parallel ablations on spare GPUs.
 source ${POLARIS}/scripts/verl_env.sh
-export CUDA_VISIBLE_DEVICES=0,1
+export CUDA_VISIBLE_DEVICES=${MM_CUDA_VISIBLE_DEVICES:-0,1}
 export HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1
 export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 

@@ -92,6 +92,30 @@ def load_text(exp_dirname: str, tasks: dict[str, str]) -> dict[str, Any]:
     return out
 
 
+FULL_STEPS = list(range(10, 160, 10))  # same cadence as 4B E1 EVAL_FULL
+
+
+def empty_series() -> dict[str, list[float | None]]:
+    n = len(FULL_STEPS)
+    return {
+        "geo3kAcc": [None] * n,
+        "geo3kPass": [None] * n,
+        "math500": [None] * n,
+        "mmlu": [None] * n,
+        "aime24": [None] * n,
+        "aime25": [None] * n,
+    }
+
+
+def put_at(series: dict[str, list[float | None]], step: int, values: dict[str, float | None]) -> None:
+    if step not in FULL_STEPS:
+        return
+    idx = FULL_STEPS.index(step)
+    for key, val in values.items():
+        if key in series:
+            series[key][idx] = val
+
+
 def build_payload() -> dict[str, Any]:
     m0_geo = load_geo3k("m0_e1_grpo_2b_step150.jsonl.summary.json")
     m1_geo = load_geo3k("m1_geo3k100_2b_step70_light.jsonl.summary.json")
@@ -183,11 +207,59 @@ def build_payload() -> dict[str, Any]:
         },
     ]
 
+    # Dense mid-step series (4B E1 EVAL_FULL style). Missing checkpoints stay null.
+    full: dict[str, dict[str, Any]] = {}
+    for g in groups:
+        series = empty_series()
+        entry: dict[str, Any] = {
+            "label": g["label"],
+            "shortLabel": g["shortLabel"],
+            "color": g["color"],
+            "config": g["config"],
+            **series,
+        }
+        full[g["key"]] = entry
+
+    put_at(
+        full["m0"],
+        150,
+        {
+            "geo3kAcc": (m0_geo or {}).get("sampleAccuracy"),
+            "geo3kPass": (m0_geo or {}).get("passAtN"),
+            "math500": m0_text["scores"].get("math500"),
+            "mmlu": m0_text["scores"].get("mmlu"),
+            "aime24": m0_text["scores"].get("aime24"),
+            "aime25": m0_text["scores"].get("aime25"),
+        },
+    )
+    put_at(
+        full["m1"],
+        70,
+        {
+            "geo3kAcc": (m1_geo or {}).get("sampleAccuracy"),
+            "geo3kPass": (m1_geo or {}).get("passAtN"),
+            "math500": m1_scores.get("math500"),
+            "mmlu": m1_scores.get("mmlu"),
+            "aime24": m1_scores.get("aime24"),
+            "aime25": m1_scores.get("aime25"),
+        },
+    )
+
+    # Sparse summary steps (like 4B EVAL 50/100/150) for quick glance.
+    summary_steps = [50, 100, 150]
+    summary: dict[str, dict[str, list[float | None]]] = {}
+    for key, series in full.items():
+        summary[key] = {
+            metric: [series[metric][FULL_STEPS.index(s)] if s in FULL_STEPS else None for s in summary_steps]
+            for metric in ("geo3kAcc", "math500", "mmlu", "aime25")
+        }
+
     return {
         "generatedAt": date.today().isoformat(),
         "generatedBy": "scripts/gen_mm_eval_dashboard_data.py",
         "note": (
             "M0 为正式基线；M1@70 为 light 配置探查（非 formal n=8/16K）。"
+            "全 step 曲线对齐 4B E1 EVAL_FULL（10–150 /10）；缺测为 null。"
             "M2/M3 待 checkpoint 与评测完成后补齐。"
         ),
         "metrics": [
@@ -199,6 +271,11 @@ def build_payload() -> dict[str, Any]:
             {"key": "aime25", "label": "AIME25", "unit": "%"},
         ],
         "groups": groups,
+        "fullSteps": [str(s) for s in FULL_STEPS],
+        "fullOrder": ["m0", "m1", "m2", "m3"],
+        "full": full,
+        "summarySteps": [str(s) for s in summary_steps],
+        "summary": summary,
     }
 
 
