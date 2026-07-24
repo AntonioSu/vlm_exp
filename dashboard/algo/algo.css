@@ -95,11 +95,23 @@ body.algo-body {
   border-bottom-color: var(--algo-accent);
 }
 
-/* Hero */
+/* Hero — full-width panel, text left / chip legend right so the band doesn't
+   read as a small island of text floating in empty space */
 .algo-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 32px;
   margin-bottom: 40px;
+  padding: 30px 36px;
+  border: 1px solid var(--algo-line);
+  border-radius: 18px;
+  background:
+    radial-gradient(560px 280px at 100% 0%, var(--algo-accent-soft), transparent 65%),
+    var(--algo-panel);
   animation: algo-in 0.45s ease both;
 }
+.algo-hero-text { min-width: 0; }
 .algo-kicker {
   display: inline-block;
   font-size: 11.5px;
@@ -111,7 +123,7 @@ body.algo-body {
 }
 .algo-hero h1 {
   font-family: "Fraunces", "Source Serif 4", Georgia, serif;
-  font-size: clamp(28px, 4vw, 36px);
+  font-size: clamp(28px, 3.4vw, 38px);
   font-weight: 650;
   line-height: 1.2;
   letter-spacing: -0.02em;
@@ -121,7 +133,7 @@ body.algo-body {
 .algo-hero .lede {
   font-size: 16px;
   color: var(--algo-muted);
-  max-width: 62ch;
+  max-width: 72ch;
   margin: 0;
 }
 .algo-hero .lede a {
@@ -131,29 +143,47 @@ body.algo-body {
   border-bottom: 1px solid rgba(31, 107, 74, 0.35);
 }
 .algo-hero .lede a:hover { border-bottom-color: var(--algo-accent); }
+@media (max-width: 900px) {
+  .algo-hero {
+    grid-template-columns: 1fr;
+    padding: 24px 22px;
+  }
+}
 
-/* 算法色条 */
+/* 算法色条 — 桌面端作为 hero 右侧的快速跳转图例（纵向），窄屏下退化为横向换行 */
 .algo-chips {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
-  margin-top: 22px;
+  flex-shrink: 0;
+  padding-left: 32px;
+  border-left: 1px solid var(--algo-line);
 }
 .algo-chips span,
 .algo-chips a {
   font-size: 12.5px;
   font-weight: 700;
-  padding: 5px 11px;
+  padding: 6px 13px;
   border-radius: 6px;
   color: #fff;
   letter-spacing: 0.01em;
   text-decoration: none;
+  text-align: center;
   display: inline-block;
   transition: filter 0.15s, transform 0.15s;
 }
 .algo-chips a:hover {
   filter: brightness(1.08);
   transform: translateY(-1px);
+}
+@media (max-width: 900px) {
+  .algo-chips {
+    display: flex;
+    flex-wrap: wrap;
+    margin-top: 22px;
+    padding-left: 0;
+    border-left: none;
+  }
 }
 .chip-ppo { background: var(--algo-ppo); }
 .chip-grpo { background: var(--algo-grpo); }

@@ -33,13 +33,15 @@
   </div>
 
   <header class="algo-hero">
-    <p class="algo-kicker">Model Backbone · Linear Attention Family</p>
-    <h1>基座算法：GDN、KDA、混合架构与 Attention Sink</h1>
-    <p class="lede">
-      本轮 RL 对比跑在 <strong>Qwen3.5</strong>（<span class="mono">model_type: qwen3_5</span>）上：多数层用 <strong>GDN</strong>，每隔若干层插 <strong>Full Attention</strong>。
-      同谱系里还有 Moonshot 的 <strong>KDA</strong>；Softmax 精确层还会出现 <strong>Attention Sink</strong>。
-      下方按模块分述：介绍 + 优缺点。策略优化见 <a href="index.html">RL 算法</a>。
-    </p>
+    <div class="algo-hero-text">
+      <p class="algo-kicker">Model Backbone · Linear Attention Family</p>
+      <h1>基座算法：GDN、KDA、混合架构与 Attention Sink</h1>
+      <p class="lede">
+        本轮 RL 对比跑在 <strong>Qwen3.5</strong>（<span class="mono">model_type: qwen3_5</span>）上：多数层用 <strong>GDN</strong>，每隔若干层插 <strong>Full Attention</strong>。
+        同谱系里还有 Moonshot 的 <strong>KDA</strong>；Softmax 精确层还会出现 <strong>Attention Sink</strong>。
+        下方按模块分述：介绍 + 优缺点。策略优化见 <a href="index.html">RL 算法</a>。
+      </p>
+    </div>
     <div class="algo-chips">
       <a class="chip-gdn" href="#mod-gdn">GDN</a>
       <a class="chip-kda" href="#mod-kda">KDA</a>
