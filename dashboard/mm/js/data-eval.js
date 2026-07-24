@@ -4,7 +4,7 @@
 window.MM_EVAL = {
   "generatedAt": "2026-07-24",
   "generatedBy": "scripts/gen_mm_eval_dashboard_data.py",
-  "note": "M0 为正式基线；M1@70 为 light 配置探查（非 formal n=8/16K）。M2/M3 待 checkpoint 与评测完成后补齐。",
+  "note": "M0 为正式基线；M1@70 为 light 配置探查（非 formal n=8/16K）。全 step 曲线对齐 4B E1 EVAL_FULL（10–150 /10）；缺测为 null。M2/M3 待 checkpoint 与评测完成后补齐。",
   "metrics": [
     {
       "key": "geo3kAcc",
@@ -153,5 +153,557 @@ window.MM_EVAL = {
       },
       "sources": {}
     }
-  ]
+  ],
+  "fullSteps": [
+    "10",
+    "20",
+    "30",
+    "40",
+    "50",
+    "60",
+    "70",
+    "80",
+    "90",
+    "100",
+    "110",
+    "120",
+    "130",
+    "140",
+    "150"
+  ],
+  "fullOrder": [
+    "m0",
+    "m1",
+    "m2",
+    "m3"
+  ],
+  "full": {
+    "m0": {
+      "label": "M0 · 0% 图文 (E1@150)",
+      "shortLabel": "M0@150",
+      "color": "#2563eb",
+      "config": "formal",
+      "geo3kAcc": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        57.32
+      ],
+      "geo3kPass": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        83.69
+      ],
+      "math500": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        86.35
+      ],
+      "mmlu": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        78.34
+      ],
+      "aime24": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        35.42
+      ],
+      "aime25": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        32.5
+      ]
+    },
+    "m1": {
+      "label": "M1 · 100% 图文 (@70 light)",
+      "shortLabel": "M1@70 light",
+      "color": "#d97706",
+      "config": "light",
+      "geo3kAcc": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        13.64,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "geo3kPass": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        13.64,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "math500": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        23.6,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "mmlu": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        0.97,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "aime24": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        0.0,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "aime25": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        6.67,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ]
+    },
+    "m2": {
+      "label": "M2 · 50% 图文",
+      "shortLabel": "M2",
+      "color": "#059669",
+      "config": null,
+      "geo3kAcc": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "geo3kPass": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "math500": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "mmlu": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "aime24": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "aime25": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ]
+    },
+    "m3": {
+      "label": "M3 · 20% 图文",
+      "shortLabel": "M3",
+      "color": "#9333ea",
+      "config": null,
+      "geo3kAcc": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "geo3kPass": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "math500": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "mmlu": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "aime24": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "aime25": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ]
+    }
+  },
+  "summarySteps": [
+    "50",
+    "100",
+    "150"
+  ],
+  "summary": {
+    "m0": {
+      "geo3kAcc": [
+        null,
+        null,
+        57.32
+      ],
+      "math500": [
+        null,
+        null,
+        86.35
+      ],
+      "mmlu": [
+        null,
+        null,
+        78.34
+      ],
+      "aime25": [
+        null,
+        null,
+        32.5
+      ]
+    },
+    "m1": {
+      "geo3kAcc": [
+        null,
+        null,
+        null
+      ],
+      "math500": [
+        null,
+        null,
+        null
+      ],
+      "mmlu": [
+        null,
+        null,
+        null
+      ],
+      "aime25": [
+        null,
+        null,
+        null
+      ]
+    },
+    "m2": {
+      "geo3kAcc": [
+        null,
+        null,
+        null
+      ],
+      "math500": [
+        null,
+        null,
+        null
+      ],
+      "mmlu": [
+        null,
+        null,
+        null
+      ],
+      "aime25": [
+        null,
+        null,
+        null
+      ]
+    },
+    "m3": {
+      "geo3kAcc": [
+        null,
+        null,
+        null
+      ],
+      "math500": [
+        null,
+        null,
+        null
+      ],
+      "mmlu": [
+        null,
+        null,
+        null
+      ],
+      "aime25": [
+        null,
+        null,
+        null
+      ]
+    }
+  }
 };
