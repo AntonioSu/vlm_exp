@@ -142,14 +142,14 @@ CUDA_VISIBLE_DEVICES=0 bash \
 - **视觉能力主判据**：Geo3K test（601题）acc，M0(0%)→M1(100%)理应单调上升，重点看 M2/M3 用多少图文比例就能追上多少视觉能力。
 - **文本能力保持主判据**：math_500（沿用已有主判据口径）。核心问题是"混入图文数据后，文本数学能力相对 M0(=E1) 掉了多少"，以及"掉多少图文比例换多少视觉能力"这条权衡曲线。
 - **通用能力监控**：`mmlu_temp`，同 exp_plan.md 的判读标准（相对 base 掉 1~2 点内正常）。
-- 训练过程指标：reward/pass rate 按数据源分开看。mixed reward 会在 M2/M3 的 rollout dump 写入 `is_geo3k`；用 `scripts/summarize_mm_rollouts.py` 可生成逐 step 的 Geo3K/text accuracy 与 mean score，并用 `scripts/gen_mm_rollout_dashboard_data.py` 转成静态看板 JS。M1 是单一 Geo3K 数据源，分析历史 dump 时传 `--default-source geo3k`。当前 M1 step 1–99 已生成早期汇总：`evaluation/mm_rollouts/m1_geo3k100_2b_rollout_summary.csv`（运行产物，因 `evaluation/` 被 `.gitignore` 忽略不入仓）和 `dashboard/mm/js/data-m1-rollouts.js`（看板数据快照，25344 samples，overall accuracy=0.6649，mean_score=0.5984；step99 单步 accuracy=0.6953，mean_score=0.6258）。M2 已开始生成混合源汇总：`evaluation/mm_rollouts/m2_mix50_2b_rollout_summary.csv` 与 `dashboard/mm/js/data-m2-rollouts.js`；step1 中 Geo3K 112 samples，accuracy=0.5179、mean_score=0.4661，text 144 samples，accuracy=0.4444、mean_score=-0.1111。
+- 训练过程指标：reward/pass rate 按数据源分开看。mixed reward 会在 M2/M3 的 rollout dump 写入 `is_geo3k`；用 `scripts/summarize_mm_rollouts.py` 可生成逐 step 的 Geo3K/text accuracy 与 mean score，并用 `scripts/gen_mm_rollout_dashboard_data.py` 转成静态看板 JS。M1 是单一 Geo3K 数据源，分析历史 dump 时传 `--default-source geo3k`。当前 M1 step 1–100 已生成早期汇总：`evaluation/mm_rollouts/m1_geo3k100_2b_rollout_summary.csv`（运行产物，因 `evaluation/` 被 `.gitignore` 忽略不入仓）和 `dashboard/mm/js/data-m1-rollouts.js`（看板数据快照，25600 samples，overall accuracy=0.6661，mean_score=0.5995；step100 单步 accuracy=0.7773，mean_score=0.6996）。M2 已开始生成混合源汇总：`evaluation/mm_rollouts/m2_mix50_2b_rollout_summary.csv` 与 `dashboard/mm/js/data-m2-rollouts.js`；截至 step2，Geo3K 224 samples，accuracy=0.5312、mean_score=0.4781，text 288 samples，accuracy=0.4306、mean_score=-0.1389；step2 单步 Geo3K accuracy=0.5446、text accuracy=0.4167。
 
 ## 8. 时间预算（粗估，正式数字待烟测校准）
 
 | 阶段 | 预估 |
 | --- | --- |
 | 烟测 | 几分钟~半小时（含调试） |
-| M1（100%图文，150 step） | 近端约 30–34 分钟/step（均值 ~32.6）；完整 150 step 约 3–4 天；截至 2026-07-24 已到 step 99 / ckpt 90 |
+| M1（100%图文，150 step） | 近端约 30–34 分钟/step（均值 ~32.6）；完整 150 step 约 3–4 天；截至 2026-07-24 已到 step 100 / ckpt 100 |
 | M2 / M3 | 同量级，混入文本样本后单 step 耗时应介于 M1 与 E1(618s/step) 之间 |
 | 评测（3 组 × Geo3K 601题 + 文本 evalscope） | 每组 ~2-4h |
 | 合计 | 保守估计与文本 5 组消融相近量级（约 1~1.5 周），实际以烟测结果为准，如超预算优先砍 M3 或把 step 降到 80-100 |
@@ -157,7 +157,7 @@ CUDA_VISIBLE_DEVICES=0 bash \
 ## 9. 待办
 
 - [x] 跑 `/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/scripts/run_smoke_mm.sh`，确认多模态 FSDP2+vLLM 链路无报错
-- [ ] M1 → M2 → M3 正式训练（M1 已于 2026-07-22 用脱离会话的后台进程重新启动，正式 rollout 已推进到 step 99，`global_step_90/actor` 已落盘且 `latest_checkpointed_iteration.txt=90`；step10 后旧训练进程无 GPU compute 且日志停写，已终止该卡住进程组，并由 `scripts/run_mm_training_pipeline.sh` 于 17:06 从 step10 自动续跑；当前继续向 step100 checkpoint 推进，`scripts/run_mm_evaluation_pipeline.sh` 仍在等待 step150 actor checkpoint；supervisor 已补充 7200s 无文件进展的保守 stale 保护；M2 已于 2026-07-24 14:15 用 `MM_CUDA_VISIBLE_DEVICES=2,3` 并行启动，`logs/exp2card_mm/m2_mix50_2b/launcher.pid=740421`，已产出 step1 rollout 并继续占用 GPU2/3；实测约 25–47 分钟/step）
+- [ ] M1 → M2 → M3 正式训练（M1 已于 2026-07-22 用脱离会话的后台进程重新启动，正式 rollout 已推进到 step 100，`global_step_100/actor` 已落盘且 `latest_checkpointed_iteration.txt=100`；step10 后旧训练进程无 GPU compute 且日志停写，已终止该卡住进程组，并由 `scripts/run_mm_training_pipeline.sh` 于 17:06 从 step10 自动续跑；当前继续向 step150 checkpoint 推进，`scripts/run_mm_evaluation_pipeline.sh` 仍在等待 step150 actor checkpoint；supervisor 已补充 7200s 无文件进展的保守 stale 保护；M2 已于 2026-07-24 14:15 用 `MM_CUDA_VISIBLE_DEVICES=2,3` 并行启动，`logs/exp2card_mm/m2_mix50_2b/launcher.pid=740421`，已产出 step2 rollout 并继续占用 GPU2/3；实测约 25–47 分钟/step）
 - [x] 写 Geo3K 601 题的离线批量评测脚本（`scripts/eval_geo3k.py`；1 题端到端 vLLM 推理与判分已验证）
 - [x] M0(=E1 step150) 正式基线评测（文本基线已完成并写入 `evaluation/completed/m0_e1_grpo_2b_text.done`：MMLU_TEMP AverageAccuracy=0.7834，AIME24 AveragePass@1=0.3542，AIME25 AveragePass@1=0.3250，MATH500 AveragePass@1=0.8635；Geo3K 601/601 已完成并写入 `evaluation/completed/m0_e1_grpo_2b_geo3k.done`：sample_accuracy=0.5732、pass@8=0.8369；输出见 `evaluation/geo3k/m0_e1_grpo_2b_step150.jsonl.summary.json`）
 - [ ] 每组跑完按第 7 节流程评测 + 归档（`scripts/run_mm_evaluation_pipeline.sh` 已在后台等待并自动接力 M1→M3 评测；`scripts/archive_mm_results.sh` 已准备好生成 `$ROOT/polaris/archive/mm_exp2card/` 快照，归档口径参照 `$ROOT/polaris/archive/README.md`）
