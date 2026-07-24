@@ -611,7 +611,7 @@ function renderEvalPanel() {
     renderLegend(document.getElementById("legend-agent-bfcl"), items("bfcl"),
       (visible) => drawLineChart("chart-agent-bfcl", "tip-agent-bfcl", {
         categories: AGENT_STEPS, series: visible,
-        valueSuffix: "%", yMin: 38, yMax: 50, height: 240,
+        valueSuffix: "%", yMin: 30, yMax: 52, height: 240,
       }));
     renderLegend(document.getElementById("legend-agent-mt"), items("bfcl_mt"),
       (visible) => drawLineChart("chart-agent-mt", "tip-agent-mt", {
@@ -621,7 +621,7 @@ function renderEvalPanel() {
     renderLegend(document.getElementById("legend-agent-tau"), items("tau"),
       (visible) => drawLineChart("chart-agent-tau", "tip-agent-tau", {
         categories: AGENT_STEPS, series: visible,
-        valueSuffix: "%", yMin: 38, yMax: 82, height: 240,
+        valueSuffix: "%", yMin: 40, yMax: 80, height: 240,
       }));
   }
 }
