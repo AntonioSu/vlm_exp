@@ -44,11 +44,12 @@
 <div class="page">
 
   <h1>多模态训练 — Qwen3.5-2B 图文数据配比</h1>
-  <p class="subtitle">方案说明见 <a href="../algo/mm.html">多模态介绍</a> · 每组 2×A100-80GB · <strong>M1 正式训练中</strong>（2026-07-22 启动）。</p>
+  <p class="subtitle">方案说明见 <a href="../algo/mm.html">多模态介绍</a> · 每组 2×A100-80GB · <strong>M1 训练中</strong> · 已有 <strong>M0 正式评测</strong>与 <strong>M1@70 light 探查</strong>。</p>
 
   <div class="tabs">
     <button class="tab-btn active" data-tab="overview">方案 / 算法总览</button>
-    <button class="tab-btn" data-tab="charts">训练过程（数据采集中）</button>
+    <button class="tab-btn" data-tab="eval">评测结果</button>
+    <button class="tab-btn" data-tab="charts">训练过程</button>
   </div>
 
   <div class="tab-panel active" id="panel-overview">
@@ -139,20 +140,82 @@
           <tr><td>数据准备（Geo3K 下载 + 文本子集切分 + 验证探针）</td><td><span class="badge"><span class="sdot" style="background:var(--e3)"></span>已完成</span></td><td>产物已落盘 <span class="mono">vlm_exp/parquet/mm/</span>，可直接被训练脚本引用</td></tr>
           <tr><td>Reward dispatcher / 训练脚本（M1–M3 + 烟测脚本）</td><td><span class="badge"><span class="sdot" style="background:var(--e3)"></span>已完成</span></td><td><span class="mono">run_m1_geo3k_2b.sh</span> / <span class="mono">run_m2_mix50_2b.sh</span> / <span class="mono">run_m3_mix20_2b.sh</span> / <span class="mono">run_smoke_mm.sh</span></td></tr>
           <tr><td>多模态链路烟测</td><td><span class="badge"><span class="sdot" style="background:var(--e3)"></span>已通过</span></td><td>2026-07-21 完成 2 step；多模态生成、图文混训、mixed reward 与双验证集指标均已验证</td></tr>
-          <tr><td>M1 → M2 → M3 正式训练</td><td><span class="badge"><span class="sdot" style="background:var(--e2)"></span>M1 运行中</span></td><td>M1 于 2026-07-22 启动，正式 rollout 已推进到 step 48；<span class="mono">global_step_40/actor</span> 已于 2026-07-23 08:07 落盘，包含 2 个 model shard 与 2 个 optimizer shard，<span class="mono">latest_checkpointed_iteration.txt=40</span>；step10 后旧进程无 GPU compute 且日志停写，已终止并由 supervisor 于 17:06 从 step10 自动续跑；续跑已产出 <span class="mono">48.jsonl</span>，当前继续向 step50 checkpoint 推进；后台监督脚本已补充 7200s stale 保护，并在完成后顺序启动 M2、M3</td></tr>
-          <tr><td>Geo3K 601 题离线评测脚本</td><td><span class="badge"><span class="sdot" style="background:var(--e3)"></span>已完成</span></td><td><span class="mono">scripts/eval_geo3k.py</span> 已通过 1 题端到端验证；M0 Geo3K 601 题正式基线评测已完成</td></tr>
-          <tr><td>M0 正式基线评测</td><td><span class="badge"><span class="sdot" style="background:var(--e3)"></span>已完成</span></td><td>文本基线已完成：MMLU_TEMP AverageAccuracy=0.7834，AIME24 AveragePass@1=0.3542，AIME25 AveragePass@1=0.3250，MATH500 AveragePass@1=0.8635；Geo3K 601/601 已完成：sample_accuracy=0.5732、pass@8=0.8369；完成标记 <span class="mono">evaluation/completed/m0_e1_grpo_2b_text.done</span> 与 <span class="mono">evaluation/completed/m0_e1_grpo_2b_geo3k.done</span> 已写入</td></tr>
-          <tr><td>M1–M3 自动评测接力 / 归档</td><td><span class="badge"><span class="sdot" style="background:var(--e2)"></span>等待 checkpoint</span></td><td><span class="mono">run_mm_evaluation_pipeline.sh</span> 已脱离会话运行，逐组自动合并、评测和失败重试；<span class="mono">archive_mm_results.sh</span> 已准备好在完成后生成归档快照</td></tr>
+          <tr><td>M1 → M2 → M3 正式训练</td><td><span class="badge"><span class="sdot" style="background:var(--e2)"></span>M1 运行中</span></td><td>M1 于 2026-07-22 启动；checkpoint 已推进到 <span class="mono">global_step_90</span>（<span class="mono">latest_checkpointed_iteration.txt=90</span>）；训练 rollout 汇总到 step 71；后台监督脚本完成后顺序启动 M2、M3</td></tr>
+          <tr><td>Geo3K 601 题离线评测脚本</td><td><span class="badge"><span class="sdot" style="background:var(--e3)"></span>已完成</span></td><td><span class="mono">scripts/eval_geo3k.py</span> 已通过端到端验证；M0 Geo3K 601 题正式基线评测已完成</td></tr>
+          <tr><td>M0 正式基线评测</td><td><span class="badge"><span class="sdot" style="background:var(--e3)"></span>已完成</span></td><td>文本：MMLU=78.34%，AIME24=35.42%，AIME25=32.50%，MATH-500=86.35%；Geo3K：sample_accuracy=57.32%、pass@8=83.69%。已写入 done 标记，并进入看板「评测结果」页签</td></tr>
+          <tr><td>M1@70 轻量离线评测</td><td><span class="badge"><span class="sdot" style="background:var(--e2)"></span>light 已完成</span></td><td>因正式 <span class="mono">n=8/16K</span> 过慢，先用 light：Geo3K 601×n1×512 → acc=13.64%；文本 light：MATH-500=23.6%，AIME25=6.67%，MMLU temp≈0.97%（max_tokens=16，仅作退化趋势探查）。见「评测结果」页签</td></tr>
+          <tr><td>M1–M3 自动评测接力 / 归档</td><td><span class="badge"><span class="sdot" style="background:var(--e2)"></span>进行中</span></td><td><span class="mono">run_mm_evaluation_pipeline.sh</span> 等待各组 step150 正式评测；看板可用 <span class="mono">scripts/gen_mm_eval_dashboard_data.py</span> 刷新；归档脚本 <span class="mono">archive_mm_results.sh</span> 已就绪</td></tr>
         </tbody>
       </table>
-      <p class="caption">当前实测 M1 约 29–39 分钟/step，完整 150 step 约 3–4 天；M2/M3 完成时间以实际响应长度为准。M0 的 Geo3K 与正式文本基线评测均已完成。</p>
+      <p class="caption">M0 为正式可比基线；M1@70 light 不可与 M0 直接比绝对值。M2/M3 尚无 checkpoint。</p>
     </section>
 
   </div>
 
+  <div class="tab-panel" id="panel-eval">
+    <section>
+      <div class="callout">
+        <div class="title">离线评测（Geo3K test + evalscope 文本保持）</div>
+        M0 使用正式口径；M1@70 目前只有 light 探查结果（生成上限更短 / n 更小），适合看趋势，不能和 M0 做严格横比。M2/M3 待训练与评测完成后自动补齐。刷新数据：
+        <span class="mono">python3 scripts/gen_mm_eval_dashboard_data.py</span>
+      </div>
+      <div class="stats-row" id="mm-eval-stats" style="margin-top:14px"></div>
+      <p class="caption" id="mm-eval-caption">数据源加载中。</p>
+    </section>
+
+    <section>
+      <h2>M0–M3 评测对照表</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>组</th><th>配置</th><th>step</th>
+            <th>Geo3K acc</th><th>Geo3K pass@n</th>
+            <th>MATH-500</th><th>MMLU</th><th>AIME24</th><th>AIME25</th>
+          </tr>
+        </thead>
+        <tbody id="mm-eval-table-body"></tbody>
+      </table>
+      <ul class="caption" id="mm-eval-notes" style="margin-top:10px; padding-left:18px; line-height:1.7"></ul>
+    </section>
+
+    <section class="grid2" style="margin-top:8px">
+      <div>
+        <h2>Geo3K sample accuracy（%）</h2>
+        <div class="chart-card">
+          <div class="chart-wrap"><canvas id="chart-mm-geo3k" height="220"></canvas><div class="tooltip" id="tip-mm-geo3k"></div></div>
+        </div>
+        <p class="caption">视觉主判据。M0 formal n=8；M1 light n=1。</p>
+      </div>
+      <div>
+        <h2>MATH-500（%）</h2>
+        <div class="chart-card">
+          <div class="chart-wrap"><canvas id="chart-mm-math500" height="220"></canvas><div class="tooltip" id="tip-mm-math500"></div></div>
+        </div>
+        <p class="caption">文本保持主判据。M1 为 light max_tokens=512。</p>
+      </div>
+    </section>
+
+    <section class="grid2" style="margin-top:16px">
+      <div>
+        <h2>MMLU（%）</h2>
+        <div class="chart-card">
+          <div class="chart-wrap"><canvas id="chart-mm-mmlu" height="220"></canvas><div class="tooltip" id="tip-mm-mmlu"></div></div>
+        </div>
+        <p class="caption">M0 来自 mmlu report；M1 light max_tokens=16，数值仅作探查。</p>
+      </div>
+      <div>
+        <h2>AIME25（%）</h2>
+        <div class="chart-card">
+          <div class="chart-wrap"><canvas id="chart-mm-aime" height="220"></canvas><div class="tooltip" id="tip-mm-aime"></div></div>
+        </div>
+        <p class="caption">M2/M3 空柱表示尚无评测产物。</p>
+      </div>
+    </section>
+  </div>
+
   <div class="tab-panel" id="panel-charts">
     <section>
-      <h2>M1 早期 rollout 汇总（step 1–48）</h2>
+      <h2>M1 训练 rollout 汇总</h2>
       <table>
         <thead><tr><th>step</th><th>样本</th><th>Geo3K train acc</th><th>mean score</th><th>mean output chars</th></tr></thead>
         <tbody id="m1-rollout-summary-body"></tbody>
@@ -163,11 +226,14 @@
 
 </div>
 
+<script src="js/data-eval.js"></script>
+<script src="js/charts-eval.js"></script>
 <script src="js/data-m1-rollouts.js"></script>
 <script>
   const tabBtns = document.querySelectorAll(".tab-btn");
   const panels = {
     overview: document.getElementById("panel-overview"),
+    eval: document.getElementById("panel-eval"),
     charts: document.getElementById("panel-charts"),
   };
   tabBtns.forEach((btn) => {
@@ -175,13 +241,21 @@
       const tab = btn.dataset.tab;
       tabBtns.forEach((b) => b.classList.toggle("active", b === btn));
       Object.entries(panels).forEach(([k, el]) => el.classList.toggle("active", k === tab));
+      if (tab === "eval" && typeof window.renderMmEval === "function") {
+        requestAnimationFrame(() => window.renderMmEval());
+      }
     });
   });
+
+  if (typeof window.renderMmEval === "function") window.renderMmEval();
 
   const m1Summary = window.MM_M1_ROLLOUT_SUMMARY;
   const m1Body = document.getElementById("m1-rollout-summary-body");
   const m1Caption = document.getElementById("m1-rollout-summary-caption");
   if (m1Summary && m1Body && m1Caption) {
+    const lastStep = m1Summary.rows.length ? m1Summary.rows[m1Summary.rows.length - 1].step : "?";
+    document.querySelector("#panel-charts h2").textContent =
+      `M1 训练 rollout 汇总（step 1–${lastStep}）`;
     m1Body.innerHTML = m1Summary.rows.map((row) => `
       <tr>
         <td>${row.step}</td>
@@ -191,7 +265,7 @@
         <td>${Math.round(row.meanOutputChars)}</td>
       </tr>
     `).join("");
-    m1Caption.innerHTML = `数据源：<span class="mono">${m1Summary.source}</span>，由 <span class="mono">${m1Summary.generatedBy}</span> 从 <span class="mono">${m1Summary.generatedFrom}</span> 生成。当前 ${m1Summary.overall.samples} 个训练样本汇总：accuracy=${m1Summary.overall.accuracy.toFixed(4)}，mean_score=${m1Summary.overall.meanScore.toFixed(4)}。这里是训练 rollout 口径，不等同于 Geo3K test 601 题最终评测。`;
+    m1Caption.innerHTML = `数据源：<span class="mono">${m1Summary.source}</span>，由 <span class="mono">${m1Summary.generatedBy}</span> 从 <span class="mono">${m1Summary.generatedFrom}</span> 生成。当前 ${m1Summary.overall.samples} 个训练样本汇总：accuracy=${m1Summary.overall.accuracy.toFixed(4)}，mean_score=${m1Summary.overall.meanScore.toFixed(4)}。这里是训练 rollout 口径，不等同于 Geo3K test 601 题离线评测。`;
   }
 </script>
 </body>
