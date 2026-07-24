@@ -51,7 +51,7 @@ for script in \
   run_smoke_mm.sh run_mm_mix_2b.sh run_m1_geo3k_2b.sh run_m2_mix50_2b.sh run_m3_mix20_2b.sh \
   run_mm_training_pipeline.sh run_mm_evaluation_pipeline.sh run_m0_baseline_supervisor.sh \
   evaluate_mm_checkpoint.sh evaluate_m0_text.sh eval_geo3k.py reward_mm_mixed.py summarize_mm_rollouts.py \
-  gen_mm_rollout_dashboard_data.py test_reward_mm_mixed.py; do
+  gen_mm_rollout_dashboard_data.py gen_mm_eval_dashboard_data.py test_reward_mm_mixed.py; do
   copy_if_exists "${VLM_EXP}/scripts/${script}" "${ARCHIVE_ROOT}/scripts/${script}"
 done
 

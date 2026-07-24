@@ -1,6 +1,6 @@
 # 多模态消融实验方案：文本 vs 图文混合比例（基于 Qwen3.5-2B）
 
-机器：单机 2× A100-80GB（与 E1–E5 文本实验共用，需排队）。工作区根目录 `/data/juicefs-white/5281-gpu-a100/lijunyi`（下文 `$ROOT`）；`vlm_exp` / `polaris` / `verl-main` / `evalscope` 均在其下。目标：在**完全相同的模型、算法(GRPO)、序列长度、预算**下，只改变**训练数据里图文样本的占比**（0% / 20% / 50% / 100%），对比：
+机器：单机 4× A100-80GB（与 E1–E5 文本实验共用，需排队）。工作区根目录 `/data/juicefs-white/5281-gpu-a100/lijunyi`（下文 `$ROOT`）；`vlm_exp` / `polaris` / `verl-main` / `evalscope` 均在其下。目标：在**完全相同的模型、算法(GRPO)、序列长度、预算**下，只改变**训练数据里图文样本的占比**（0% / 20% / 50% / 100%），对比：
 
 1. 视觉推理能力的获得速度与上限（Geo3K 验证/测试集 acc）；
 2. 纯文本数学能力是否被图文数据"稀释"或"带崩"（复用 aime24/math_500 探针，与 E1 GRPO 直接可比）。
@@ -24,7 +24,7 @@ processor output keys: ['input_ids', 'attention_mask', 'mm_token_type_ids', 'pix
 
 另确认 verl `rl_dataset.py` 原生支持"部分训练文件有 `images` 列、部分没有"的混合 concatenate（源码注释：*"When concatenating multimodal datasets, get will return None for samples without a modality column"*，`_build_messages` 里 `if not images and not videos and not audios: continue` 会跳过纯文本行的图像占位符替换）。这意味着**混合比例可以直接靠 `data.train_files=[a.parquet,b.parquet]` 传多个文件实现，不需要手工合并 schema**——这是本方案数据侧的核心简化。
 
-**尚未验证、需要烟测确认的**：verl FSDP2 + vLLM 0.24 rollout 对 `Qwen3_5ForConditionalGeneration` 的**多模态**生成路径（此前的架构验证只测过纯文本生成，见 polaris 主仓库的 `/data/juicefs-white/5281-gpu-a100/lijunyi/polaris/smoke_test/smoke_test_results.md`）。这是本方案唯一的新架构风险点，已备好 `/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/scripts/run_smoke_mm.sh`，正式跑前必须先过一遍（见第 6 节）。
+**烟测已通过（2026-07-21）**：verl FSDP2 + vLLM 0.24 rollout 对 `Qwen3_5ForConditionalGeneration` 的多模态生成、图文 parquet 混合、mixed reward dispatcher 与双验证集指标均已跑通；产物在 `model/exp2card_mm_smoke/smoke_mm_2b/global_step_2/`，日志在 `logs/exp2card_mm/smoke_mm_2b/`。
 
 ## 1. 消融分组设计
 
@@ -91,6 +91,8 @@ M1–M3 相对 E1 统一配置块的改动只有：`data.train_files`（换成�
 
 **小数据组的 epoch 设置**：M1 训练池只有 2101 行（`train_batch_size=32` → 每 epoch ≈66 step），需要 `total_epochs=10` 循环凑够 150 step；M2 池 4202 行（`total_epochs=5`）；M3 池 10505 行（`total_epochs=2`）。实际停止点仍由 `total_training_steps=150` 控制，`total_epochs` 只是保证不会在还没到 150 step 时就因为 epoch 耗尽而提前停止。
 
+**已知偏离 E1 配置的一处（`enforce_eager=True`，非科学性变量）**：M1 首次正式跑时用 E1 原始的 `enforce_eager=False`（开 CUDA-graph capture + torch.compile）复现了崩溃——`torch._inductor` 的 autotune 缓存保存阶段抛出 `PermissionError: /data/lijunyi`（一个与本次路径迁移无关的 torch/vLLM 内部缓存路径解析问题，多次排查未能定位到具体源头；`enforce_eager=True` 的烟测脚本从未触发这条编译路径，因此未提前暴露）。为尽快解除阻塞，`run_mm_mix_2b.sh` 改为 `enforce_eager=True`（跳过 vLLM 的 CUDA-graph 编译，只影响 rollout 吞吐，不影响模型数值/正确性）。这与 E1 的 `enforce_eager=False`不一致，如果 M1–M3 的 rollout 吞吐显著低于 E1 折算值，这是已知原因；若后续需要修复以恢复可比性，需要进一步定位该 torch/vLLM 缓存路径 bug。
+
 ## 5. 为什么不在本轮铺开算法/分辨率/冻结视觉编码器等其它消融轴
 
 多模态场景下值得做的消融还有：视觉编码器冻结 vs 解冻、图像分辨率/视觉 token 数量、模型底座对比（Qwen3.5-2B vs Qwen3-VL-2B）。这些都有价值，但：
@@ -124,43 +126,37 @@ M1–M3 相对 E1 统一配置块的改动只有：`data.train_files`（换成�
 ## 7. 评测流程（每组跑完执行，仿 `exp_plan.md` 第 4 节）
 
 ```bash
-# 1) FSDP 分片 → HF 格式（同文本实验，trans_weight.sh 是主仓库的共享脚本）
-bash /data/juicefs-white/5281-gpu-a100/lijunyi/polaris/trans_weight.sh \
-  /data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/model/exp2card_mm/<实验名>/global_step_150/actor \
-  /data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/model/exp2card_mm/<实验名>/merged_150
-
-# 2) Geo3K 测试集(601题)评测：视觉推理能力主判据
-#    暂无现成 evalscope 多模态评测脚本，需要另写一个基于 verl geo3k.py 判分逻辑的
-#    离线批量推理+判分脚本（vllm 直接加载 merged 权重跑 geo3k_raw/test.parquet 601 题）
-
-# 3) 文本能力保持：复用已有的 evalscope 流程（同 exp_plan.md 第 4 节）
-cd /data/juicefs-white/5281-gpu-a100/lijunyi/evalscope
-bash eval.sh --model-name exp2card_mm/<实验名> \
-  --model-path /data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/model/exp2card_mm/<实验名>/merged_150 \
-  -t "mmlu_temp" -mt "aime24 aime25 math_500" \
-  --math-generation-config "temperature=0.6,top_p=0.95,max_tokens=16384,n=8"
+# 一条命令依次完成：FSDP→HF 合并、Geo3K 601 题视觉评测、文本能力评测
+CUDA_VISIBLE_DEVICES=0 bash \
+  /data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/scripts/evaluate_mm_checkpoint.sh \
+  <实验名>
 ```
+
+其中 `scripts/eval_geo3k.py` 复用训练时的 Qwen 多模态模板和 Geo3K 官方判分逻辑，逐题落 JSONL、支持中断续跑，并同时汇报 `sample_accuracy` 和 `pass_at_n`。文本部分复用 evalscope，覆盖 `mmlu_temp`、`aime24`、`aime25`、`math_500`，采样口径统一为 temperature=0.6、top_p=0.95、max_tokens=16384、n=8。本机安装的 EvalScope 0.17.1 不识别新版自定义 `mmlu_temp` adapter，因此 `eval.sh` 将其等价映射为标准 MMLU 的 `anatomy`、`medical_genetics`、`high_school_mathematics`、`machine_learning` 四个子集，并显式保持 5-shot；数据缓存已改到工作区可写目录。
+
+`scripts/run_mm_evaluation_pipeline.sh` 已作为独立 session 在 GPU2 上等待 M1/M2/M3 的 step-150 checkpoint；每组训练完成后会自动合并、评测，失败则保留日志并重试，成功标记写入 `evaluation/completed/`。所有组完成后用 `scripts/archive_mm_results.sh` 生成 `$ROOT/polaris/archive/mm_exp2card/` 快照（不复制大体积 checkpoint）。
 
 **对比维度**：
 
 - **视觉能力主判据**：Geo3K test（601题）acc，M0(0%)→M1(100%)理应单调上升，重点看 M2/M3 用多少图文比例就能追上多少视觉能力。
 - **文本能力保持主判据**：math_500（沿用已有主判据口径）。核心问题是"混入图文数据后，文本数学能力相对 M0(=E1) 掉了多少"，以及"掉多少图文比例换多少视觉能力"这条权衡曲线。
 - **通用能力监控**：`mmlu_temp`，同 exp_plan.md 的判读标准（相对 base 掉 1~2 点内正常）。
-- 训练过程指标：reward/pass rate 按 `data_source` 分开看（naive reward manager 的 per-sample 判分会自然按行归属，tensorboard 里如果只有聚合曲线，可以从 `/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/logs/exp2card_mm/<实验名>/rollout_dump/*.jsonl` 里按 `data_source` 拆开统计）。
+- 训练过程指标：reward/pass rate 按数据源分开看。mixed reward 会在 M2/M3 的 rollout dump 写入 `is_geo3k`；用 `scripts/summarize_mm_rollouts.py` 可生成逐 step 的 Geo3K/text accuracy 与 mean score，并用 `scripts/gen_mm_rollout_dashboard_data.py` 转成静态看板 JS。M1 是单一 Geo3K 数据源，分析历史 dump 时传 `--default-source geo3k`。当前 M1 step 1–55 已生成早期汇总：`evaluation/mm_rollouts/m1_geo3k100_2b_rollout_summary.csv`（运行产物，因 `evaluation/` 被 `.gitignore` 忽略不入仓）和 `dashboard/mm/js/data-m1-rollouts.js`（看板数据快照，14080 samples，overall accuracy=0.6390，mean_score=0.5751；step55 单步 accuracy=0.7305，mean_score=0.6574）。
 
 ## 8. 时间预算（粗估，正式数字待烟测校准）
 
 | 阶段 | 预估 |
 | --- | --- |
 | 烟测 | 几分钟~半小时（含调试） |
-| M1（100%图文，150 step） | 待烟测校准单 step 耗时后估计；图文 batch 通常比纯文本(16K)快，因为响应更短，但视觉 encoder forward 有额外开销，方向不确定，需实测 |
+| M1（100%图文，150 step） | 已实测约 29–39 分钟/step，完整训练约 3–4 天 |
 | M2 / M3 | 同量级，混入文本样本后单 step 耗时应介于 M1 与 E1(618s/step) 之间 |
 | 评测（3 组 × Geo3K 601题 + 文本 evalscope） | 每组 ~2-4h |
 | 合计 | 保守估计与文本 5 组消融相近量级（约 1~1.5 周），实际以烟测结果为准，如超预算优先砍 M3 或把 step 降到 80-100 |
 
 ## 9. 待办
 
-- [ ] 跑 `/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/scripts/run_smoke_mm.sh`，确认多模态 FSDP2+vLLM 链路无报错，记录单 step 耗时用于校准预算
-- [ ] 等 E4/E5 训练结束、GPU 空闲后启动 M1 → M2 → M3
-- [ ] 写 Geo3K 601 题的离线批量评测脚本（vllm + `verl/utils/reward_score/geo3k.py` 判分逻辑）
-- [ ] 每组跑完按第 7 节流程评测 + 归档（参照 `$ROOT/polaris/archive/README.md` 的归档惯例）
+- [x] 跑 `/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/scripts/run_smoke_mm.sh`，确认多模态 FSDP2+vLLM 链路无报错
+- [ ] M1 → M2 → M3 正式训练（M1 已于 2026-07-22 用脱离会话的后台进程重新启动，正式 rollout 已推进到 step 55，`global_step_50/actor` 已于 2026-07-23 13:05 落盘且包含 2 个 model shard、2 个 optimizer shard 与 2 个 extra_state shard，`latest_checkpointed_iteration.txt=50`；step10 后旧训练进程无 GPU compute 且日志停写，已终止该卡住进程组，并由 `scripts/run_mm_training_pipeline.sh` 于 17:06 从 step10 自动续跑；续跑已产出 `55.jsonl`，当前继续向 step60 checkpoint 推进；supervisor 已补充 7200s 无文件进展的保守 stale 保护；实测约 25–47 分钟/step）
+- [x] 写 Geo3K 601 题的离线批量评测脚本（`scripts/eval_geo3k.py`；1 题端到端 vLLM 推理与判分已验证）
+- [x] M0(=E1 step150) 正式基线评测（文本基线已完成并写入 `evaluation/completed/m0_e1_grpo_2b_text.done`：MMLU_TEMP AverageAccuracy=0.7834，AIME24 AveragePass@1=0.3542，AIME25 AveragePass@1=0.3250，MATH500 AveragePass@1=0.8635；Geo3K 601/601 已完成并写入 `evaluation/completed/m0_e1_grpo_2b_geo3k.done`：sample_accuracy=0.5732、pass@8=0.8369；输出见 `evaluation/geo3k/m0_e1_grpo_2b_step150.jsonl.summary.json`）
+- [ ] 每组跑完按第 7 节流程评测 + 归档（`scripts/run_mm_evaluation_pipeline.sh` 已在后台等待并自动接力 M1→M3 评测；`scripts/archive_mm_results.sh` 已准备好生成 `$ROOT/polaris/archive/mm_exp2card/` 快照，归档口径参照 `$ROOT/polaris/archive/README.md`）
