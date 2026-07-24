@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>算法介绍 · 多模态 — 图文数据配比</title>
+<title>算法介绍 · 多模态 — ViT / VAE / 视觉–语言技术</title>
 <link rel="stylesheet" href="../common/base.css">
 <link rel="stylesheet" href="algo.css">
 </head>
@@ -22,107 +22,302 @@
   </div>
 </div>
 
-<div class="algo-page">
+<div class="algo-page algo-page-with-toc">
   <div class="algo-subnav">
-    <a href="index.html">算法</a>
+    <a href="base.html">基座</a>
+    <a href="index.html">RL 算法</a>
     <a href="mm.html" class="active">多模态</a>
   </div>
 
   <header class="algo-hero">
-    <p class="algo-kicker">Multimodal · Data Mix</p>
-    <h1>只改图文配比的消融</h1>
+    <p class="algo-kicker">Multimodal · Vision–Language Stack</p>
+    <h1>多模态技术：ViT、VAE 与图文对齐</h1>
     <p class="lede">
-      算法固定为 <a href="index.html">GRPO</a>，唯一自变量是训练数据里图文样本占比。
-      看两件事：视觉推理上限（Geo3K），以及文本数学是否被稀释。训练曲线见 <a href="../mm/index.html">多模态训练</a>。
+      多模态 LLM 把图像变成语言模型能吃的 token：常见路径是 <strong>ViT</strong> 提视觉特征，再经投影 / 适配器进 LLM；
+      生成与压缩侧常用 <strong>VAE</strong>（或 VQ-VAE）做潜变量。下方按模块分述：介绍 + 优缺点。
+      训练曲线见 <a href="../mm/index.html">多模态训练</a>；策略侧见 <a href="index.html">RL 算法</a>。
     </p>
+    <div class="algo-chips">
+      <a class="chip-vit" href="#mod-vit">ViT</a>
+      <a class="chip-vae" href="#mod-vae">VAE</a>
+      <a class="chip-vqvae" href="#mod-vqvae">VQ-VAE</a>
+      <a class="chip-proj" href="#mod-proj">Projector</a>
+      <a class="chip-align" href="#mod-align">对齐</a>
+      <a class="chip-mm" href="#mod-fusion">融合</a>
+    </div>
   </header>
 
-  <section class="algo-section">
-    <h2>配比怎么设</h2>
-    <p class="sec-sub">四档占比，其余超参不动</p>
-    <div class="mix-rail">
-      <div class="mix-cell">
-        <div class="pct">0%</div>
-        <div class="bar"><i style="width:4%"></i></div>
-        <p>纯文本对照端点；与文本侧 GRPO 对齐，可复用已有结果。</p>
+  <div class="algo-layout">
+  <nav class="algo-toc" aria-label="目录">
+    <p class="toc-heading">目录</p>
+    <ol class="toc-list">
+      <li><a href="#sec-stack"><span class="toc-num">0</span><span class="toc-title">多模态栈怎么分</span></a></li>
+      <li data-a="vit"><a href="#mod-vit"><span class="toc-num">1</span><span class="toc-title">ViT</span></a></li>
+      <li data-a="vae"><a href="#mod-vae"><span class="toc-num">2</span><span class="toc-title">VAE</span></a></li>
+      <li data-a="vqvae"><a href="#mod-vqvae"><span class="toc-num">3</span><span class="toc-title">VQ-VAE</span></a></li>
+      <li data-a="proj"><a href="#mod-proj"><span class="toc-num">4</span><span class="toc-title">Projector</span></a></li>
+      <li data-a="align"><a href="#mod-align"><span class="toc-num">5</span><span class="toc-title">图文对齐</span></a></li>
+      <li data-a="mm"><a href="#mod-fusion"><span class="toc-num">6</span><span class="toc-title">模态融合</span></a></li>
+      <li data-a="vit"><a href="#mod-token"><span class="toc-num">7</span><span class="toc-title">视觉 Token</span></a></li>
+      <li><a href="#sec-pipeline"><span class="toc-num">8</span><span class="toc-title">典型流水线</span></a></li>
+      <li><a href="#sec-memo"><span class="toc-num">9</span><span class="toc-title">一句话记忆</span></a></li>
+    </ol>
+  </nav>
+
+  <div class="algo-main">
+
+  <section class="algo-section" id="sec-stack">
+    <h2>多模态栈怎么分</h2>
+    <p class="sec-sub">感知 → 压缩/离散 → 对齐 → 进 LLM</p>
+    <div class="family-grid cols-2">
+      <div class="family-card" data-f="vit">
+        <p class="family-label">Encoder · Vision</p>
+        <h3>ViT</h3>
+        <p class="family-desc">把图像切成 patch，用 Transformer 编码成序列特征；现代 VL 的默认视觉骨干。</p>
+        <div class="family-members">
+          <a class="chip-vit" href="#mod-vit">ViT</a>
+        </div>
       </div>
-      <div class="mix-cell">
-        <div class="pct">20%</div>
-        <div class="bar"><i style="width:20%"></i></div>
-        <p>Geo3K + 更大量文本；更贴近真实 post-training 配比。</p>
+      <div class="family-card" data-f="vae">
+        <p class="family-label">Latent · Compress</p>
+        <h3>VAE / VQ-VAE</h3>
+        <p class="family-desc">连续或离散潜空间：压缩像素、支撑生成与图像 tokenizer。</p>
+        <div class="family-members">
+          <a class="chip-vae" href="#mod-vae">VAE</a>
+          <a class="chip-vqvae" href="#mod-vqvae">VQ-VAE</a>
+        </div>
       </div>
-      <div class="mix-cell">
-        <div class="pct">50%</div>
-        <div class="bar"><i style="width:50%"></i></div>
-        <p>Geo3K + 等量文本子集；等量混合。</p>
+      <div class="family-card" data-f="proj">
+        <p class="family-label">Bridge · Align</p>
+        <h3>Projector / 对齐</h3>
+        <p class="family-desc">把视觉特征投到 LLM 词嵌入空间；CLIP 式对比学习建跨模态共享语义。</p>
+        <div class="family-members">
+          <a class="chip-proj" href="#mod-proj">Projector</a>
+          <a class="chip-align" href="#mod-align">对齐</a>
+        </div>
       </div>
-      <div class="mix-cell">
-        <div class="pct">100%</div>
-        <div class="bar"><i style="width:100%"></i></div>
-        <p>纯 Geo3K 图文；检验纯视觉信号下的 GRPO。</p>
+      <div class="family-card" data-f="mm">
+        <p class="family-label">Integrate · LLM</p>
+        <h3>融合与 Token</h3>
+        <p class="family-desc">早期/晚期/交叉注意力融合；视觉 token 数量决定精度与算力。</p>
+        <div class="family-members">
+          <a class="chip-mm" href="#mod-fusion">融合</a>
+          <a class="chip-vit" href="#mod-token">Token</a>
+        </div>
       </div>
     </div>
-    <p class="algo-caption">统一不变量：序列长度、采样预算、学习率、总步数等保持不变，只改 <span class="mono">data.train_files</span> 混合比例。</p>
   </section>
 
-  <section class="algo-section">
-    <h2>模型与任务</h2>
-    <p class="sec-sub">同底座加视觉，任务选 Geo3K</p>
+  <!-- ========== ViT ========== -->
+  <section class="algo-section module-sec" id="mod-vit" data-a="vit">
+    <p class="module-tag">Vision Encoder</p>
+    <h2>ViT</h2>
+    <p class="sec-sub">Vision Transformer</p>
+    <div class="module-intro">
+      <p>将图像切成固定大小的 <strong>patch</strong>，线性投影后加位置编码，再送入标准 Transformer encoder。输出 patch / CLS 特征序列，供下游分类、检测，或作为 VL 模型的视觉前端（如 Qwen-VL / LLaVA 一类栈）。相对 CNN：全局感受野更早、扩展性更好，但更吃数据与算力。</p>
+      <p class="how"><strong>核心：</strong>image → patches → Transformer · 序列化视觉特征</p>
+    </div>
+    <div class="module-pros">
+      <div class="pros-col">
+        <h4>优点</h4>
+        <p>与 LLM 同构（注意力），易规模化；长程依赖与全局上下文强；预训练生态成熟（CLIP-ViT、SigLIP 等）。</p>
+      </div>
+      <div class="pros-col">
+        <h4>缺点</h4>
+        <p>小数据上不如 CNN 稳；高分辨率时 token 数平方级涨；局部归纳偏置弱，细粒度纹理有时吃亏。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== VAE ========== -->
+  <section class="algo-section module-sec" id="mod-vae" data-a="vae">
+    <p class="module-tag">Latent Model · Continuous</p>
+    <h2>VAE</h2>
+    <p class="sec-sub">Variational Autoencoder</p>
+    <div class="module-intro">
+      <p>编码器把输入映到<strong>连续潜分布</strong>（常见对角高斯），从中采样再解码重建。训练目标 ≈ 重建损失 + KL（相对先验）。在多模态里常作图像压缩前端（如扩散模型的 latent）、或连续视觉表征瓶颈；与「直接 ViT 特征进 LLM」是另一条轴。</p>
+      <p class="how"><strong>核心：</strong>encode → 采样 z ~ q(z|x) → decode · ELBO</p>
+    </div>
+    <div class="module-pros">
+      <div class="pros-col">
+        <h4>优点</h4>
+        <p>潜空间连续、可插值；压缩比高，利于生成与长图；概率建模清晰，易接下游扩散 / 控制。</p>
+      </div>
+      <div class="pros-col">
+        <h4>缺点</h4>
+        <p>重建易糊（尤其小 latent）；KL 塌缩 / 后验坍塌常见；连续 z 不如离散码直接当「视觉词」喂自回归 LLM。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== VQ-VAE ========== -->
+  <section class="algo-section module-sec" id="mod-vqvae" data-a="vqvae">
+    <p class="module-tag">Latent Model · Discrete</p>
+    <h2>VQ-VAE</h2>
+    <p class="sec-sub">Vector Quantized VAE</p>
+    <div class="module-intro">
+      <p>在 VAE 思路上把连续 latent <strong>量化到码本</strong>（codebook）：每个空间位置选最近码向量，得到离散 index 序列。解码器从码向量重建图像。这样图像变成「视觉词表」上的 token，可与文本一样做自回归（如早期 DALL·E / Parti 路线），或作多模态统一 tokenizer。</p>
+      <p class="how"><strong>核心：</strong>连续 z → nearest code · 离散视觉 token</p>
+    </div>
+    <div class="module-pros">
+      <div class="pros-col">
+        <h4>优点</h4>
+        <p>离散 token 与 LLM 接口自然；码本可共享跨模态词表直觉；生成可控、易做 AR 建模。</p>
+      </div>
+      <div class="pros-col">
+        <h4>缺点</h4>
+        <p>码本塌缩 / 利用率不均；量化误差伤细节；训练需 commitment loss、EMA 等技巧，工程更烦。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== Projector ========== -->
+  <section class="algo-section module-sec" id="mod-proj" data-a="proj">
+    <p class="module-tag">Bridge · Vision → LLM</p>
+    <h2>Projector</h2>
+    <p class="sec-sub">视觉–语言投影 / 适配器</p>
+    <div class="module-intro">
+      <p>ViT（或其它视觉编码器）输出维度通常不等于 LLM 词嵌入维。Projector（MLP / 线性层 / Q-Former / Perceiver Resampler 等）把视觉特征<strong>投到 LLM 输入空间</strong>，再与文本 token 拼进同一序列。LLaVA 式「冻 ViT + 训投影 + 指令微调」是常见低成本配方；也有端到端全开。</p>
+      <p class="how"><strong>核心：</strong>视觉特征 → 对齐维数/语义 → LLM embedding</p>
+    </div>
+    <div class="module-pros">
+      <div class="pros-col">
+        <h4>优点</h4>
+        <p>改动面小、易插拔；可冻大视觉/语言骨干省算力；MLP 投影实现简单、收敛快。</p>
+      </div>
+      <div class="pros-col">
+        <h4>缺点</h4>
+        <p>浅投影表达力有限，细粒度接地弱；与冻结编码器耦合时，能力上限受前端束缚；Q-Former 等更强桥更重、更难训。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== 对齐 ========== -->
+  <section class="algo-section module-sec" id="mod-align" data-a="align">
+    <p class="module-tag">Pretrain · Cross-Modal</p>
+    <h2>图文对齐</h2>
+    <p class="sec-sub">Contrastive / Matching / Captioning</p>
+    <div class="module-intro">
+      <p>让图像与文本落在<strong>共享语义空间</strong>。代表：CLIP / SigLIP 式对比学习（同图文对拉近、不同对推远）；还可加图文匹配、图文生成（caption）辅助。对齐好的 ViT 常直接当 VL 的视觉塔；本看板多模态训练则在已对齐底座上再做 GRPO 等后训练。</p>
+      <p class="how"><strong>核心：</strong>对比 / 匹配 / 生成 · 跨模态共享语义</p>
+    </div>
+    <div class="module-pros">
+      <div class="pros-col">
+        <h4>优点</h4>
+        <p>零样本迁移强；为 VL 提供现成视觉塔；对比目标规模化效果好。</p>
+      </div>
+      <div class="pros-col">
+        <h4>缺点</h4>
+        <p>偏全局语义，细粒度定位/OCR 弱；负样本与 batch 规模敏感；与生成式目标（caption）需额外平衡。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== 融合 ========== -->
+  <section class="algo-section module-sec" id="mod-fusion" data-a="mm">
+    <p class="module-tag">Integration</p>
+    <h2>模态融合</h2>
+    <p class="sec-sub">Early / Late / Cross-Attention</p>
+    <div class="module-intro">
+      <p>图像与文本如何进同一计算图：<strong>早期融合</strong>（视觉 token 与文本拼序列，自注意力混）；<strong>晚期融合</strong>（两塔分别编码再拼接/点积）；<strong>交叉注意力</strong>（语言 query 视觉 key/value，如 Flamingo）。现代开源 VL 多走「视觉 token 插入 LLM 序列」的早期/中期融合。</p>
+      <p class="how"><strong>核心：</strong>拼序列 / 双塔 / 交叉注意 · 决定交互深度与成本</p>
+    </div>
+    <div class="module-pros">
+      <div class="pros-col">
+        <h4>优点</h4>
+        <p>拼序列实现简单、与 LLM 训练栈统一；交叉注意可省视觉 token、控算力；晚期融合推理轻、易部署。</p>
+      </div>
+      <div class="pros-col">
+        <h4>缺点</h4>
+        <p>拼序列让上下文暴涨；晚期融合交互浅，复杂推理弱；交叉注意结构异构，实现与并行更麻烦。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== 视觉 Token ========== -->
+  <section class="algo-section module-sec" id="mod-token" data-a="vit">
+    <p class="module-tag">Efficiency · Resolution</p>
+    <h2>视觉 Token</h2>
+    <p class="sec-sub">Patch 数 · 分辨率 · 压缩</p>
+    <div class="module-intro">
+      <p>高分辨率 → 更多 patch → 更长视觉前缀 → 训练/推理更贵。工程上常用：动态分辨率、any-res 切图、自适应池化、Perceiver 压缩、或 VAE/VQ 降到少而密的 token。多模态 RL（长 response + 图）时，视觉 token 预算往往是 OOM 与速度的第一瓶颈。</p>
+      <p class="how"><strong>核心：</strong>精度 ↔ 长度权衡 · 决定显存与吞吐</p>
+    </div>
+    <div class="module-pros">
+      <div class="pros-col">
+        <h4>优点</h4>
+        <p>提高分辨率/token 数可明显抬 OCR、细粒度几何；压缩策略能把长图塞进固定上下文。</p>
+      </div>
+      <div class="pros-col">
+        <h4>缺点</h4>
+        <p>token 过多直接打爆上下文与 KV；过度压缩丢细节；动态分辨率让 batch 形状不齐，工程复杂。</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="algo-section" id="sec-pipeline">
+    <h2>典型流水线</h2>
+    <p class="sec-sub">理解型 VL（进 LLM）vs 生成型（潜空间）</p>
     <ol class="diff-list">
       <li class="diff-item">
         <div class="diff-num">1</div>
-        <h3>模型：同底座加视觉，不换一套 VL</h3>
-        <p>用 <strong>Qwen3.5-2B 原生 vision</strong>（与文本实验同一份权重），而不是独立 Qwen3-VL-2B。唯一多出来的是图像模态，语言侧起点与文本 GRPO 对齐。</p>
+        <h3>理解型：ViT → Projector → LLM</h3>
+        <p>图像经 ViT（常已 CLIP/SigLIP 对齐）编码，投影成视觉 token，与文本拼进 LLM。适合 VQA、文档、几何推理（如 Geo3K）与多模态 RL 后训练。</p>
       </li>
       <li class="diff-item">
         <div class="diff-num">2</div>
-        <h3>任务：Geo3K（几何 + 数学推理）</h3>
-        <p>社区有现成 GRPO 与 reward；视觉主判据用 Geo3K test acc，文本保持用 math_500 / aime 等同探针。</p>
+        <h3>生成型：VAE / VQ-VAE → 生成头</h3>
+        <p>像素压到 latent 或离散码，再扩散 / 自回归生成。与「图→文理解」栈不同，但共享「视觉要先进紧凑表征」这一层。</p>
       </li>
     </ol>
   </section>
 
-  <section class="algo-section">
-    <h2>Reward 分发</h2>
-    <p class="sec-sub">同一 batch 混有文本行与图文行</p>
-    <ol class="diff-list">
-      <li class="diff-item">
-        <div class="diff-num">1</div>
-        <h3>按 data_source 分流</h3>
-        <p><span class="mono">geometry3k → geo3k 判分</span>；否则走文本 math（boxed + Math-Verify）。</p>
-      </li>
-      <li class="diff-item">
-        <div class="diff-num">2</div>
-        <h3>文本分支</h3>
-        <p>复用文本实验口径，保证 0% 图文端点与文本 GRPO 可比。</p>
-      </li>
-      <li class="diff-item">
-        <div class="diff-num">3</div>
-        <h3>图文分支</h3>
-        <p>复用 Geo3K 官方判分（答案等价 + 少量格式奖励），与社区基线一致。</p>
-      </li>
-    </ol>
-  </section>
-
-  <section class="algo-section">
-    <h2>为什么只锁一个自变量</h2>
-    <p class="sec-sub">避免维度交叉导致不可归因</p>
-    <p class="lede" style="font-size:15px;max-width:68ch">
-      还可消融：冻视觉编码器、分辨率 / 视觉 token、底座对比等。与配比交叉会指数膨胀、难归因。
-      本轮<strong>算法固定 GRPO、分辨率与底座固定</strong>，只改图文占比；若出现明显负/正迁移，再立项下一轮。
-    </p>
-  </section>
-
-  <section class="algo-section">
+  <section class="algo-section" id="sec-memo">
     <h2>一句话记忆</h2>
     <ul class="memo-list">
-      <li data-a="mm"><span class="k">算法固定</span><span>多模态侧只用 GRPO，不与五种文本算法交叉</span></li>
-      <li data-a="mm"><span class="k">唯一变量</span><span>图文样本占比 0% / 20% / 50% / 100%</span></li>
-      <li data-a="mm"><span class="k">双目标</span><span>Geo3K 看视觉；math_500 / aime 看文本是否被稀释</span></li>
-      <li data-a="mm"><span class="k">Reward</span><span>按 data_source：文本 boxed / 图文 geo3k</span></li>
+      <li data-a="vit"><span class="k">ViT</span><span>图像切 patch + Transformer；VL 默认视觉骨干</span></li>
+      <li data-a="vae"><span class="k">VAE</span><span>连续潜变量压缩；利生成，重建易糊</span></li>
+      <li data-a="vqvae"><span class="k">VQ-VAE</span><span>离散码本 → 视觉词；易接 AR，怕码本塌缩</span></li>
+      <li data-a="proj"><span class="k">Projector</span><span>视觉特征投到 LLM 维；轻量桥</span></li>
+      <li data-a="align"><span class="k">对齐</span><span>CLIP 式对比 / 匹配；共享语义空间</span></li>
+      <li data-a="mm"><span class="k">融合</span><span>拼序列 / 双塔 / 交叉注意</span></li>
+      <li data-a="vit"><span class="k">Token</span><span>分辨率 ↔ 长度；多模态算力瓶颈</span></li>
     </ul>
   </section>
+
+  </div><!-- /.algo-main -->
+  </div><!-- /.algo-layout -->
 </div>
 
+<script>
+(function () {
+  const links = Array.from(document.querySelectorAll(".algo-toc a[href^='#']"));
+  if (!links.length) return;
+  const sections = links
+    .map((a) => document.querySelector(a.getAttribute("href")))
+    .filter(Boolean);
+
+  function setActive(id) {
+    links.forEach((a) => {
+      a.classList.toggle("is-active", a.getAttribute("href") === "#" + id);
+    });
+  }
+
+  const observer = new IntersectionObserver(
+    (entries) => {
+      const visible = entries
+        .filter((e) => e.isIntersecting)
+        .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
+      if (visible[0]) setActive(visible[0].target.id);
+    },
+    { rootMargin: "-20% 0px -60% 0px", threshold: [0, 0.25, 0.5, 1] }
+  );
+  sections.forEach((s) => observer.observe(s));
+
+  const hash = location.hash.slice(1);
+  if (hash && document.getElementById(hash)) setActive(hash);
+  else if (sections[0]) setActive(sections[0].id);
+})();
+</script>
 </body>
 </html>

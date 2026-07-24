@@ -1,0 +1,327 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>算法介绍 · 基座 — GDN / KDA / Hybrid / Attention Sink</title>
+<link rel="stylesheet" href="../common/base.css">
+<link rel="stylesheet" href="algo.css">
+</head>
+<body class="algo-body">
+
+<div class="site-header">
+  <div class="site-header-inner">
+    <a class="site-brand" href="../index.html"><span class="dot">●</span> RL 实验看板</a>
+    <div class="site-nav">
+      <a href="../index.html">总览</a>
+      <a href="../algo/index.html" class="active">算法介绍</a>
+      <a href="../2b/index.html">2B 训练</a>
+      <a href="../4b/index.html">4B 训练</a>
+      <a href="../mm/index.html">多模态训练</a>
+    </div>
+  </div>
+</div>
+
+<div class="algo-page algo-page-with-toc">
+  <div class="algo-subnav">
+    <a href="base.html" class="active">基座</a>
+    <a href="index.html">RL 算法</a>
+    <a href="mm.html">多模态</a>
+  </div>
+
+  <header class="algo-hero">
+    <p class="algo-kicker">Model Backbone · Linear Attention Family</p>
+    <h1>基座算法：GDN、KDA、混合架构与 Attention Sink</h1>
+    <p class="lede">
+      本轮 RL 对比跑在 <strong>Qwen3.5</strong>（<span class="mono">model_type: qwen3_5</span>）上：多数层用 <strong>GDN</strong>，每隔若干层插 <strong>Full Attention</strong>。
+      同谱系里还有 Moonshot 的 <strong>KDA</strong>；Softmax 精确层还会出现 <strong>Attention Sink</strong>。
+      下方按模块分述：介绍 + 优缺点。策略优化见 <a href="index.html">RL 算法</a>。
+    </p>
+    <div class="algo-chips">
+      <a class="chip-gdn" href="#mod-gdn">GDN</a>
+      <a class="chip-kda" href="#mod-kda">KDA</a>
+      <a class="chip-delta" href="#mod-delta">Delta Rule</a>
+      <a class="chip-full" href="#mod-full">Full Attn</a>
+      <a class="chip-sink" href="#mod-sink">Attn Sink</a>
+      <a class="chip-hybrid" href="#mod-hybrid">Hybrid</a>
+      <a class="chip-moe" href="#mod-moe">MoE</a>
+    </div>
+  </header>
+
+  <div class="algo-layout">
+  <nav class="algo-toc" aria-label="目录">
+    <p class="toc-heading">目录</p>
+    <ol class="toc-list">
+      <li><a href="#sec-rl"><span class="toc-num">0</span><span class="toc-title">和 RL 的关系</span></a></li>
+      <li data-a="gdn"><a href="#mod-gdn"><span class="toc-num">1</span><span class="toc-title">GDN</span></a></li>
+      <li data-a="kda"><a href="#mod-kda"><span class="toc-num">2</span><span class="toc-title">KDA</span></a></li>
+      <li data-a="delta"><a href="#mod-delta"><span class="toc-num">3</span><span class="toc-title">Delta Rule</span></a></li>
+      <li data-a="full"><a href="#mod-full"><span class="toc-num">4</span><span class="toc-title">Full Attention</span></a></li>
+      <li data-a="sink"><a href="#mod-sink"><span class="toc-num">5</span><span class="toc-title">Attention Sink</span></a></li>
+      <li data-a="hybrid"><a href="#mod-hybrid"><span class="toc-num">6</span><span class="toc-title">Hybrid</span></a></li>
+      <li data-a="moe"><a href="#mod-moe"><span class="toc-num">7</span><span class="toc-title">MoE</span></a></li>
+      <li><a href="#sec-compare"><span class="toc-num">8</span><span class="toc-title">GDN vs KDA</span></a></li>
+      <li><a href="#sec-eng"><span class="toc-num">9</span><span class="toc-title">工程含义</span></a></li>
+      <li><a href="#sec-memo"><span class="toc-num">10</span><span class="toc-title">一句话记忆</span></a></li>
+    </ol>
+  </nav>
+
+  <div class="algo-main">
+  <section class="algo-section" id="sec-rl">
+    <h2>和 RL 算法的关系</h2>
+    <p class="sec-sub">一层骨架，一层训练目标</p>
+    <ol class="diff-list">
+      <li class="diff-item">
+        <div class="diff-num">1</div>
+        <h3>基座决定「怎么混合 token」</h3>
+        <p>GDN / KDA / Full Attention / Hybrid 布局属于<strong>模型结构</strong>：影响长上下文成本、KV / 状态内存、以及训练与 rollout 的算子栈。</p>
+      </li>
+      <li class="diff-item">
+        <div class="diff-num">2</div>
+        <h3>RL 算法决定「怎么用 reward 更新策略」</h3>
+        <p>GRPO / DAPO / … 是<strong>训练算法</strong>：在同一骨架上换 advantage / KL / clip。本看板 2B/4B 对比只改 RL，不改注意力算子。</p>
+      </li>
+      <li class="diff-item">
+        <div class="diff-num">3</div>
+        <h3>本实验用哪一个</h3>
+        <p><strong>本轮底座是 GDN Hybrid（Qwen3.5）</strong>。KDA、Attention Sink、MoE 写进此页便于对照，不是本轮训练变量。</p>
+      </li>
+    </ol>
+  </section>
+
+  <!-- ========== GDN ========== -->
+  <section class="algo-section module-sec" id="mod-gdn" data-a="gdn">
+    <p class="module-tag">Linear Attention · 本轮底座</p>
+    <h2>GDN</h2>
+    <p class="sec-sub">Gated DeltaNet</p>
+    <div class="module-intro">
+      <p>把「注意力」改成对固定维状态矩阵的递推更新：用 <strong>delta rule</strong> 做可纠错写入，用 <strong>exponential gating</strong>（通常 head-wise / 标量）控制遗忘；前面常接 causal Conv1D。相对 softmax，长序列更省内存与算力。本轮 Qwen3.5 的主路径算子。</p>
+      <p class="how"><strong>核心：</strong>固定状态 S · 粗门控 · 近线性复杂度 · 本轮 2B/4B 主路径</p>
+    </div>
+    <div class="module-pros">
+      <div class="pros-col">
+        <h4>优点</h4>
+        <p>固定大小状态，长序列内存近似常数；算力近线性，适合长 response / 长上下文训练；delta + gate 比朴素累加更可控；生态与 Qwen3.5 / FLA·Triton 核成熟。</p>
+      </div>
+      <div class="pros-col">
+        <h4>缺点</h4>
+        <p>遗忘门偏粗（头级/标量），细粒度记忆控制弱于 KDA；精确拷贝 / 长程指针弱于 Full Attn，通常要 Hybrid 补齐；依赖专用核，换栈成本高于标准 FlashAttention。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== KDA ========== -->
+  <section class="algo-section module-sec" id="mod-kda" data-a="kda">
+    <p class="module-tag">Linear Attention+ · 谱系对照</p>
+    <h2>KDA</h2>
+    <p class="sec-sub">Kimi Delta Attention</p>
+    <div class="module-intro">
+      <p>Moonshot <strong>Kimi Linear</strong> 的核心算子：在 GDN 骨架上把标量/头级衰减换成<strong>对角通道门控</strong> Diag(α_t)，每个特征维独立决定记多久。配合专用 DPLR chunkwise 并行，更吃 Tensor Core。本轮<strong>未使用</strong>，仅作粗门控 vs 细门控对照。</p>
+      <p class="how"><strong>核心：</strong>GDN + channel-wise gate · 更细遗忘控制 · 本轮未用</p>
+    </div>
+    <div class="module-pros">
+      <div class="pros-col">
+        <h4>优点</h4>
+        <p>通道级遗忘，记忆节奏比 GDN 更细；仍守 delta rule，表达力与可控性通常更强；DPLR 实现利于混合架构里的 RNN 式记忆；与 MLA Hybrid 配方在 Kimi Linear 上已验证。</p>
+      </div>
+      <div class="pros-col">
+        <h4>缺点</h4>
+        <p>实现与核更复杂，工程栈不如 GDN 在 Qwen 侧现成；门控参数更多，训练/调试面更大；本轮底座是 Qwen3.5 GDN，换 KDA 等于换模型族，无法作「只改 RL」对照。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== Delta Rule ========== -->
+  <section class="algo-section module-sec" id="mod-delta" data-a="delta">
+    <p class="module-tag">Update Rule</p>
+    <h2>Delta Rule</h2>
+    <p class="sec-sub">Error-correcting write</p>
+    <div class="module-intro">
+      <p>状态更新不是简单累加，而是按「当前键上的误差」做修正写入。GDN / KDA 都建立在这条规则上；差别主要在<strong>遗忘门有多细</strong>，而不是要不要 delta。</p>
+      <p class="how"><strong>核心：</strong>selective overwrite · GDN 与 KDA 共用</p>
+    </div>
+    <div class="module-pros">
+      <div class="pros-col">
+        <h4>优点</h4>
+        <p>可纠错写入，减轻状态被无关信息永久污染；比纯累加线性注意力更稳、更可解释；为门控遗忘提供清晰的「写 / 改 / 忘」分工。</p>
+      </div>
+      <div class="pros-col">
+        <h4>缺点</h4>
+        <p>单独不足以解决长程精确检索；实现依赖 chunkwise / 递推数值稳定；与 softmax Full Attn 的机制不同，调试直觉不能直接迁移。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== Full Attention ========== -->
+  <section class="algo-section module-sec" id="mod-full" data-a="full">
+    <p class="module-tag">Softmax / MLA · 精确层</p>
+    <h2>Full Attention</h2>
+    <p class="sec-sub">精确检索层</p>
+    <div class="module-intro">
+      <p>经典 QKᵀV + softmax（Qwen 侧常配 GQA + RoPE），或 Kimi 侧的 Full MLA。负责补齐纯线性注意力在精确拷贝 / 长程指针上的短板；Hybrid 里按固定间隔出现。Softmax 归一化也是 <strong>Attention Sink</strong> 出现的温床。</p>
+      <p class="how"><strong>核心：</strong>完整 KV / 压缩潜变量 · O(L²) 或 MLA 变体 · 周期插入</p>
+    </div>
+    <div class="module-pros">
+      <div class="pros-col">
+        <h4>优点</h4>
+        <p>精确长程检索与拷贝能力强；生态成熟（FlashAttention 等）；Hybrid 里少量插入即可显著补齐线性层短板。</p>
+      </div>
+      <div class="pros-col">
+        <h4>缺点</h4>
+        <p>算力/显存随长度近似平方（或 MLA 仍有增长的 KV）；易出现 Attention Sink / massive activation；全网若全用 Full，长序列成本远高于 GDN 主路径。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== Attention Sink ========== -->
+  <section class="algo-section module-sec" id="mod-sink" data-a="sink">
+    <p class="module-tag">Phenomenon · Softmax 侧效应</p>
+    <h2>Attention Sink</h2>
+    <p class="sec-sub">注意力汇 · StreamingLLM</p>
+    <div class="module-intro">
+      <p>Softmax 强制注意力权重和为 1：许多 token 并不「该」被关注时，模型仍要把概率质量倒到某处——全局可见的<strong>序列首部 token</strong>就常成为汇点，即使语义不重要。StreamingLLM 据此做流式推理：滑窗 KV 之外<strong>始终保留若干 sink token 的 KV</strong>，避免窗口滑走后 perplexity 尖峰。门控 / 线性注意力路径往往能削弱这一现象。本轮<strong>非训练变量</strong>。</p>
+      <p class="how"><strong>核心：</strong>首部汇聚 · 流式留 sink KV · 主要见于 Full Attn</p>
+    </div>
+    <div class="module-pros">
+      <div class="pros-col">
+        <h4>优点</h4>
+        <p>利用汇点可做稳定流式：滑窗 + 少量 sink KV，无需重训即可撑很长上下文；实现相对轻量；解释了为何「丢掉首 token」会突然崩质量。</p>
+      </div>
+      <div class="pros-col">
+        <h4>缺点</h4>
+        <p>本质是 softmax 侧效应，会扭曲注意力分布、伴随 massive activation；滑窗仍丢中间语义；需改 KV 管理（与 prefix cache / CUDA graph 等可能冲突）；门控模型上现象减弱，策略收益也变小。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== Hybrid ========== -->
+  <section class="algo-section module-sec" id="mod-hybrid" data-a="hybrid">
+    <p class="module-tag">Architecture · 本轮布局</p>
+    <h2>Hybrid</h2>
+    <p class="sec-sub">Linear ×3 + Full ×1</p>
+    <div class="module-intro">
+      <p>整网约 75% 线性层 + 25% 精确层。本实验：<strong>GDN ×3 + Full ×1</strong>（Qwen3.5，<span class="mono">full_attention_interval=4</span>）。对照谱系：Kimi Linear 为 <strong>KDA ×3 + MLA ×1</strong>。配方同构，换的是线性算子。</p>
+      <p class="how"><strong>核心：</strong>效率层堆叠 + 周期精确层 · 本轮用 GDN 版</p>
+    </div>
+    <div class="module-pros">
+      <div class="pros-col">
+        <h4>优点</h4>
+        <p>兼顾效率与检索：多数层近线性，少数层补精确能力；比纯 Full 更省长上下文成本；比纯线性更不易在拷贝/指针任务上翻车；工业界（Qwen / Kimi）已验证可行。</p>
+      </div>
+      <div class="pros-col">
+        <h4>缺点</h4>
+        <p>异构算子栈（GDN 核 + FlashAttention）更难运维；间隔超参（3:1 等）需经验；Full 层仍带 sink / KV 增长；调试时要分清瓶颈在线性态还是精确层。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== MoE ========== -->
+  <section class="algo-section module-sec" id="mod-moe" data-a="moe">
+    <p class="module-tag">Scale note · 大规格</p>
+    <h2>MoE</h2>
+    <p class="sec-sub">Sparse experts</p>
+    <div class="module-intro">
+      <p>更大规格 Qwen3.5 还会叠 Sparse MoE。本看板主实验 <strong>2B / 4B 是 dense + GDN Hybrid</strong>，无专家路由变量。</p>
+      <p class="how"><strong>本轮：</strong>dense Hybrid · 无 MoE</p>
+    </div>
+    <div class="module-pros">
+      <div class="pros-col">
+        <h4>优点</h4>
+        <p>同等激活参数下可放大总容量；大规格训练/推理性价比高；与 Hybrid 注意力正交，可叠加。</p>
+      </div>
+      <div class="pros-col">
+        <h4>缺点</h4>
+        <p>路由不稳、负载不均；通信与实现复杂；小规格（2B/4B）收益有限，本轮刻意不用以免混淆 RL 变量。</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="algo-section" id="sec-compare">
+    <h2>GDN vs KDA</h2>
+    <p class="sec-sub">同属 gated delta 一脉，差在门控粒度</p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th></th><th>GDN</th><th>KDA</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>全称</td><td>Gated DeltaNet</td><td>Kimi Delta Attention</td></tr>
+          <tr><td>代表模型</td><td>Qwen3-Next / Qwen3.5</td><td>Kimi Linear</td></tr>
+          <tr><td>遗忘门</td><td>粗：head-wise / 标量衰减</td><td>细：channel-wise，Diag(α_t)</td></tr>
+          <tr><td>写入</td><td>delta rule</td><td>仍遵守 delta rule（DPLR 变体实现）</td></tr>
+          <tr><td>表达力直觉</td><td>一整头共享遗忘节奏</td><td>各特征维可不同遗忘节奏</td></tr>
+          <tr><td>本轮是否使用</td><td><strong>是</strong>（2B/4B 底座）</td><td>否（仅谱系对照）</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="algo-section" id="sec-eng">
+    <h2>工程含义（对本实验）</h2>
+    <p class="sec-sub">读日志 / 配环境时会碰到的几点</p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>点</th><th>说明</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>架构标识</td><td class="mono">Qwen3_5ForConditionalGeneration · model_type=qwen3_5</td></tr>
+          <tr><td>线性算子</td><td><strong>GDN</strong>（非 KDA）；每 4 层 1 层 full attention</td></tr>
+          <tr><td>推理栈</td><td>GDN 走 Triton / FLA 前缀核；full 层常用 FlashAttention</td></tr>
+          <tr><td>长序列训练</td><td>大词表 + 长 response 易在 entropy/logits 处 OOM；本环境用 fused kernel + chunked entropy 规避</td></tr>
+          <tr><td>与 RL 变量正交</td><td>E1–E5 只换 adv / KL / clip 等；不改 GDN / Hybrid 布局</td></tr>
+          <tr><td>Attention Sink</td><td>Full Attn 层的 softmax 侧效应；长上下文 / 流式时需保留初始 sink KV；本轮不改此机制</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="algo-section" id="sec-memo">
+    <h2>一句话记忆</h2>
+    <ul class="memo-list">
+      <li data-a="gdn"><span class="k">GDN</span><span>粗门控 + delta；Qwen3.5 主路径，本轮底座</span></li>
+      <li data-a="kda"><span class="k">KDA</span><span>GDN + 通道级对角门控；Kimi Linear，本轮未用</span></li>
+      <li data-a="delta"><span class="k">Delta</span><span>纠错写入；GDN / KDA 共用</span></li>
+      <li data-a="full"><span class="k">Full Attn</span><span>精确层（或 MLA），补长程检索</span></li>
+      <li data-a="sink"><span class="k">Attn Sink</span><span>首 token 吸注意力；流式要留 sink KV；本轮非训练变量</span></li>
+      <li data-a="hybrid"><span class="k">Hybrid</span><span>~3:1 线性:精确；本轮 = GDN 版</span></li>
+      <li data-a="moe"><span class="k">MoE</span><span>大规格才有；本轮 2B/4B 为 dense</span></li>
+    </ul>
+  </section>
+  </div><!-- /.algo-main -->
+  </div><!-- /.algo-layout -->
+</div>
+
+<script>
+(function () {
+  const links = Array.from(document.querySelectorAll(".algo-toc a[href^='#']"));
+  if (!links.length) return;
+  const sections = links
+    .map((a) => document.querySelector(a.getAttribute("href")))
+    .filter(Boolean);
+
+  function setActive(id) {
+    links.forEach((a) => {
+      a.classList.toggle("is-active", a.getAttribute("href") === "#" + id);
+    });
+  }
+
+  const observer = new IntersectionObserver(
+    (entries) => {
+      const visible = entries
+        .filter((e) => e.isIntersecting)
+        .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
+      if (visible[0]) setActive(visible[0].target.id);
+    },
+    { rootMargin: "-20% 0px -60% 0px", threshold: [0, 0.25, 0.5, 1] }
+  );
+  sections.forEach((s) => observer.observe(s));
+
+  // initial hash / first section
+  const hash = location.hash.slice(1);
+  if (hash && document.getElementById(hash)) setActive(hash);
+  else if (sections[0]) setActive(sections[0].id);
+})();
+</script>
+</body>
+</html>

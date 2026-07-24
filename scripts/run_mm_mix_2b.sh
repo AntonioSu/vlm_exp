@@ -90,7 +90,7 @@ ${ENVBIN}/python -m verl.trainer.main_ppo \
     actor_rollout_ref.rollout.temperature=1.0 \
     actor_rollout_ref.rollout.log_prob_use_dynamic_bsz=False \
     actor_rollout_ref.rollout.log_prob_micro_batch_size_per_gpu=1 \
-    actor_rollout_ref.rollout.enforce_eager=False \
+    actor_rollout_ref.rollout.enforce_eager=True \
     actor_rollout_ref.rollout.enable_chunked_prefill=False \
     reward.custom_reward_function.path=${VLM_EXP}/scripts/reward_mm_mixed.py \
     reward.custom_reward_function.name=compute_score \

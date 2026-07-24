@@ -42,5 +42,9 @@ def _score_geo3k(solution_str: str, ground_truth: str) -> dict:
 
 def compute_score(data_source, solution_str, ground_truth, extra_info=None):
     if data_source == "hiyouga/geometry3k":
-        return _score_geo3k(solution_str, ground_truth)
-    return _score_text_math(solution_str, ground_truth)
+        result = _score_geo3k(solution_str, ground_truth)
+        result["is_geo3k"] = True
+        return result
+    result = _score_text_math(solution_str, ground_truth)
+    result["is_geo3k"] = False
+    return result
