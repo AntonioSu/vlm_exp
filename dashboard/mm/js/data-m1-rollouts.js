@@ -4,9 +4,9 @@ window.MM_M1_ROLLOUT_SUMMARY = {
   "generatedBy": "scripts/summarize_mm_rollouts.py",
   "note": "Training rollout metrics; not Geo3K test-set evaluation.",
   "overall": {
-    "samples": 25344,
-    "accuracy": 0.6649305555555556,
-    "meanScore": 0.5984414457070707
+    "samples": 25600,
+    "accuracy": 0.6660546875,
+    "meanScore": 0.599453125
   },
   "rows": [
     {
@@ -800,6 +800,14 @@ window.MM_M1_ROLLOUT_SUMMARY = {
       "accuracy": 0.6953125,
       "meanScore": 0.6257812500000001,
       "meanOutputChars": 16709.81640625
+    },
+    {
+      "step": 100,
+      "source": "geo3k",
+      "samples": 256,
+      "accuracy": 0.77734375,
+      "meanScore": 0.699609375,
+      "meanOutputChars": 18704.9921875
     }
   ]
 };
