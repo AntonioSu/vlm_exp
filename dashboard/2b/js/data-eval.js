@@ -1,4 +1,4 @@
-// ---- Evaluation results (evalscope offline, auto-synced 2026-07-24) ----
+// ---- Evaluation results (evalscope offline, auto-synced 2026-07-25) ----
 // Source: /data/lijunyi/evalscope/outputs/exp2card/<exp>_2b_<step>/*/reports/<model>/*.json
 // 评测配置: eval_exp4b.sh + verl_qwen35 vLLM 0.24；
 // aime24/aime25 temperature=0.6 top_p=0.95 max_tokens=16384 n=8（30题×n8=240 采样）；

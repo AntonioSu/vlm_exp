@@ -1,4 +1,4 @@
-// ---- Evaluation results (evalscope offline, auto-synced 2026-07-23) ----
+// ---- Evaluation results (evalscope offline, auto-synced 2026-07-25) ----
 // Source: /data/lijunyi/evalscope/outputs/exp2card/<exp>_4b_<step>/*/reports/<model>/*.json
 // 评测配置: eval_exp4b.sh + verl_qwen35 vLLM 0.24；
 // aime24/aime25 temperature=0.6 top_p=0.95 max_tokens=16384 n=8（30题×n8=240 采样）；
@@ -56,9 +56,9 @@ const EVAL_FULL = {
 // 全 step 曲线：E1–E5
 const EVAL_FULL_ORDER = ["e1", "e2", "e3", "e4", "e5"];
 
-// ---- Agent / tool-use benchmarks (evalscope, auto-synced 2026-07-24) ----
+// ---- Agent / tool-use benchmarks (evalscope, auto-synced 2026-07-25) ----
 // Source: /data/lijunyi/evalscope/outputs/agent2/<ts>/reports/<exp>_4b_<step>/{bfcl_v3,tau_bench}.json
-// Coverage: bfcl=74 · tau=60 · steps with any report: 10/20/30/40/50/60/70/80/90/100/110/120/130/140/150
+// Coverage: bfcl=74 · tau=74 · steps with any report: 10/20/30/40/50/60/70/80/90/100/110/120/130/140/150
 // BFCL-v3: 10 subset ×30；bfcl=OVERALL；bfcl_mt=MULTI_TURN。
 // tau-bench: retail+airline×20，user-sim=gpt-5p5-apipro。null = 尚未评测。
 // Refresh: python3 scripts/sync_4b_agent_dashboard.py
@@ -76,7 +76,7 @@ const AGENT = {
     label: "E2 DAPO",       color: COLORS.e2,
     bfcl:   [45.7, 45.9, 45.2, 44.3, 47.5, 43.9, 41.8, null, 45.8, 46.4, 42.8, 45.6, 43.3, 41.2, 42.1],
     bfcl_mt:[8.3, 8.9, 7.2, 6.7, 10.0, 8.9, 7.2, null, 10.0, 10.6, 5.6, 6.7, 8.9, 6.7, 8.3],
-    tau:    [55.0, 55.0, 42.5, 55.0, 55.0, 65.0, 52.5, null, 60.0, null, 55.0, null, 65.0, null, 70.0],
+    tau:    [55.0, 55.0, 42.5, 55.0, 55.0, 65.0, 52.5, null, 60.0, 60.0, 55.0, 60.0, 65.0, 52.5, 70.0],
   },
   e3: {
     label: "E3 Dr.GRPO",    color: COLORS.e3,
@@ -88,13 +88,13 @@ const AGENT = {
     label: "E4 RLOO",       color: COLORS.e4,
     bfcl:   [43.0, 47.0, 47.4, 42.9, 45.9, 41.1, 47.4, 48.3, 44.8, 46.9, 46.8, 44.8, 43.1, 44.1, 47.0],
     bfcl_mt:[6.7, 7.2, 7.8, 7.2, 9.4, 7.8, 3.3, 11.1, 6.1, 6.7, 7.2, 6.1, 6.1, 3.9, 8.9],
-    tau:    [55.0, 52.5, 55.0, 57.5, 57.5, 52.5, 62.5, null, 60.0, null, 62.5, null, 52.5, null, 57.5],
+    tau:    [55.0, 52.5, 55.0, 57.5, 57.5, 52.5, 62.5, 70.0, 60.0, 60.0, 62.5, 65.0, 52.5, 60.0, 57.5],
   },
   e5: {
     label: "E5 REINFORCE++", color: COLORS.e5,
     bfcl:   [44.0, 43.5, 44.2, 44.9, 45.7, 41.0, 42.5, 43.5, 41.3, 46.4, 41.5, 39.4, 42.1, 44.0, 41.5],
     bfcl_mt:[8.3, 7.8, 11.1, 6.7, 8.9, 6.1, 10.0, 7.8, 7.2, 10.6, 3.9, 7.2, 4.4, 6.1, 7.2],
-    tau:    [55.0, null, 57.5, null, 55.0, null, 60.0, null, 77.5, null, 70.0, null, 52.5, null, 55.0],
+    tau:    [55.0, 55.0, 57.5, 57.5, 55.0, 62.5, 60.0, 57.5, 77.5, 52.5, 70.0, 62.5, 52.5, 60.0, 55.0],
   },
 };
 

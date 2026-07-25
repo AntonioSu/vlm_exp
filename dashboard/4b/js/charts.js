@@ -555,20 +555,6 @@ function renderExpPanel(key) {
 }
 
 function renderEvalPanel() {
-  renderLegend(document.getElementById("legend-eval-mmlu"), EVAL_ORDER.map(k => ({ name: EVAL[k].label, data: EVAL[k].mmlu, color: EVAL[k].color })),
-    (visible) => drawLineChart("chart-eval-mmlu", "tip-eval-mmlu", {
-      categories: EVAL_STEPS,
-      series: visible,
-      valueSuffix: "%", yMin: 89, yMax: 93, height: 240,
-    }));
-
-  renderLegend(document.getElementById("legend-eval-aime25"), EVAL_ORDER.map(k => ({ name: EVAL[k].label, data: EVAL[k].aime25, color: EVAL[k].color })),
-    (visible) => drawLineChart("chart-eval-aime25", "tip-eval-aime25", {
-      categories: EVAL_STEPS,
-      series: visible,
-      valueSuffix: "%", yMin: 45, yMax: 62, height: 240,
-    }));
-
   drawBarChart("chart-eval-mmlu150", "tip-eval-mmlu150", {
     categories: EVAL_ORDER.map(k => EVAL[k].label),
     data: EVAL_ORDER.map(k => EVAL[k].mmlu[2]),

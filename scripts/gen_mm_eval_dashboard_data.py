@@ -128,9 +128,51 @@ def put_at(series: dict[str, list[float | None]], step: int, values: dict[str, f
             series[key][idx] = val
 
 
+def discover_m1_light_geo() -> list[tuple[int, dict[str, Any]]]:
+    """Return sorted (step, geo3k_summary) for M1 light Geo3K summaries."""
+    found: list[tuple[int, dict[str, Any]]] = []
+    for root in GEO3K_DIR_CANDIDATES:
+        if not root.is_dir():
+            continue
+        for path in root.glob("m1_geo3k100_2b_step*_light.jsonl.summary.json"):
+            # m1_geo3k100_2b_step70_light.jsonl.summary.json
+            stem = path.name.replace(".jsonl.summary.json", "")
+            try:
+                step = int(stem.rsplit("_step", 1)[1].rsplit("_", 1)[0])
+            except (IndexError, ValueError):
+                continue
+            data = load_geo3k(path.name)
+            if data:
+                found.append((step, data))
+    # de-dupe by step (prefer first candidate root which is /data/lijunyi)
+    by_step: dict[int, dict[str, Any]] = {}
+    for step, data in sorted(found):
+        by_step.setdefault(step, data)
+    return sorted(by_step.items())
+
+
+def load_m1_text_light(step: int) -> tuple[dict[str, float | None], dict[str, str]]:
+    text = load_text(
+        f"m1_geo3k100_2b_step{step}_text_light",
+        {"mmlu": "mmlu_temp"},
+    )
+    math = load_text(
+        f"m1_geo3k100_2b_step{step}_math_light",
+        {"aime24": "aime24", "aime25": "aime25", "math500": "math_500"},
+    )
+    scores = {
+        "mmlu": text["scores"].get("mmlu"),
+        "aime24": math["scores"].get("aime24"),
+        "aime25": math["scores"].get("aime25"),
+        "math500": math["scores"].get("math500"),
+    }
+    sources = {**text.get("sources", {}), **math.get("sources", {})}
+    return scores, sources
+
+
 def build_payload() -> dict[str, Any]:
     m0_geo = load_geo3k("m0_e1_grpo_2b_step150.jsonl.summary.json")
-    m1_geo = load_geo3k("m1_geo3k100_2b_step70_light.jsonl.summary.json")
+    m1_lights = discover_m1_light_geo()
     m1_geo_quick = load_geo3k("m1_geo3k100_2b_step70_quick.jsonl.summary.json")
 
     m0_text = load_text(
@@ -144,21 +186,19 @@ def build_payload() -> dict[str, Any]:
         if alt["sources"].get("mmlu"):
             m0_text["sources"]["mmlu"] = alt["sources"]["mmlu"]
 
-    m1_text = load_text(
-        "m1_geo3k100_2b_step70_text_light",
-        {"mmlu": "mmlu_temp"},
+    # Latest M1 light checkpoint is the headline group; earlier lights go into full curves.
+    latest_m1_step, latest_m1_geo = m1_lights[-1] if m1_lights else (None, None)
+    m1_scores, m1_sources = (
+        load_m1_text_light(latest_m1_step) if latest_m1_step is not None else (
+            {"mmlu": None, "aime24": None, "aime25": None, "math500": None},
+            {},
+        )
     )
-    m1_math = load_text(
-        "m1_geo3k100_2b_step70_math_light",
-        {"aime24": "aime24", "aime25": "aime25", "math500": "math_500"},
-    )
-    m1_scores = {
-        "mmlu": m1_text["scores"].get("mmlu"),
-        "aime24": m1_math["scores"].get("aime24"),
-        "aime25": m1_math["scores"].get("aime25"),
-        "math500": m1_math["scores"].get("math500"),
-    }
-    m1_sources = {**m1_text.get("sources", {}), **m1_math.get("sources", {})}
+    # Fall back to step70 text light if latest has no text reports yet.
+    if latest_m1_step is not None and all(v is None for v in m1_scores.values()):
+        m1_scores, m1_sources = load_m1_text_light(70)
+
+    m1_steps_str = "/".join(str(s) for s, _ in m1_lights) if m1_lights else "none"
 
     groups = [
         {
@@ -176,20 +216,32 @@ def build_payload() -> dict[str, Any]:
         },
         {
             "key": "m1",
-            "label": "M1 · 100% 图文 (@70 light)",
-            "shortLabel": "M1@70 light",
-            "color": "#d97706",
-            "step": 70,
-            "visionPct": 100,
-            "config": "light",
-            "configNote": (
-                "轻量探查：Geo3K n=1 max_tokens=512；文本 max_tokens 很低"
-                "（mmlu_temp=16，math=512），与 M0 正式结果不可直接比绝对值"
+            "label": (
+                f"M1 · 100% 图文 (@{latest_m1_step} light)"
+                if latest_m1_step is not None
+                else "M1 · 100% 图文"
             ),
-            "geo3k": m1_geo,
+            "shortLabel": (
+                f"M1@{latest_m1_step} light" if latest_m1_step is not None else "M1"
+            ),
+            "color": "#d97706",
+            "step": latest_m1_step,
+            "visionPct": 100,
+            "config": "light" if latest_m1_geo else None,
+            "configNote": (
+                f"轻量探查（Geo3K n=1 max_tokens=512）。已有 light Geo3K step：{m1_steps_str}。"
+                "文本 light 仅在有对应 evalscope 产物时填入；与 M0 正式结果不可直接比绝对值。"
+                if latest_m1_geo
+                else "尚无 M1 light / formal 离线评测"
+            ),
+            "geo3k": latest_m1_geo,
             "geo3kQuick": m1_geo_quick,
             "text": m1_scores,
-            "sources": {"geo3k": (m1_geo or {}).get("source"), **m1_sources},
+            "sources": {
+                "geo3k": (latest_m1_geo or {}).get("source"),
+                **m1_sources,
+                **{f"geo3k@{step}": geo.get("source") for step, geo in m1_lights},
+            },
         },
         {
             "key": "m2",
@@ -244,18 +296,20 @@ def build_payload() -> dict[str, Any]:
             "aime25": m0_text["scores"].get("aime25"),
         },
     )
-    put_at(
-        full["m1"],
-        70,
-        {
-            "geo3kAcc": (m1_geo or {}).get("sampleAccuracy"),
-            "geo3kPass": (m1_geo or {}).get("passAtN"),
-            "math500": m1_scores.get("math500"),
-            "mmlu": m1_scores.get("mmlu"),
-            "aime24": m1_scores.get("aime24"),
-            "aime25": m1_scores.get("aime25"),
-        },
-    )
+    for step, geo in m1_lights:
+        text_scores, _ = load_m1_text_light(step)
+        put_at(
+            full["m1"],
+            step,
+            {
+                "geo3kAcc": geo.get("sampleAccuracy"),
+                "geo3kPass": geo.get("passAtN"),
+                "math500": text_scores.get("math500"),
+                "mmlu": text_scores.get("mmlu"),
+                "aime24": text_scores.get("aime24"),
+                "aime25": text_scores.get("aime25"),
+            },
+        )
 
     # Sparse summary steps (like 4B EVAL 50/100/150) for quick glance.
     summary_steps = [50, 100, 150]
@@ -270,9 +324,10 @@ def build_payload() -> dict[str, Any]:
         "generatedAt": date.today().isoformat(),
         "generatedBy": "scripts/gen_mm_eval_dashboard_data.py",
         "note": (
-            "M0 为正式基线；M1@70 为 light 配置探查（非 formal n=8/16K）。"
+            f"M0 为正式基线；M1 light Geo3K steps：{m1_steps_str}"
+            "（n=1 max_tokens=512，非 formal n=8/16K）。"
             "全 step 曲线对齐 4B E1 EVAL_FULL（10–150 /10）；缺测为 null。"
-            "M2/M3 待 checkpoint 与评测完成后补齐。"
+            "M2/M3 待 formal 评测完成后补齐。"
         ),
         "metrics": [
             {"key": "geo3kAcc", "label": "Geo3K sample acc", "unit": "%"},
