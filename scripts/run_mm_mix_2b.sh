@@ -28,6 +28,9 @@ source ${POLARIS}/scripts/verl_env.sh
 export CUDA_VISIBLE_DEVICES=${MM_CUDA_VISIBLE_DEVICES:-0,1}
 export HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1
 export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
+if [[ -n "${MM_RAY_MEMORY_USAGE_THRESHOLD:-}" ]]; then
+    export RAY_memory_usage_threshold=${MM_RAY_MEMORY_USAGE_THRESHOLD}
+fi
 
 # ---- 实验标识与路径 ----
 PROJECT=exp2card_mm
@@ -105,7 +108,7 @@ ${ENVBIN}/python -m verl.trainer.main_ppo \
     trainer.nnodes=1 \
     trainer.val_before_train=False \
     trainer.test_freq=25 \
-    trainer.save_freq=10 \
+    trainer.save_freq=${MM_SAVE_FREQ:-10} \
     trainer.resume_mode=auto \
     trainer.max_actor_ckpt_to_keep=null \
     trainer.total_training_steps=150 \

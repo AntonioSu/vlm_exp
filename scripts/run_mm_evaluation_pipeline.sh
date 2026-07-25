@@ -6,7 +6,10 @@ VLM_EXP=/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp
 MODEL_DIR=${VLM_EXP}/model/exp2card_mm
 DONE_DIR=${VLM_EXP}/evaluation/completed
 LOG_DIR=${VLM_EXP}/logs/exp2card_mm/evaluation_pipeline
-GPU=${EVAL_GPU:-2}
+# M2 can run concurrently on GPU2/3 while M1 is finishing on GPU0/1.  When M1
+# reaches step150, GPU0/1 are expected to be released first, so default eval to
+# GPU0 and keep EVAL_GPU as an override for manual scheduling.
+GPU=${EVAL_GPU:-0}
 PORT=${EVAL_PORT:-8082}
 experiments=(m1_geo3k100_2b m2_mix50_2b m3_mix20_2b)
 
