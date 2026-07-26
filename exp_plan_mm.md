@@ -157,7 +157,767 @@ CUDA_VISIBLE_DEVICES=0 bash \
 ## 9. 待办
 
 - [x] 跑 `/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/scripts/run_smoke_mm.sh`，确认多模态 FSDP2+vLLM 链路无报错
-- [ ] M1 → M2 → M3 正式训练（M1 已于 2026-07-22 用脱离会话的后台进程重新启动，首轮正式 rollout 推进到 step105 后于 2026-07-24 18:45 触发 Ray node memory OOM；`global_step_100/actor` 已落盘且 `latest_checkpointed_iteration.txt=100`，因此 2026-07-24 18:46 自动重启后实际从 ckpt100 恢复，未 checkpoint 的 step101–105 证据已复制到 `logs/exp2card_mm/m1_geo3k100_2b_pre_oom_step105_uncheckpointed/`；2026-07-24 19:26 M1 重启 run 写出新 step101，旧 step102–105 已从 live rollout 目录移到 `logs/exp2card_mm/m1_geo3k100_2b_pre_oom_step105_uncheckpointed/removed_from_live_after_resume_20260724_1927/rollout_dump/`，避免污染当前汇总和后续写文件；2026-07-24 20:04 M1 写出新 step102，2026-07-24 20:37 写出新 step103，2026-07-24 21:10 写出新 step104，2026-07-24 21:51 写出新 step105，2026-07-24 22:26 写出新 step106，2026-07-24 22:58 写出新 step107，已越过旧 run 的 step105 OOM 点；2026-07-25 00:49 确认 step110 checkpoint，2026-07-25 07:08 checkpoint/dashboard 已同步到 step120（actor 7 files，约25G；step120 accuracy=0.7227），2026-07-25 07:26 rollout/dashboard 已同步到 step121（accuracy=0.7148），2026-07-25 08:01 rollout/train dashboard 已同步到 step122（accuracy=0.6992），2026-07-25 08:34 rollout dashboard 已同步到 step123（accuracy=0.7891），2026-07-25 09:11 rollout/train dashboard 已同步到 step124（accuracy=0.6680），2026-07-25 09:46 rollout dashboard 已同步到 step125（accuracy=0.7656），2026-07-25 10:32 rollout/train dashboard 已同步到 step126（accuracy=0.6797），2026-07-25 11:07 rollout dashboard 已同步到 step127（accuracy=0.7031），2026-07-25 11:45 rollout/train dashboard 已同步到 step128（accuracy=0.6758），2026-07-25 12:15 rollout dashboard 已同步到 step129（accuracy=0.8125），2026-07-25 13:00 checkpoint/rollout/train dashboard 已同步到 step130（actor 7 files，约25G；accuracy=0.7344），2026-07-25 13:25 rollout dashboard 已同步到 step131（accuracy=0.6562），2026-07-25 14:02 rollout/train dashboard 已同步到 step132（accuracy=0.6133，mean_score=0.5520），2026-07-25 14:38 rollout dashboard 已同步到 step133（accuracy=0.7500，mean_score=0.6750；train dashboard 暂滞后到 step132），2026-07-25 15:18 rollout/train dashboard 已同步到 step134（accuracy=0.6875，mean_score=0.6188），2026-07-25 15:55 rollout dashboard 已同步到 step135（accuracy=0.6641，mean_score=0.5977；train dashboard 暂滞后到 step134），2026-07-25 16:30 M1 写出未 checkpoint 的 step136 后触发 Ray node memory OOM；最后可信 checkpoint 仍为 step130，pipeline 已于 16:31 自动重启新 run，并在 16:36 从 `global_step_130` 加载 model/optimizer/rng/lr_scheduler。为避免污染当前汇总，已将 live `rollout_dump/131.jsonl`–`136.jsonl` 移到 `logs/exp2card_mm/m1_geo3k100_2b_pre_oom_step136_uncheckpointed/removed_from_live_after_resume_20260725_1642/rollout_dump/`，M1 rollout dashboard 回退并同步到可信 step130，train dashboard 已裁剪到 checkpointed/live-clean step130；2026-07-25 17:03 新 run 仍在进行（actor_rollout_ref_update_actor），期间 raylet 报告 4 个 worker 因 memory pressure 被杀；随后该 run 在重新写出未 checkpoint step131 后再次 Ray OOM 退出，pipeline 已于 17:09 第三次从 `global_step_130` 自动恢复。2026-07-25 17:20 已将此次失败的 live `rollout_dump/131.jsonl` 移到 `logs/exp2card_mm/m1_geo3k100_2b_pre_oom_step131_retry_uncheckpointed/removed_from_live_after_resume_20260725_1720/rollout_dump/`，M1 rollout/train dashboard 均保持 checkpointed/live-clean step130；后续多次自动 retry 均卡在 GPU0 CUDA OOM（GPU0 约74.9G 显存被无 nvidia-smi PID 的残留上下文占用，`nvidia-smi --gpu-reset -i 0` 因权限不足失败），2026-07-25 23:17 已终止当前 M1 retry 进程树并暂停 `scripts/run_mm_training_pipeline.sh`，避免继续消耗；最新一次未 checkpoint `rollout_dump/131.jsonl` 已移到 `logs/exp2card_mm/m1_geo3k100_2b_pre_oom_step131_retry2_uncheckpointed/removed_from_live_after_pause_20260725_2318/rollout_dump/`；M1 下一步需等待 GPU0 被管理员/root reset 或等 M2 释放 GPU2/3 后改用空闲 2-GPU lane 从 step130 恢复；`scripts/run_mm_evaluation_pipeline.sh` 仍在等待 step150 actor checkpoint，默认使用 GPU0 评测以避开 M2 的 GPU2/3；supervisor 已补充 7200s 无文件进展的保守 stale 保护；M2 首次并行 run 在 step6 后因 Ray node memory OOM 退出，已归档到 `logs/exp2card_mm/m2_mix50_2b_failed_20260724_1841_oom_step6/`；由于尚无 step10 checkpoint，2026-07-24 18:47 已从头重启 M2，`logs/exp2card_mm/m2_mix50_2b/launcher.pid=903677`，使用 `MM_CUDA_VISIBLE_DEVICES=2,3`、`MM_SAVE_FREQ=5`、`MM_RAY_MEMORY_USAGE_THRESHOLD=0.99`；2026-07-24 19:37 M2 新 run 写出 step1 rollout，2026-07-24 20:18 写出 step2 rollout，2026-07-24 21:01 写出 step3 rollout，2026-07-24 21:47 写出 step4 rollout，2026-07-24 22:30 写出 step5 rollout且无错误，并已确认 `latest_checkpointed_iteration.txt=5` 与 `global_step_5/actor`；2026-07-24 23:09 写出 step6 rollout，2026-07-25 01:54 确认 step10 checkpoint，2026-07-25 05:11 checkpoint/rollout/summary/dashboard 已同步到 step15（step15：Geo3K accuracy=0.7188、text accuracy=0.4313），2026-07-25 05:54 rollout/summary/dashboard 已同步到 step16（Geo3K accuracy=0.6771、text accuracy=0.4938），2026-07-25 06:33 rollout/summary/dashboard 已同步到 step17（Geo3K accuracy=0.5250、text accuracy=0.4779），2026-07-25 07:11 rollout/summary/dashboard 已同步到 step18（Geo3K accuracy=0.6591、text accuracy=0.5238），2026-07-25 07:53 rollout/summary/dashboard 已同步到 step19（Geo3K accuracy=0.5250、text accuracy=0.3971），2026-07-25 08:30 checkpoint/rollout/summary/dashboard 已同步到 step20（actor 7 files，约25G；Geo3K accuracy=0.5909、text accuracy=0.5250），2026-07-25 09:13 rollout/summary/dashboard 已同步到 step21（Geo3K accuracy=0.4107、text accuracy=0.5625），2026-07-25 10:02 rollout/summary/dashboard 已同步到 step22（Geo3K accuracy=0.4062、text accuracy=0.4125），2026-07-25 10:44 rollout/summary/dashboard 已同步到 step23（Geo3K accuracy=0.6250、text accuracy=0.4453），2026-07-25 11:22 rollout/summary/dashboard 已同步到 step24（Geo3K accuracy=0.6544、text accuracy=0.5500），2026-07-25 12:05 checkpoint/rollout/summary/dashboard 已同步到 step25（actor 7 files，约25G；Geo3K accuracy=0.7434、text accuracy=0.5000），2026-07-25 12:54 rollout/summary/dashboard 已同步到 step26（Geo3K accuracy=0.6458、text accuracy=0.4813），2026-07-25 13:39 rollout/summary/dashboard 已同步到 step27（Geo3K accuracy=0.6833、text accuracy=0.3750），2026-07-25 14:18 rollout/summary/dashboard 已同步到 step28（Geo3K accuracy=0.6912、text accuracy=0.5250），2026-07-25 14:57 rollout/summary/dashboard 已同步到 step29（Geo3K accuracy=0.7569、text accuracy=0.3750），2026-07-25 15:38 checkpoint/rollout/summary/dashboard 已同步到 step30（actor 7 files，约25G；Geo3K accuracy=0.7404、text accuracy=0.5789），2026-07-25 16:14 rollout/summary/dashboard 已同步到 step31（Geo3K accuracy=0.7583、text accuracy=0.7279），2026-07-25 16:53 rollout/summary/dashboard 已同步到 step32（Geo3K accuracy=0.6080、text accuracy=0.6000），2026-07-25 23:15 rollout/summary/dashboard 已同步到 step41，并确认 checkpoint step35/step40 actor 均为 7 files、约25G（step40：Geo3K accuracy=0.7885、text accuracy=0.5987；step41：Geo3K accuracy=0.7019、text accuracy=0.6447），当前无错误，下一 checkpoint 目标 step45；M3 等待下一条空闲 2-GPU lane）
+- [ ] M1 → M2 → M3 正式训练（M1 已于 2026-07-22 用脱离会话的后台进程重新启动，首轮正式 rollout 推进到 step105 后于 2026-07-24 18:45 触发 Ray node memory OOM；`global_step_100/actor` 已落盘且 `latest_checkpointed_iteration.txt=100`，因此 2026-07-24 18:46 自动重启后实际从 ckpt100 恢复，未 checkpoint 的 step101–105 证据已复制到 `logs/exp2card_mm/m1_geo3k100_2b_pre_oom_step105_uncheckpointed/`；2026-07-24 19:26 M1 重启 run 写出新 step101，旧 step102–105 已从 live rollout 目录移到 `logs/exp2card_mm/m1_geo3k100_2b_pre_oom_step105_uncheckpointed/removed_from_live_after_resume_20260724_1927/rollout_dump/`，避免污染当前汇总和后续写文件；2026-07-24 20:04 M1 写出新 step102，2026-07-24 20:37 写出新 step103，2026-07-24 21:10 写出新 step104，2026-07-24 21:51 写出新 step105，2026-07-24 22:26 写出新 step106，2026-07-24 22:58 写出新 step107，已越过旧 run 的 step105 OOM 点；2026-07-25 00:49 确认 step110 checkpoint，2026-07-25 07:08 checkpoint/dashboard 已同步到 step120（actor 7 files，约25G；step120 accuracy=0.7227），2026-07-25 07:26 rollout/dashboard 已同步到 step121（accuracy=0.7148），2026-07-25 08:01 rollout/train dashboard 已同步到 step122（accuracy=0.6992），2026-07-25 08:34 rollout dashboard 已同步到 step123（accuracy=0.7891），2026-07-25 09:11 rollout/train dashboard 已同步到 step124（accuracy=0.6680），2026-07-25 09:46 rollout dashboard 已同步到 step125（accuracy=0.7656），2026-07-25 10:32 rollout/train dashboard 已同步到 step126（accuracy=0.6797），2026-07-25 11:07 rollout dashboard 已同步到 step127（accuracy=0.7031），2026-07-25 11:45 rollout/train dashboard 已同步到 step128（accuracy=0.6758），2026-07-25 12:15 rollout dashboard 已同步到 step129（accuracy=0.8125），2026-07-25 13:00 checkpoint/rollout/train dashboard 已同步到 step130（actor 7 files，约25G；accuracy=0.7344），2026-07-25 13:25 rollout dashboard 已同步到 step131（accuracy=0.6562），2026-07-25 14:02 rollout/train dashboard 已同步到 step132（accuracy=0.6133，mean_score=0.5520），2026-07-25 14:38 rollout dashboard 已同步到 step133（accuracy=0.7500，mean_score=0.6750；train dashboard 暂滞后到 step132），2026-07-25 15:18 rollout/train dashboard 已同步到 step134（accuracy=0.6875，mean_score=0.6188），2026-07-25 15:55 rollout dashboard 已同步到 step135（accuracy=0.6641，mean_score=0.5977；train dashboard 暂滞后到 step134），2026-07-25 16:30 M1 写出未 checkpoint 的 step136 后触发 Ray node memory OOM；最后可信 checkpoint 仍为 step130，pipeline 已于 16:31 自动重启新 run，并在 16:36 从 `global_step_130` 加载 model/optimizer/rng/lr_scheduler。为避免污染当前汇总，已将 live `rollout_dump/131.jsonl`–`136.jsonl` 移到 `logs/exp2card_mm/m1_geo3k100_2b_pre_oom_step136_uncheckpointed/removed_from_live_after_resume_20260725_1642/rollout_dump/`，M1 rollout dashboard 回退并同步到可信 step130，train dashboard 已裁剪到 checkpointed/live-clean step130；2026-07-25 17:03 新 run 仍在进行（actor_rollout_ref_update_actor），期间 raylet 报告 4 个 worker 因 memory pressure 被杀；随后该 run 在重新写出未 checkpoint step131 后再次 Ray OOM 退出，pipeline 已于 17:09 第三次从 `global_step_130` 自动恢复。2026-07-25 17:20 已将此次失败的 live `rollout_dump/131.jsonl` 移到 `logs/exp2card_mm/m1_geo3k100_2b_pre_oom_step131_retry_uncheckpointed/removed_from_live_after_resume_20260725_1720/rollout_dump/`，M1 rollout/train dashboard 均保持 checkpointed/live-clean step130；后续多次自动 retry 均卡在 GPU0 CUDA OOM（GPU0 约74.9G 显存被无 nvidia-smi PID 的残留上下文占用，`nvidia-smi --gpu-reset -i 0` 因权限不足失败），2026-07-25 23:17 已终止当前 M1 retry 进程树并暂停 `scripts/run_mm_training_pipeline.sh`，避免继续消耗；最新一次未 checkpoint `rollout_dump/131.jsonl` 已移到 `logs/exp2card_mm/m1_geo3k100_2b_pre_oom_step131_retry2_uncheckpointed/removed_from_live_after_pause_20260725_2318/rollout_dump/`；M1 下一步需等待 GPU0 被管理员/root reset 或等 M2 释放 GPU2/3 后改用空闲 2-GPU lane 从 step130 恢复；`scripts/run_mm_evaluation_pipeline.sh` 仍在等待 step150 actor checkpoint，默认使用 GPU0 评测以避开 M2 的 GPU2/3；supervisor 已补充 7200s 无文件进展的保守 stale 保护；M2 首次并行 run 在 step6 后因 Ray node memory OOM 退出，已归档到 `logs/exp2card_mm/m2_mix50_2b_failed_20260724_1841_oom_step6/`；由于尚无 step10 checkpoint，2026-07-24 18:47 已从头重启 M2，`logs/exp2card_mm/m2_mix50_2b/launcher.pid=903677`，使用 `MM_CUDA_VISIBLE_DEVICES=2,3`、`MM_SAVE_FREQ=5`、`MM_RAY_MEMORY_USAGE_THRESHOLD=0.99`；2026-07-24 19:37 M2 新 run 写出 step1 rollout，2026-07-24 20:18 写出 step2 rollout，2026-07-24 21:01 写出 step3 rollout，2026-07-24 21:47 写出 step4 rollout，2026-07-24 22:30 写出 step5 rollout且无错误，并已确认 `latest_checkpointed_iteration.txt=5` 与 `global_step_5/actor`；2026-07-24 23:09 写出 step6 rollout，2026-07-25 01:54 确认 step10 checkpoint，2026-07-25 05:11 checkpoint/rollout/summary/dashboard 已同步到 step15（step15：Geo3K accuracy=0.7188、text accuracy=0.4313），2026-07-25 05:54 rollout/summary/dashboard 已同步到 step16（Geo3K accuracy=0.6771、text accuracy=0.4938），2026-07-25 06:33 rollout/summary/dashboard 已同步到 step17（Geo3K accuracy=0.5250、text accuracy=0.4779），2026-07-25 07:11 rollout/summary/dashboard 已同步到 step18（Geo3K accuracy=0.6591、text accuracy=0.5238），2026-07-25 07:53 rollout/summary/dashboard 已同步到 step19（Geo3K accuracy=0.5250、text accuracy=0.3971），2026-07-25 08:30 checkpoint/rollout/summary/dashboard 已同步到 step20（actor 7 files，约25G；Geo3K accuracy=0.5909、text accuracy=0.5250），2026-07-25 09:13 rollout/summary/dashboard 已同步到 step21（Geo3K accuracy=0.4107、text accuracy=0.5625），2026-07-25 10:02 rollout/summary/dashboard 已同步到 step22（Geo3K accuracy=0.4062、text accuracy=0.4125），2026-07-25 10:44 rollout/summary/dashboard 已同步到 step23（Geo3K accuracy=0.6250、text accuracy=0.4453），2026-07-25 11:22 rollout/summary/dashboard 已同步到 step24（Geo3K accuracy=0.6544、text accuracy=0.5500），2026-07-25 12:05 checkpoint/rollout/summary/dashboard 已同步到 step25（actor 7 files，约25G；Geo3K accuracy=0.7434、text accuracy=0.5000），2026-07-25 12:54 rollout/summary/dashboard 已同步到 step26（Geo3K accuracy=0.6458、text accuracy=0.4813），2026-07-25 13:39 rollout/summary/dashboard 已同步到 step27（Geo3K accuracy=0.6833、text accuracy=0.3750），2026-07-25 14:18 rollout/summary/dashboard 已同步到 step28（Geo3K accuracy=0.6912、text accuracy=0.5250），2026-07-25 14:57 rollout/summary/dashboard 已同步到 step29（Geo3K accuracy=0.7569、text accuracy=0.3750），2026-07-25 15:38 checkpoint/rollout/summary/dashboard 已同步到 step30（actor 7 files，约25G；Geo3K accuracy=0.7404、text accuracy=0.5789），2026-07-25 16:14 rollout/summary/dashboard 已同步到 step31（Geo3K accuracy=0.7583、text accuracy=0.7279），2026-07-25 16:53 rollout/summary/dashboard 已同步到 step32（Geo3K accuracy=0.6080、text accuracy=0.6000），2026-07-25 23:15 rollout/summary/dashboard 已同步到 step41，并确认 checkpoint step35/step40 actor 均为 7 files、约25G（step40：Geo3K accuracy=0.7885、text accuracy=0.5987；step41：Geo3K accuracy=0.7019、text accuracy=0.6447），2026-07-25 23:37 rollout/summary/dashboard 已同步到 step42（Geo3K accuracy=0.8250、text accuracy=0.5588），2026-07-26 00:15 rollout/summary/dashboard 已同步到 step43（Geo3K accuracy=0.7500、text accuracy=0.5250），2026-07-26 00:53 rollout/summary/dashboard 已同步到 step44（Geo3K accuracy=0.6250、text accuracy=0.4922），2026-07-26 01:34 checkpoint/rollout/summary/dashboard 已同步到 step45（actor 7 files，约25G；Geo3K accuracy=0.6458、text accuracy=0.5125），2026-07-26 02:12 rollout/summary/dashboard 已同步到 step46（Geo3K accuracy=0.7431、text accuracy=0.5804），2026-07-26 02:48 rollout/summary/dashboard 已同步到 step47（Geo3K accuracy=0.8235、text accuracy=0.5250），2026-07-26 03:26 rollout/summary/dashboard 已同步到 step48（Geo3K accuracy=0.5781、text accuracy=0.5469），2026-07-26 04:01 rollout/summary/dashboard 已同步到 step49（Geo3K accuracy=0.6500、text accuracy=0.5735），2026-07-26 04:33 checkpoint/rollout/summary/dashboard 已同步到 step50（actor 7 files，约25G；Geo3K accuracy=0.6806、text accuracy=0.5089），当前无错误，下一 checkpoint 目标 step60；M3 等待下一条空闲 2-GPU lane）
 - [x] 写 Geo3K 601 题的离线批量评测脚本（`scripts/eval_geo3k.py`；1 题端到端 vLLM 推理与判分已验证）
 - [x] M0(=E1 step150) 正式基线评测（文本基线已完成并写入 `evaluation/completed/m0_e1_grpo_2b_text.done`：MMLU_TEMP AverageAccuracy=0.7834，AIME24 AveragePass@1=0.3542，AIME25 AveragePass@1=0.3250，MATH500 AveragePass@1=0.8635；Geo3K 601/601 已完成并写入 `evaluation/completed/m0_e1_grpo_2b_geo3k.done`：sample_accuracy=0.5732、pass@8=0.8369；输出见 `evaluation/geo3k/m0_e1_grpo_2b_step150.jsonl.summary.json`）
 - [ ] 每组跑完按第 7 节流程评测 + 归档（`scripts/run_mm_evaluation_pipeline.sh` 已在后台等待并自动接力 M1→M3 评测；`scripts/archive_mm_results.sh` 已准备好生成 `$ROOT/polaris/archive/mm_exp2card/` 快照，归档口径参照 `$ROOT/polaris/archive/README.md`）
+
+### 2026-07-26 04:42 巡检补充
+
+- GPU 状态：GPU0 仍占用 74902/81920 MiB 且 util=0（疑似 M1 OOM 后残留 CUDA context，非 root reset 失败）；GPU1 空闲 3/81920 MiB；GPU2/3 被 M2 使用（约 38.6G/38.7G，util 40%/38%）。
+- M1：仍停在 checkpoint step130，live rollout 已保持到 `130.jsonl`，`global_step_150/actor` 未出现；旧 supervisor `3849879` 为 defunct，未发现继续重试。
+- M2：launcher/trainer/workers 仍运行，checkpoint 仍为 step50，latest rollout 为 `50.jsonl`（2026-07-26 04:33:20），未发现 OOM/Traceback/FAILED，仅有 NUMA affinity warning；下一 checkpoint 目标 step60。
+- M3：尚未启动；`run_mm_mix_2b.sh` 固定 `trainer.n_gpus_per_node=2`，当前只有单张 GPU1 空闲，因此暂不安全开启新训练任务。
+- Evaluation：pipeline supervisor `833608` 仍每 5 分钟等待 M1 step150 actor；`evaluation/completed/` 尚无 M1/M2/M3 completion marker。
+
+### 2026-07-26 04:49 巡检补充
+
+- 短轮询 04:45–04:49：M2 仍为 checkpoint step50，latest rollout 仍为 `50.jsonl`（2026-07-26 04:33:20）；GPU2/3 util 约 35%–41%，进程仍活跃，尚未到 step51。
+- GPU 空闲判断未变：GPU1 单卡空闲，GPU0 仍残留约 74.9G，无法满足 M1/M3 的 2-GPU 训练需求；暂不启动新训练任务。
+
+### 2026-07-26 05:03 巡检补充
+
+- 长轮询 04:50–05:03：M2 GPU2/3 从约 38.6G 降到 6–10G 后又升至约 31.6G，util 多次达到 90%–100%，说明训练仍在活跃推进；但 latest rollout 仍为 `50.jsonl`，checkpoint 仍为 step50，尚未落盘 step51。
+- M1/M3 启动判断不变：GPU0 仍残留约 74.9G、GPU1 单卡空闲、GPU2/3 被 M2 占用；当前没有可用 2-GPU lane，继续等待 M2 释放或 GPU0 被 reset。
+
+### 2026-07-26 05:04 巡检补充
+
+- M2 进程仍活跃：workers `906649/906650` 当前处于 `actor_rollout_ref_update_actor`，GPU2/3 约 31.8G、util 60%–67%；latest rollout 仍为 `50.jsonl`，尚无 step51/52 文件或 checkpoint。
+- M1 仍为 checkpoint step130、M3 未启动、evaluation supervisor 继续等待 M1 step150；GPU 空闲判断不变，暂不启动后续任务。
+
+### 2026-07-26 05:18 巡检补充
+
+- M2 已写出 `rollout_dump/51.jsonl`（2026-07-26 05:17:26），rollout summary 与 `dashboard/mm/js/data-m2-rollouts.js` 已刷新到 step51；step51 指标：Geo3K accuracy=0.6333、text accuracy=0.4632。
+- M2 训练进程仍健康运行，checkpoint 仍为 step50（下一 checkpoint 目标 step55/60），日志未发现 OOM/Traceback/FAILED；GPU2/3 约 38.6G、util 41%/41%。
+- M1 仍停在 checkpoint step130，M3 未启动，evaluation supervisor 继续等待 M1 step150；GPU0 残留约 74.9G、GPU1 单卡空闲、GPU2/3 被 M2 占用，仍无可用 2-GPU lane。
+
+### 2026-07-26 05:19 巡检补充
+
+- M2 latest rollout 仍为 `51.jsonl`，checkpoint 仍为 step50；workers `906649/906650` 继续运行，GPU2/3 约 38.6G、util 38%–40%，日志仍仅有 NUMA affinity warning。
+- M1/M3/evaluation 状态未变：M1 checkpoint step130、M3 未启动、evaluation supervisor 继续等待 M1 step150；GPU0 残留约 74.9G，当前仍不能启动新的 2-GPU 训练。
+
+### 2026-07-26 05:20 巡检补充
+
+- M2 状态稳定：latest rollout 仍为 `51.jsonl`，checkpoint 仍为 step50，GPU2/3 约 38.6G、util 40% 左右；未发现新增错误。
+- M1 仍停在 step130，M3 未启动，evaluation supervisor 继续等待 M1 step150；GPU0/GPU1/GPU2/3 占用格局未变，无可用双卡 lane。
+
+### 2026-07-26 05:21 巡检补充
+
+- M2 latest rollout 仍为 `51.jsonl`，checkpoint 仍为 step50；GPU2/3 约 38.6G、util 41%–42%，训练进程继续运行，日志无新增 OOM/Traceback/FAILED。
+- M1 仍为 checkpoint step130、M3 未启动、evaluation supervisor 仍在等待 M1 step150；GPU0 残留约 74.9G，仍无可用 2-GPU lane。
+
+### 2026-07-26 05:22 巡检补充
+
+- M2 latest rollout 仍为 `51.jsonl`，checkpoint 仍为 step50；GPU2/3 约 38.6G、util 40%–41%，进程继续运行，未发现新增错误。
+- M1 仍为 checkpoint step130，M3 未启动，evaluation supervisor 仍在等待 M1 step150；GPU 占用格局未变，仍无可用 2-GPU lane。
+
+### 2026-07-26 05:24 巡检补充
+
+- M2 latest rollout 仍为 `51.jsonl`，checkpoint 仍为 step50；GPU2/3 约 38.6G、util 33%–38%，进程正常，日志无新增 OOM/Traceback/FAILED。
+- M1/M3/evaluation 状态未变：M1 checkpoint step130、M3 未启动、evaluation supervisor 等待 M1 step150；无可用双卡 lane。
+
+### 2026-07-26 05:25 巡检补充
+
+- M2 latest rollout 仍为 `51.jsonl`，checkpoint 仍为 step50；GPU2/3 约 38.6G、util 33%–37%，训练进程继续运行，日志未见新增 OOM/Traceback/FAILED。
+- M1 仍停在 checkpoint step130，M3 未启动；evaluation supervisor 继续等待 M1 step150；GPU 占用格局未变，仍无可用 2-GPU lane。
+
+### 2026-07-26 05:26 巡检补充
+
+- M2 latest rollout 仍为 `51.jsonl`，checkpoint 仍为 step50；GPU2/3 约 38.6G、util 29%/29%，进程继续运行，日志无新增 OOM/Traceback/FAILED。
+- M1 仍停在 checkpoint step130，M3 未启动，evaluation supervisor 继续等待 M1 step150；GPU0 仍残留约 74.9G，仍无可用 2-GPU lane。
+
+### 2026-07-26 05:27 巡检补充
+
+- M2 latest rollout 仍为 `51.jsonl`，checkpoint 仍为 step50；workers 已切到 `actor_rollout_ref_compute_log_prob`，GPU2/3 约 9.8G/10.0G、util 78%/65%，说明 step52 正在前进但尚未落盘。
+- M1 仍停在 checkpoint step130，M3 未启动，evaluation supervisor 继续等待 M1 step150；GPU0 仍残留约 74.9G，仍无可用 2-GPU lane。
+
+### 2026-07-26 05:36 巡检补充
+
+- 05:28–05:36 轮询：M2 latest rollout 仍为 `51.jsonl`，checkpoint 仍为 step50；step52 已从 `actor_rollout_ref_compute_log_prob` → `actor_rollout_ref_compute_ref_log_prob` → `actor_rollout_ref_update_actor`，GPU2/3 约 30.9G、util 81%/100%，仍在活跃推进但尚未落盘 step52。
+- M1 仍停在 checkpoint step130，M3 未启动，evaluation supervisor 继续等待 M1 step150；GPU0 残留约 74.9G、GPU1 单卡空闲、GPU2/3 被 M2 占用，仍无可用 2-GPU lane。
+
+### 2026-07-26 05:38 巡检补充
+
+- M2 latest rollout 仍为 `51.jsonl`，checkpoint 仍为 step50；workers 仍在 `actor_rollout_ref_update_actor`，GPU2/3 约 31.7G、util 67%/100%，step52 尚未落盘但仍活跃。
+- M1 仍停在 checkpoint step130，M3 未启动，evaluation supervisor 继续等待 M1 step150；GPU0 仍残留约 74.9G，仍无可用 2-GPU lane。
+
+### 2026-07-26 05:39 巡检补充
+
+- M2 latest rollout 仍为 `51.jsonl`，checkpoint 仍为 step50；workers 仍在 `actor_rollout_ref_update_actor`，GPU2/3 约 31.8G、util 47%/41%，step52 尚未落盘。
+- M1 仍停在 checkpoint step130，M3 未启动，evaluation supervisor 继续等待 M1 step150；GPU 占用格局未变，仍无可用 2-GPU lane。
+
+### 2026-07-26 05:40 巡检补充
+
+- M2 latest rollout 仍为 `51.jsonl`，checkpoint 仍为 step50；workers 仍在 `actor_rollout_ref_update_actor`，GPU2/3 约 32.0G、util 76%/81%，step52 尚未落盘但仍活跃。
+- M1 仍停在 checkpoint step130，M3 未启动，evaluation supervisor 继续等待 M1 step150；GPU0/GPU1/GPU2/3 占用格局未变，仍无可用 2-GPU lane。
+
+### 2026-07-26 05:42 巡检补充
+
+- M2 latest rollout 仍为 `51.jsonl`，checkpoint 仍为 step50；workers 仍在 `actor_rollout_ref_update_actor`，GPU2/3 约 32.2G、util 79%/100%，step52 仍未落盘但训练活跃。
+- M1 仍停在 checkpoint step130，M3 未启动，evaluation supervisor 继续等待 M1 step150；GPU0 仍残留约 74.9G，仍无可用 2-GPU lane。
+
+### 2026-07-26 05:43 巡检补充
+
+- M2 latest rollout 仍为 `51.jsonl`，checkpoint 仍为 step50；workers 仍在 `actor_rollout_ref_update_actor`，GPU2/3 约 32.5G、util 35%/20%，step52 尚未落盘但进程正常。
+- M1 仍停在 checkpoint step130，M3 未启动，evaluation supervisor 继续等待 M1 step150；GPU0 残留约 74.9G，仍无可用 2-GPU lane。
+
+### 2026-07-26 05:45 巡检补充
+
+- M2 latest rollout 仍为 `51.jsonl`，checkpoint 仍为 step50；workers 仍在 `actor_rollout_ref_update_actor`，GPU2/3 约 33.8G、util 58%/65%，step52 尚未落盘但训练活跃。
+- M1 仍停在 checkpoint step130，M3 未启动，evaluation supervisor 继续等待 M1 step150；GPU0 残留约 74.9G，仍无可用 2-GPU lane。
+
+### 2026-07-26 05:46 巡检补充
+
+- M2 latest rollout 仍为 `51.jsonl`，checkpoint 仍为 step50；workers 仍在 `actor_rollout_ref_update_actor`，GPU2/3 约 33.8G、util 91%/89%，step52 尚未落盘但训练高利用活跃。
+- M1 仍停在 checkpoint step130，M3 未启动，evaluation supervisor 继续等待 M1 step150；GPU0 残留约 74.9G，仍无可用 2-GPU lane。
+
+### 2026-07-26 05:47 巡检补充
+
+- M2 latest rollout 仍为 `51.jsonl`，checkpoint 仍为 step50；workers 仍在 `actor_rollout_ref_update_actor`，GPU2/3 约 33.8G、util 85%/84%，step52 尚未落盘但训练高利用活跃。
+- M1 仍停在 checkpoint step130，M3 未启动，evaluation supervisor 继续等待 M1 step150；GPU 占用格局未变，仍无可用 2-GPU lane。
+
+### 2026-07-26 05:49 巡检补充
+
+- M2 latest rollout 仍为 `51.jsonl`，checkpoint 仍为 step50；workers 仍在 `actor_rollout_ref_update_actor`，GPU2/3 约 33.8G、util 83%/92%，step52 尚未落盘但训练高利用活跃。
+- M1 仍停在 checkpoint step130，M3 未启动，evaluation supervisor 继续等待 M1 step150；GPU 占用格局未变，仍无可用 2-GPU lane。
+
+### 2026-07-26 05:50 巡检补充
+
+- M2 latest rollout 仍为 `51.jsonl`，checkpoint 仍为 step50；workers 仍在 `actor_rollout_ref_update_actor`，GPU2/3 约 33.8G、util 40%/24%，step52 尚未落盘但进程继续运行。
+- M1 仍停在 checkpoint step130，M3 未启动，evaluation supervisor 继续等待 M1 step150；GPU 占用格局未变，仍无可用 2-GPU lane。
+
+### 2026-07-26 05:51 巡检补充
+
+- M2 latest rollout 仍为 `51.jsonl`，checkpoint 仍为 step50；workers 仍在 `actor_rollout_ref_update_actor`，GPU2/3 约 33.8G、util 0%/100%，step52 尚未落盘但进程继续运行。
+- M1 仍停在 checkpoint step130，M3 未启动，evaluation supervisor 继续等待 M1 step150；GPU 占用格局未变，仍无可用 2-GPU lane。
+
+### 2026-07-26 05:52 巡检补充
+
+- M2 latest rollout 仍为 `51.jsonl`，checkpoint 仍为 step50；workers 仍在 `actor_rollout_ref_update_actor`，GPU2/3 约 33.8G、util 54%/48%，step52 尚未落盘但进程继续运行。
+- M1 仍停在 checkpoint step130，M3 未启动，evaluation supervisor 继续等待 M1 step150；GPU 占用格局未变，仍无可用 2-GPU lane。
+
+### 2026-07-26 05:54 巡检补充
+
+- M2 latest rollout 仍为 `51.jsonl`，checkpoint 仍为 step50；workers 仍在 `actor_rollout_ref_update_actor`，GPU2/3 约 33.8G、util 98%/29%，step52 尚未落盘但训练仍活跃。
+- M1 仍停在 checkpoint step130，M3 未启动，evaluation supervisor 继续等待 M1 step150；GPU0 残留约 74.9G，仍无可用 2-GPU lane。
+
+### 2026-07-26 05:56 巡检补充
+
+- M2 latest rollout 仍为 `51.jsonl`，checkpoint 仍为 step50；workers 仍在 `actor_rollout_ref_update_actor`，GPU2/3 约 33.8G、util 73%/77%，step52 尚未落盘但训练仍活跃。
+- M1 仍停在 checkpoint step130，M3 未启动，evaluation supervisor 继续等待 M1 step150；GPU0 残留约 74.9G，仍无可用 2-GPU lane。
+
+### 2026-07-26 05:58 巡检补充
+
+- M2 已写出 `rollout_dump/52.jsonl`（2026-07-26 05:55:41），rollout summary 与 `dashboard/mm/js/data-m2-rollouts.js` 已刷新到 step52；step52 指标：Geo3K accuracy=0.7500、text accuracy=0.4926。
+- M2 训练进程继续运行，checkpoint 仍为 step50（下一 checkpoint 目标 step55），日志仍未发现 OOM/Traceback/FAILED；GPU2/3 约 38.6G/38.5G、util 39%/40%。
+- M1 仍停在 checkpoint step130，M3 未启动，evaluation supervisor 继续等待 M1 step150；GPU0 残留约 74.9G、GPU1 单卡空闲、GPU2/3 被 M2 占用，仍无可用 2-GPU lane。
+
+### 2026-07-26 05:59 巡检补充
+
+- M2 latest rollout 仍为 `52.jsonl`，checkpoint 仍为 step50；workers 继续运行，GPU2/3 约 38.6G/38.5G、util 39%/40%，日志无新增 OOM/Traceback/FAILED。
+- M1 仍停在 checkpoint step130，M3 未启动，evaluation supervisor 继续等待 M1 step150；GPU 占用格局未变，仍无可用 2-GPU lane。
+
+### 2026-07-26 06:00 巡检补充
+
+- M2 latest rollout 仍为 `52.jsonl`，checkpoint 仍为 step50；workers 继续运行，GPU2/3 约 38.6G/38.5G、util 38%/38%，日志无新增 OOM/Traceback/FAILED。
+- M1 仍停在 checkpoint step130，M3 未启动，evaluation supervisor 继续等待 M1 step150；GPU0 残留约 74.9G、GPU1 单卡空闲、GPU2/3 被 M2 占用，仍无可用 2-GPU lane。
+
+### 2026-07-26 06:02 巡检补充
+
+- M2 latest rollout 仍为 `52.jsonl`，checkpoint 仍为 step50；workers 继续运行，GPU2/3 约 38.6G/38.5G、util 37%/37%，日志无新增 OOM/Traceback/FAILED。
+- M1 仍停在 checkpoint step130，M3 未启动，evaluation supervisor 继续等待 M1 step150；GPU0 残留约 74.9G、GPU1 单卡空闲、GPU2/3 被 M2 占用，仍无可用 2-GPU lane。
+
+### 2026-07-26 06:03 巡检补充
+
+- M2 latest rollout 仍为 `52.jsonl`，checkpoint 仍为 step50；workers 继续运行，GPU2/3 约 38.6G/38.5G、util 30%/31%，日志无新增 OOM/Traceback/FAILED。
+- M1 仍停在 checkpoint step130，M3 未启动，evaluation supervisor 继续等待 M1 step150；GPU0 残留约 74.9G、GPU1 单卡空闲、GPU2/3 被 M2 占用，仍无可用 2-GPU lane。
+
+### 2026-07-26 06:05 巡检补充
+
+- M2 latest rollout 仍为 `52.jsonl`，checkpoint 仍为 step50；workers 继续运行，GPU2/3 约 38.6G/38.5G、util 29%/29%，日志无新增 OOM/Traceback/FAILED。
+- M1 仍停在 checkpoint step130，M3 未启动，evaluation supervisor 继续等待 M1 step150；GPU0 残留约 74.9G、GPU1 单卡空闲、GPU2/3 被 M2 占用，仍无可用 2-GPU lane。
+
+### 2026-07-26 06:06 巡检补充
+
+- M2 latest rollout 仍为 `52.jsonl`，checkpoint 仍为 step50；workers 已切到 `actor_rollout_ref_compute_log_prob`，GPU2/3 约 9.8G/10.2G、util 57%/51%，说明 step53 正在推进但尚未落盘。
+- M1 仍停在 checkpoint step130，M3 未启动，evaluation supervisor 继续等待 M1 step150；GPU0 残留约 74.9G、GPU1 单卡空闲、GPU2/3 被 M2 占用，仍无可用 2-GPU lane。
+
+### 2026-07-26 06:08 巡检补充
+
+- M2 latest rollout 仍为 `52.jsonl`，checkpoint 仍为 step50；workers 已切到 `actor_rollout_ref_compute_ref_log_prob`，GPU2/3 约 6.6G/6.6G、util 100%/100%，step53 正在推进但尚未落盘。
+- M1 仍停在 checkpoint step130，M3 未启动，evaluation supervisor 继续等待 M1 step150；GPU0 残留约 74.9G、GPU1 单卡空闲、GPU2/3 被 M2 占用，仍无可用 2-GPU lane。
+
+### 2026-07-26 06:10 巡检补充
+
+- M2 latest rollout 仍为 `52.jsonl`，checkpoint 仍为 step50；workers 仍在 `actor_rollout_ref_compute_ref_log_prob`，GPU2/3 约 6.8G/6.8G、util 41%/46%，step53 尚未落盘。
+- M1 仍停在 checkpoint step130，M3 未启动，evaluation supervisor 继续等待 M1 step150；GPU0 残留约 74.9G、GPU1 单卡空闲、GPU2/3 被 M2 占用，仍无可用 2-GPU lane。
+
+### 2026-07-26 06:17 巡检补充
+
+- M2 latest rollout 仍为 `52.jsonl`，checkpoint 仍为 step50；workers 在 `actor_rollout_ref_update_actor`，GPU2/3 约 32.0G/32.1G、util 42%/25%，step53 尚未落盘但训练进程仍活跃。
+- 日志扫描仍只见 NUMA affinity warning，未见 OOM/Traceback/FAILED；evaluation supervisor 继续等待 M1 step150。
+- GPU0 仍残留约 74.9G 且 util 0%，GPU1 单卡空闲，GPU2/3 被 M2 占用；当前没有干净的 2-GPU lane，因此暂不启动 M3/不重启 M1。
+
+### 2026-07-26 06:33 巡检补充
+
+- M2 已写出 `rollout_dump/53.jsonl`（2026-07-26 06:29:33），rollout summary 与 `dashboard/mm/js/data-m2-rollouts.js` 已刷新到 step53。
+- Step53 指标：Geo3K accuracy=0.6548（168 samples）、text accuracy=0.6023（88 samples）；M2 checkpoint 仍为 step50，下一 checkpoint 目标 step55。
+- M2 进程继续运行，GPU2/3 约 38.6G/38.5G、util 42%/42%；日志仍未见 OOM/Traceback/FAILED。GPU0 仍残留约 74.9G、GPU1 单卡空闲，仍无干净 2-GPU lane，因此暂不启动 M3/不重启 M1。
+
+### 2026-07-26 06:34 巡检补充
+
+- M2 latest rollout 为 `53.jsonl`，CSV 与 `dashboard/mm/js/data-m2-rollouts.js` 已确认覆盖到 step53；step53 指标保持 Geo3K accuracy=0.6548、text accuracy=0.6023。
+- M2 checkpoint 仍为 step50，尚无 `global_step_55/actor`；launcher/trainer/workers 仍存活，GPU2/3 约 38.6G/38.5G、util 38%/39%。
+- M1 仍停在 checkpoint step130、无 step150；M3 未启动；evaluation supervisor 仍等待 M1 step150。
+- GPU0 仍残留约 74.9G、GPU1 单卡空闲、GPU2/3 被 M2 占用；当前无干净 2-GPU lane，因此继续不启动 M3/不重启 M1。
+
+### 2026-07-26 06:50 巡检补充
+
+- M2 latest rollout 仍为 `53.jsonl`，checkpoint 仍为 step50；尚无 `global_step_55/actor`，workers 在 `actor_rollout_ref_update_actor`，说明 step54/后续仍在推进但未落盘。
+- M2 GPU2/3 约 31.6G/31.5G、util 61%/49%；日志扫描仍只见 NUMA affinity warning，未见 OOM/Traceback/FAILED。
+- M1 仍停在 checkpoint step130、无 step150；M3 未启动；evaluation supervisor 继续等待 M1 step150。
+- GPU0 仍残留约 74.9G、GPU1 单卡空闲、GPU2/3 被 M2 占用；仍无干净 2-GPU lane，因此继续不启动新任务。
+
+### 2026-07-26 07:11 巡检补充
+
+- M2 已写出 `rollout_dump/54.jsonl`（2026-07-26 07:08:08），rollout summary 与 `dashboard/mm/js/data-m2-rollouts.js` 已刷新并确认 dashboard max step=54。
+- Step54 指标：Geo3K accuracy=0.6667（120 samples）、text accuracy=0.4926（136 samples）；M2 checkpoint 仍为 step50，尚无 `global_step_55/actor`，下一重点观察 step55 checkpoint。
+- M2 进程继续运行，GPU2/3 约 38.7G/38.6G、util 40%/41%；日志仍未见 OOM/Traceback/FAILED。
+- GPU0 仍残留约 74.9G、GPU1 单卡空闲、GPU2/3 被 M2 占用；仍无干净 2-GPU lane，因此继续不启动 M3/不重启 M1。evaluation supervisor 仍等待 M1 step150。
+
+### 2026-07-26 07:32 巡检补充
+
+- M2 latest rollout 仍为 `54.jsonl`，checkpoint 仍为 step50；尚无 `55.jsonl` 与 `global_step_55/actor`，workers 在 `actor_rollout_ref_update_actor`，训练仍活跃。
+- M2 GPU2/3 约 32.3G/32.3G、util 79%/81%；日志扫描仍只见 NUMA affinity warning，未见 OOM/Traceback/FAILED。
+- M1 仍停在 checkpoint step130、无 step150；M3 未启动；evaluation supervisor 继续等待 M1 step150。
+- GPU0 仍残留约 74.9G、GPU1 单卡空闲、GPU2/3 被 M2 占用；仍无干净 2-GPU lane，因此继续不启动新任务，下一重点继续等 M2 step55 checkpoint。
+
+### 2026-07-26 07:54 巡检补充
+
+- M2 已写出 `rollout_dump/55.jsonl`（2026-07-26 07:47:03），`latest_checkpointed_iteration.txt=55`；`global_step_55/actor` 已验证完整（7 files，约 25G）。
+- M2 rollout summary 与 `dashboard/mm/js/data-m2-rollouts.js` 已刷新并确认 dashboard max step=55；step55 指标：Geo3K accuracy=0.6103（136 samples）、text accuracy=0.4083（120 samples）。
+- M2 进程继续运行，GPU2/3 约 38.6G/38.6G、util 35%/38%；日志仍未见 OOM/Traceback/FAILED。
+- M1 仍停在 checkpoint step130、无 step150；M3 未启动；evaluation supervisor 继续等待 M1 step150。
+- GPU0 仍残留约 74.9G、GPU1 单卡空闲、GPU2/3 被 M2 占用；仍无干净 2-GPU lane，因此继续不启动新任务，下一重点观察 M2 step56/60 与 GPU lane 是否释放。
+
+### 2026-07-26 08:15 巡检补充
+
+- M2 latest rollout 仍为 `55.jsonl`，checkpoint 仍为 step55；尚无 `56.jsonl`、`global_step_56/actor` 或 `global_step_60/actor`，workers 在 `actor_rollout_ref_update_actor`，训练仍活跃。
+- M2 GPU2/3 约 32.3G/32.5G、util 75%/75%；日志扫描仍只见 NUMA affinity warning，未见 OOM/Traceback/FAILED。
+- M1 仍停在 checkpoint step130、无 step150；M3 未启动；evaluation supervisor 继续等待 M1 step150。
+- GPU0 仍残留约 74.9G、GPU1 单卡空闲、GPU2/3 被 M2 占用；仍无干净 2-GPU lane，因此继续不启动新任务，下一重点继续等 M2 step56/60。
+
+### 2026-07-26 08:37 巡检补充
+
+- M2 已写出 `rollout_dump/56.jsonl`（2026-07-26 08:32:23），rollout summary 与 `dashboard/mm/js/data-m2-rollouts.js` 已刷新并确认 dashboard max step=56。
+- Step56 指标：Geo3K accuracy=0.6167（120 samples）、text accuracy=0.5662（136 samples）；M2 checkpoint 仍为 step55，尚无 `global_step_60/actor`。
+- M2 进程继续运行，GPU2/3 约 38.5G/38.6G、util 44%/48%；日志仍未见 OOM/Traceback/FAILED。
+- M1 仍停在 checkpoint step130、无 step150；M3 未启动；evaluation supervisor 继续等待 M1 step150。
+- GPU0 仍残留约 74.9G、GPU1 单卡空闲、GPU2/3 被 M2 占用；仍无干净 2-GPU lane，因此继续不启动新任务，下一重点观察 M2 step57/60 与 GPU lane 是否释放。
+
+### 2026-07-26 08:59 巡检补充
+
+- M2 latest rollout 仍为 `56.jsonl`，checkpoint 仍为 step55；尚无 `57.jsonl`、`global_step_57/actor` 或 `global_step_60/actor`，workers 在 `actor_rollout_ref_update_actor`，训练仍活跃。
+- M2 GPU2/3 约 32.2G/32.2G、util 37%/34%；日志扫描仍只见 NUMA affinity warning，未见 OOM/Traceback/FAILED。
+- GPU0 仍残留约 74.9G，GPU1 也出现约 74.5G 无进程显存残留（`nvidia-smi` 进程表为空但显存占用存在），GPU2/3 被 M2 占用；当前没有可用 2-GPU lane。
+- M1 仍停在 checkpoint step130、无 step150；M3 未启动；evaluation supervisor 继续等待 M1 step150；因此继续不启动新任务，下一重点观察 M2 step57/60 与 GPU 残留是否释放。
+
+### 2026-07-26 09:20 巡检补充
+
+- M2 已写出 `rollout_dump/57.jsonl`（2026-07-26 09:17:22），rollout summary 与 `dashboard/mm/js/data-m2-rollouts.js` 已刷新并确认 dashboard max step=57。
+- Step57 指标：Geo3K accuracy=0.4615（104 samples）、text accuracy=0.6316（152 samples）；M2 checkpoint 仍为 step55，尚无 `global_step_60/actor`。
+- M2 进程继续运行，GPU2/3 约 38.5G/38.5G、util 28%/29%；日志仍未见 OOM/Traceback/FAILED。
+- GPU0 仍残留约 74.9G，GPU1 仍约 74.5G 且 util 一度 100%、但 `nvidia-smi` 进程表无可见进程；GPU2/3 被 M2 占用，仍无可用 2-GPU lane。
+- M1 仍停在 checkpoint step130、无 step150；M3 未启动；evaluation supervisor 继续等待 M1 step150；因此继续不启动新任务，下一重点观察 M2 step58/60 与 GPU 残留是否释放。
+
+### 2026-07-26 09:42 巡检补充
+
+- M2 latest rollout 仍为 `57.jsonl`，checkpoint 仍为 step55；尚无 `58.jsonl`、`global_step_58/actor` 或 `global_step_60/actor`，workers 在 `actor_rollout_ref_update_actor`，训练仍活跃。
+- M2 GPU2/3 约 32.3G/32.3G、util 62%/47%；日志扫描仍只见 NUMA affinity warning，未见 OOM/Traceback/FAILED。
+- GPU1 的无进程显存残留已释放（约 3 MiB），但 GPU0 仍残留约 74.9G，GPU2/3 被 M2 占用；当前仍只有单张干净空闲卡，没有可用 2-GPU lane。
+- M1 仍停在 checkpoint step130、无 step150；M3 未启动；evaluation supervisor 继续等待 M1 step150；因此继续不启动新任务，下一重点观察 M2 step58/60 与 GPU0 残留是否释放。
+
+### 2026-07-26 10:04 巡检补充
+
+- M2 已写出 `rollout_dump/58.jsonl`（2026-07-26 09:54:34），rollout summary 与 `dashboard/mm/js/data-m2-rollouts.js` 已刷新并确认 dashboard max step=58。
+- Step58 指标：Geo3K accuracy=0.6818（176 samples）、text accuracy=0.6250（80 samples）；M2 checkpoint 仍为 step55，尚无 `global_step_60/actor`。
+- M2 进程继续运行，GPU2/3 约 38.4G/38.6G、util 29%/31%；日志仍未见 OOM/Traceback/FAILED。
+- GPU1 仍干净空闲（约 3 MiB），但 GPU0 仍残留约 74.9G，GPU2/3 被 M2 占用；当前仍只有单张干净空闲卡，没有可用 2-GPU lane。
+- M1 仍停在 checkpoint step130、无 step150；M3 未启动；evaluation supervisor 继续等待 M1 step150；因此继续不启动新任务，下一重点观察 M2 step59/60 checkpoint 与 GPU0 残留是否释放。
+
+### 2026-07-26 10:27 巡检补充
+
+- M2 latest rollout 仍为 `58.jsonl`，checkpoint 仍为 step55；尚无 `59.jsonl`、`global_step_59/actor` 或 `global_step_60/actor`，workers 在 `actor_rollout_ref_update_actor`，训练仍活跃。
+- M2 GPU2/3 约 33.8G/33.8G、util 43%/38%；日志扫描仍只见 NUMA affinity warning，未见 OOM/Traceback/FAILED。
+- GPU1 仍干净空闲（约 3 MiB），GPU0 仍残留约 74.9G，GPU2/3 被 M2 占用；当前仍只有单张干净空闲卡，没有可用 2-GPU lane。
+- M1 仍停在 checkpoint step130、无 step150；M3 未启动；evaluation supervisor 继续等待 M1 step150；因此继续不启动新任务，下一重点继续观察 M2 step59/60 checkpoint 与 GPU0 残留是否释放。
+
+### 2026-07-26 10:49 巡检补充
+
+- M2 已写出 `rollout_dump/59.jsonl`（2026-07-26 10:28:45），rollout summary 与 `dashboard/mm/js/data-m2-rollouts.js` 已刷新并确认 dashboard max step=59。
+- Step59 指标：Geo3K accuracy=0.8158（152 samples）、text accuracy=0.5769（104 samples）；M2 checkpoint 仍为 step55，尚无 `global_step_60/actor`。
+- M2 进程继续运行，GPU2/3 约 31.4G/31.4G、util 69%/71%；日志仍未见 OOM/Traceback/FAILED。
+- GPU1 仍干净空闲（约 3 MiB），GPU0 仍残留约 74.9G，GPU2/3 被 M2 占用；当前仍只有单张干净空闲卡，没有可用 2-GPU lane。
+- M1 仍停在 checkpoint step130、无 step150；M3 未启动；evaluation supervisor 继续等待 M1 step150；因此继续不启动新任务，下一重点观察 M2 step60 checkpoint 与 GPU0 残留是否释放。
+
+### 2026-07-26 11:10 巡检补充
+
+- M2 已写出 `rollout_dump/60.jsonl`（2026-07-26 11:07:30），`latest_checkpointed_iteration.txt=60`；`global_step_60/actor` 已验证完整（7 files，约 25G）。
+- M2 rollout summary 与 `dashboard/mm/js/data-m2-rollouts.js` 已刷新并确认 dashboard max step=60；step60 指标：Geo3K accuracy=0.7625（160 samples）、text accuracy=0.5312（96 samples）。
+- M2 进程继续运行，GPU2/3 约 38.7G/38.7G、util 40%/40%；日志仍未见 OOM/Traceback/FAILED。
+- GPU0 仍残留约 74.9G，GPU1 再次出现约 74.5G 无可见进程残留且 util 100%，GPU2/3 被 M2 占用；当前没有可用 2-GPU lane。
+- M1 仍停在 checkpoint step130、无 step150；M3 未启动；evaluation supervisor 继续等待 M1 step150；因此继续不启动新任务，下一重点观察 M2 step65/150 与 GPU 残留是否释放。
+
+### 2026-07-26 11:33 巡检补充
+
+- M2 latest rollout 仍为 `60.jsonl`，checkpoint 仍为 step60；尚无 `61.jsonl`、`global_step_61/actor` 或 `global_step_65/actor`，workers 在 `actor_rollout_ref_update_actor`，训练仍活跃。
+- M2 GPU2/3 约 33.7G/33.7G、util 98%/95%；日志扫描仍只见 NUMA affinity warning，未见 OOM/Traceback/FAILED。
+- GPU0 仍残留约 74.9G，GPU1 再次出现约 74.5G 无可见进程残留，GPU2/3 被 M2 占用；当前没有可用 2-GPU lane。
+- M1 仍停在 checkpoint step130、无 step150；M3 未启动；evaluation supervisor 继续等待 M1 step150；因此继续不启动新任务，下一重点观察 M2 step61/65 与 GPU 残留是否释放。
+
+### 2026-07-26 11:55 巡检补充
+
+- M2 已写出 `rollout_dump/61.jsonl`（2026-07-26 11:44:06），rollout summary 与 `dashboard/mm/js/data-m2-rollouts.js` 已刷新并确认 dashboard max step=61。
+- Step61 指标：Geo3K accuracy=0.7125（160 samples）、text accuracy=0.5625（96 samples）；M2 checkpoint 仍为 step60，尚无 `global_step_65/actor`。
+- M2 进程继续运行，workers 在 `actor_rollout_ref_compute_log_prob`，GPU2/3 约 9.9G/10.0G、util 57%/57%；日志仍未见 OOM/Traceback/FAILED。
+- GPU1 当前恢复干净空闲（约 3 MiB），但 GPU0 仍残留约 74.9G，GPU2/3 被 M2 占用；当前仍只有单张干净空闲卡，没有可用 2-GPU lane。
+- M1 仍停在 checkpoint step130、无 step150；M3 未启动；evaluation supervisor 继续等待 M1 step150；因此继续不启动新任务，下一重点观察 M2 step62/65 checkpoint 与 GPU 残留是否释放。
+
+### 2026-07-26 12:17 巡检补充
+
+- M2 latest rollout 仍为 `61.jsonl`，checkpoint 仍为 step60；尚无 `62.jsonl`、`global_step_62/actor` 或 `global_step_65/actor`，workers 在 `actor_rollout_ref_update_actor`，训练仍活跃。
+- M2 GPU2/3 约 33.9G/33.8G、util 45%/35%；日志扫描仍只见 NUMA affinity warning，未见 OOM/Traceback/FAILED。
+- GPU1 当前干净空闲（约 3 MiB），但 GPU0 仍残留约 74.9G，GPU2/3 被 M2 占用；当前仍只有单张干净空闲卡，没有可用 2-GPU lane。
+- M1 仍停在 checkpoint step130、无 step150；M3 未启动；evaluation supervisor 继续等待 M1 step150；因此继续不启动新任务，下一重点观察 M2 step62/65 checkpoint 与 GPU 残留是否释放。
+
+### 2026-07-26 12:39 巡检补充
+
+- M2 已写出 `rollout_dump/62.jsonl`（2026-07-26 12:23:37），rollout summary 与 `dashboard/mm/js/data-m2-rollouts.js` 已刷新并确认 dashboard max step=62。
+- Step62 指标：Geo3K accuracy=0.8333（120 samples）、text accuracy=0.5147（136 samples）；M2 checkpoint 仍为 step60，尚无 `global_step_65/actor`。
+- M2 进程继续运行，workers 在 `actor_rollout_ref_compute_ref_log_prob`，GPU2/3 约 7.1G/7.1G、util 57%/58%；日志仍未见 OOM/Traceback/FAILED。
+- GPU1 当前干净空闲（约 3 MiB），但 GPU0 仍残留约 74.9G，GPU2/3 被 M2 占用；当前仍只有单张干净空闲卡，没有可用 2-GPU lane。
+- M1 仍停在 checkpoint step130、无 step150；M3 未启动；evaluation supervisor 继续等待 M1 step150；因此继续不启动新任务，下一重点观察 M2 step63/65 checkpoint 与 GPU 残留是否释放。
+
+### 2026-07-26 13:01 巡检补充
+
+- M2 已写出 `rollout_dump/63.jsonl`（2026-07-26 13:01:14），rollout summary 与 `dashboard/mm/js/data-m2-rollouts.js` 已刷新并确认 dashboard max step=63。
+- Step63 指标：Geo3K accuracy=0.7143（168 samples）、text accuracy=0.5341（88 samples）；M2 checkpoint 仍为 step60，尚无 `global_step_65/actor`。
+- M2 进程继续运行，GPU2/3 约 38.6G/38.6G、util 39%/40%；日志仍未见 OOM/Traceback/FAILED。
+- GPU1 当前干净空闲（约 3 MiB），但 GPU0 仍残留约 74.9G，GPU2/3 被 M2 占用；当前仍只有单张干净空闲卡，没有可用 2-GPU lane。
+- M1 仍停在 checkpoint step130、无 step150；M3 未启动；evaluation supervisor 继续等待 M1 step150；因此继续不启动新任务，下一重点观察 M2 step64/65 checkpoint 与 GPU 残留是否释放。
+
+### 2026-07-26 13:24 巡检补充
+
+- M2 latest rollout 仍为 `63.jsonl`，checkpoint 仍为 step60；尚无 `64.jsonl`、`global_step_64/actor` 或 `global_step_65/actor`，workers 在 `actor_rollout_ref_update_actor`，训练仍活跃。
+- M2 GPU2/3 约 32.1G/32.1G、util 77%/74%；日志扫描仍只见 NUMA affinity warning，未见 OOM/Traceback/FAILED。
+- GPU1 当前干净空闲（约 3 MiB），但 GPU0 仍残留约 74.9G，GPU2/3 被 M2 占用；当前仍只有单张干净空闲卡，没有可用 2-GPU lane。
+- M1 仍停在 checkpoint step130、无 step150；M3 未启动；evaluation supervisor 继续等待 M1 step150；因此继续不启动新任务，下一重点观察 M2 step64/65 checkpoint 与 GPU 残留是否释放。
+
+### 2026-07-26 13:47 巡检补充
+
+- M2 已写出 `rollout_dump/64.jsonl`（2026-07-26 13:35:46），rollout summary 与 `dashboard/mm/js/data-m2-rollouts.js` 已刷新并确认 dashboard max step=64。
+- Step64 指标：Geo3K accuracy=0.6125（160 samples）、text accuracy=0.5833（96 samples）；M2 checkpoint 仍为 step60，尚无 `global_step_65/actor`。
+- M2 进程继续运行，workers 在 `actor_rollout_ref_compute_log_prob`，GPU2/3 约 9.9G/10.3G、util 48%/56%；日志仍未见 OOM/Traceback/FAILED。
+- GPU1 当前干净空闲（约 3 MiB），但 GPU0 仍残留约 74.9G，GPU2/3 被 M2 占用；当前仍只有单张干净空闲卡，没有可用 2-GPU lane。
+- M1 仍停在 checkpoint step130、无 step150；M3 未启动；evaluation supervisor 继续等待 M1 step150；因此继续不启动新任务，下一重点观察 M2 step65 checkpoint 与 GPU 残留是否释放。
+
+### 2026-07-26 14:12 巡检补充
+
+- M2 latest rollout 仍为 `64.jsonl`，checkpoint 仍为 step60；尚无 `65.jsonl`、`global_step_65/actor` 或 `global_step_70/actor`，workers 在 `actor_rollout_ref_update_actor`，训练仍活跃。
+- M2 GPU2/3 约 33.9G/33.9G、util 53%/48%；日志扫描仍只见 NUMA affinity warning，未见 OOM/Traceback/FAILED。
+- GPU1 当前干净空闲（约 3 MiB），但 GPU0 仍残留约 74.9G，GPU2/3 被 M2 占用；当前仍只有单张干净空闲卡，没有可用 2-GPU lane。
+- M1 仍停在 checkpoint step130、无 step150；M3 未启动；evaluation supervisor 继续等待 M1 step150；因此继续不启动新任务，下一重点继续观察 M2 step65 checkpoint 与 GPU 残留是否释放。
+
+### 2026-07-26 14:34 巡检补充
+
+- M2 已写出 `rollout_dump/65.jsonl`（2026-07-26 14:15:01），`latest_checkpointed_iteration.txt=65`；`global_step_65/actor` 已验证完整（7 files，约 25G）。
+- M2 rollout summary 与 `dashboard/mm/js/data-m2-rollouts.js` 已刷新并确认 dashboard max step=65；step65 指标：Geo3K accuracy=0.6691（136 samples）、text accuracy=0.6333（120 samples）。
+- M2 进程继续运行，GPU2/3 约 31.3G/31.4G、util 61%/55%；日志仍未见 OOM/Traceback/FAILED。
+- GPU1 当前干净空闲（约 3 MiB），但 GPU0 仍残留约 74.9G，GPU2/3 被 M2 占用；当前仍只有单张干净空闲卡，没有可用 2-GPU lane。
+- M1 仍停在 checkpoint step130、无 step150；M3 未启动；evaluation supervisor 继续等待 M1 step150；因此继续不启动新任务，下一重点观察 M2 step66/70 checkpoint 与 GPU 残留是否释放。
+
+### 2026-07-26 14:57 巡检补充
+
+- M2 已写出 `rollout_dump/66.jsonl`（2026-07-26 14:51:22），rollout summary 与 `dashboard/mm/js/data-m2-rollouts.js` 已刷新并确认 dashboard max step=66。
+- Step66 指标：Geo3K accuracy=0.7222（144 samples）、text accuracy=0.7232（112 samples）；M2 checkpoint 仍为 step65，尚无 `global_step_70/actor`。
+- M2 进程继续运行，GPU2/3 约 38.6G/38.6G、util 41%/44%；日志仍未见 OOM/Traceback/FAILED。
+- GPU1 当前干净空闲（约 3 MiB），但 GPU0 仍残留约 74.9G，GPU2/3 被 M2 占用；当前仍只有单张干净空闲卡，没有可用 2-GPU lane。
+- M1 仍停在 checkpoint step130、无 step150；M3 未启动；evaluation supervisor 继续等待 M1 step150；因此继续不启动新任务，下一重点观察 M2 step67/70 checkpoint 与 GPU 残留是否释放。
+
+### 2026-07-26 15:19 巡检补充
+
+- M2 latest rollout 仍为 `66.jsonl`，checkpoint 仍为 step65；尚无 `67.jsonl`、`global_step_67/actor` 或 `global_step_70/actor`，workers 在 `actor_rollout_ref_update_actor`，训练仍活跃。
+- M2 GPU2/3 约 33.3G/33.4G、util 100%/94%；日志扫描仍只见 NUMA affinity warning，未见 OOM/Traceback/FAILED。
+- GPU1 当前干净空闲（约 3 MiB），但 GPU0 仍残留约 74.9G，GPU2/3 被 M2 占用；当前仍只有单张干净空闲卡，没有可用 2-GPU lane。
+- M1 仍停在 checkpoint step130、无 step150；M3 未启动；evaluation supervisor 继续等待 M1 step150；因此继续不启动新任务，下一重点观察 M2 step67/70 checkpoint 与 GPU 残留是否释放。
+
+### 2026-07-26 15:22 巡检补充
+
+- GPU1 当前是唯一干净空闲卡（约 3 MiB）；GPU0 仍有两个 `[Not Found]` CUDA 上下文合计约 74.9G，GPU2/3 被 M2 占用，因此没有可用于 M1/M3 的干净 2-GPU lane。
+- M2 仍健康运行在 GPU2/3，launcher/trainer/workers 存活；latest rollout 仍为 `66.jsonl`，checkpoint 仍为 step65，尚无 `67.jsonl` 或 `global_step_70/actor`。
+- M1 仍停在 checkpoint step130、无 step150；M3 未启动；evaluation supervisor 继续等待 M1 step150。
+- 结论：暂不启动新任务；若之后 GPU0 残留释放或 M2 释放 GPU2/3，优先恢复 M1 到 step150，再启动 M3。
+
+### 2026-07-26 15:27 巡检补充
+
+- 追加等待约 2 分钟后，M2 latest rollout 仍为 `66.jsonl`，`latest_checkpointed_iteration.txt=65`，尚无 `67.jsonl` 或 `global_step_70/actor`。
+- M2 launcher/trainer/workers 仍存活，GPU2/3 约 33.9G/33.9G、util 58%/58%；日志仍只见 NUMA affinity warning，未见 OOM/Traceback/FAILED。
+- GPU0 仍残留约 74.9G，GPU1 干净空闲，GPU2/3 被 M2 占用；继续没有可启动 M1/M3 的干净 2-GPU lane。
+- evaluation supervisor 最新心跳为 2026-07-26 15:24:45，仍在等待 `m1_geo3k100_2b` step150 actor checkpoint。
+
+### 2026-07-26 15:32 巡检补充
+
+- 继续等待约 4 分钟后，M2 latest rollout 仍为 `66.jsonl`（2026-07-26 14:51:22），checkpoint 仍为 step65；尚无 `67.jsonl`、`global_step_67/actor` 或 `global_step_70/actor`。
+- M2 launcher/trainer/workers 仍存活，workers 仍在 `actor_rollout_ref_update_actor`；训练日志尾部最新完整指标为 step66，error scan 仍只见 NUMA affinity warning。
+- GPU2/3 约 33.9G/33.9G、util 65%/49%；GPU0 仍残留约 74.9G，GPU1 干净空闲，因此仍没有干净 2-GPU lane。
+- evaluation supervisor 最新心跳为 2026-07-26 15:29:45，继续等待 M1 step150；M1 停在 step130，M3 未启动。
+
+### 2026-07-26 15:34 巡检补充
+
+- M2 新写出 `rollout_dump/67.jsonl`（2026-07-26 15:32:51），rollout summary 与 `dashboard/mm/js/data-m2-rollouts.js` 已刷新并确认 dashboard max step=67。
+- Step67 指标：Geo3K accuracy=0.4583（96 samples）、text accuracy=0.5500（160 samples）；M2 checkpoint 仍为 step65，尚无 `global_step_67/actor` 或 `global_step_70/actor`。
+- M2 继续运行，GPU2/3 约 38.6G/38.4G、util 42%/43%；日志仍只见 NUMA affinity warning，未见 OOM/Traceback/FAILED。
+- GPU0 仍残留约 74.9G，GPU1 干净空闲，GPU2/3 被 M2 占用；当前仍没有干净 2-GPU lane，不启动 M1/M3。
+
+### 2026-07-26 15:41 巡检补充
+
+- 继续等待约 5 分钟后，M2 latest rollout 仍为 `67.jsonl`；checkpoint 仍为 step65，尚无 `68.jsonl`、`global_step_68/actor` 或 `global_step_70/actor`。
+- M2 launcher/trainer/workers 仍存活，GPU2/3 约 38.6G/38.4G、util 27%/27%；错误扫描仍只见 NUMA affinity warning，未见 OOM/Traceback/FAILED。
+- GPU0 仍残留约 74.9G，GPU1 干净空闲，GPU2/3 被 M2 占用；仍无干净 2-GPU lane，继续不启动 M1/M3。
+- evaluation supervisor 最新心跳为 2026-07-26 15:39:45，仍等待 M1 step150；M1 停在 step130，M3 未启动。
+
+### 2026-07-26 15:49 巡检补充
+
+- M2 latest rollout 仍为 `67.jsonl`，checkpoint 仍为 step65；尚无 `68.jsonl`、`global_step_68/actor` 或 `global_step_70/actor`。
+- M2 进程仍健康，workers 已从 `actor_rollout_ref_compute_log_prob` 推进到 `actor_rollout_ref_compute_ref_log_prob`；GPU2/3 约 6.8G/6.8G、util 88%/88%。
+- 错误扫描仍只见 NUMA affinity warning，未见 OOM/Traceback/FAILED；evaluation supervisor 最新心跳为 2026-07-26 15:44:45，仍等待 M1 step150。
+- GPU0 仍残留约 74.9G，GPU1 干净空闲，GPU2/3 被 M2 占用；仍无干净 2-GPU lane，继续不启动 M1/M3。
+
+### 2026-07-26 15:55 巡检补充
+
+- M2 latest rollout 仍为 `67.jsonl`，checkpoint 仍为 step65；尚无 `68.jsonl`、`global_step_68/actor` 或 `global_step_70/actor`。
+- M2 workers 已回到 `actor_rollout_ref_update_actor`，GPU2/3 约 31.7G/31.6G、util 61%/69%；进程仍存活。
+- 错误扫描仍只见 NUMA affinity warning，未见 OOM/Traceback/FAILED；evaluation supervisor 最新心跳为 2026-07-26 15:54:45，仍等待 M1 step150。
+- GPU0 仍残留约 74.9G，GPU1 干净空闲，GPU2/3 被 M2 占用；仍无干净 2-GPU lane，继续不启动 M1/M3。
+
+### 2026-07-26 16:02 巡检补充
+
+- 继续等待约 6 分钟后，M2 latest rollout 仍为 `67.jsonl`，checkpoint 仍为 step65；尚无 `68.jsonl`、`global_step_68/actor` 或 `global_step_70/actor`。
+- M2 launcher/trainer/workers 均存活，workers 仍在 `actor_rollout_ref_update_actor`；GPU2/3 约 33.8G/33.8G、util 71%/76%。
+- 错误扫描仍只见 NUMA affinity warning，未见 OOM/Traceback/FAILED；evaluation supervisor 最新心跳为 2026-07-26 15:59:45，仍等待 M1 step150。
+- GPU0 仍残留约 74.9G，GPU1 干净空闲，GPU2/3 被 M2 占用；仍无干净 2-GPU lane，继续不启动 M1/M3。
+
+### 2026-07-26 16:10 巡检补充
+
+- M2 新写出 `rollout_dump/68.jsonl`（2026-07-26 16:09:13），rollout summary 与 `dashboard/mm/js/data-m2-rollouts.js` 已刷新并确认 dashboard max step=68。
+- Step68 指标：Geo3K accuracy=0.5893（112 samples）、text accuracy=0.6111（144 samples）；M2 checkpoint 仍为 step65，尚无 `global_step_68/actor` 或 `global_step_70/actor`。
+- M2 继续运行，GPU2/3 约 38.7G/38.7G、util 41%/40%；日志仍只见 NUMA affinity warning，未见 OOM/Traceback/FAILED。
+- GPU0 仍残留约 74.9G，GPU1 干净空闲，GPU2/3 被 M2 占用；当前仍没有干净 2-GPU lane，不启动 M1/M3；evaluation supervisor 继续等待 M1 step150。
+
+### 2026-07-26 16:17 巡检补充
+
+- M2 latest rollout 仍为 `68.jsonl`，checkpoint 仍为 step65；尚无 `69.jsonl` 或 `global_step_70/actor`。
+- 训练日志已写出 step68 完整指标行，workers 继续存活；GPU2/3 约 38.7G/38.7G、util 28%/29%。
+- 错误扫描仍只见 NUMA affinity warning，未见 OOM/Traceback/FAILED；evaluation supervisor 最新心跳为 2026-07-26 16:14:45，仍等待 M1 step150。
+- GPU0 仍残留约 74.9G，GPU1 干净空闲，GPU2/3 被 M2 占用；仍无干净 2-GPU lane，继续不启动 M1/M3。
+
+### 2026-07-26 16:25 巡检补充
+
+- M2 latest rollout 仍为 `68.jsonl`，checkpoint 仍为 step65；尚无 `69.jsonl` 或 `global_step_70/actor`。
+- M2 workers 已从 `actor_rollout_ref_compute_log_prob` 推进到 `actor_rollout_ref_compute_ref_log_prob`；GPU2/3 约 7.1G/6.8G、util 55%/57%。
+- 错误扫描仍只见 NUMA affinity warning，未见 OOM/Traceback/FAILED；evaluation supervisor 最新心跳为 2026-07-26 16:19:45，仍等待 M1 step150。
+- GPU0 仍残留约 74.9G，GPU1 干净空闲，GPU2/3 被 M2 占用；仍无干净 2-GPU lane，继续不启动 M1/M3。
+
+### 2026-07-26 16:33 巡检补充
+
+- M2 latest rollout 仍为 `68.jsonl`，checkpoint 仍为 step65；尚无 `69.jsonl` 或 `global_step_70/actor`。
+- M2 workers 已回到 `actor_rollout_ref_update_actor`，GPU2/3 约 31.9G/32.0G、util 56%/56%；launcher/trainer/workers 均存活。
+- 错误扫描仍只见 NUMA affinity warning，未见 OOM/Traceback/FAILED；evaluation supervisor 最新心跳为 2026-07-26 16:29:45，仍等待 M1 step150。
+- GPU0 仍残留约 74.9G，GPU1 干净空闲，GPU2/3 被 M2 占用；仍无干净 2-GPU lane，继续不启动 M1/M3。
+
+### 2026-07-26 16:41 巡检补充
+
+- 继续等待约 6 分钟后，M2 latest rollout 仍为 `68.jsonl`，checkpoint 仍为 step65；尚无 `69.jsonl` 或 `global_step_70/actor`。
+- M2 launcher/trainer/workers 均存活，workers 仍在 `actor_rollout_ref_update_actor`；GPU2/3 约 33.8G/33.8G、util 57%/71%。
+- 错误扫描仍只见 NUMA affinity warning，未见 OOM/Traceback/FAILED；evaluation supervisor 最新心跳为 2026-07-26 16:39:45，仍等待 M1 step150。
+- GPU0 仍残留约 74.9G，GPU1 干净空闲，GPU2/3 被 M2 占用；仍无干净 2-GPU lane，继续不启动 M1/M3。
+
+### 2026-07-26 16:49 巡检补充
+
+- M2 新写出 `rollout_dump/69.jsonl`（2026-07-26 16:47:44），rollout summary 与 `dashboard/mm/js/data-m2-rollouts.js` 已刷新并确认 dashboard max step=69。
+- Step69 指标：Geo3K accuracy=0.7875（80 samples）、text accuracy=0.5511（176 samples）；M2 checkpoint 仍为 step65，尚无 `global_step_69/actor` 或 `global_step_70/actor`。
+- M2 继续运行，GPU2/3 约 38.5G/38.6G、util 40%/38%；日志仍只见 NUMA affinity warning，未见 OOM/Traceback/FAILED。
+- GPU0 仍残留约 74.9G，GPU1 干净空闲，GPU2/3 被 M2 占用；当前仍没有干净 2-GPU lane，不启动 M1/M3；evaluation supervisor 继续等待 M1 step150。
+
+### 2026-07-26 16:56 巡检补充
+
+- M2 latest rollout 仍为 `69.jsonl`，checkpoint 仍为 step65；尚无 `global_step_70/actor`，训练日志尚未打印 step69 完整指标行。
+- M2 launcher/trainer/workers 均存活，GPU2/3 约 38.5G/38.6G、util 30%/28%；错误扫描仍只见 NUMA affinity warning，未见 OOM/Traceback/FAILED。
+- evaluation supervisor 最新心跳为 2026-07-26 16:54:45，仍等待 M1 step150。
+- GPU0 仍残留约 74.9G，GPU1 干净空闲，GPU2/3 被 M2 占用；仍无干净 2-GPU lane，继续不启动 M1/M3。
+
+### 2026-07-26 17:04 巡检补充
+
+- M2 latest rollout 仍为 `69.jsonl`，checkpoint 仍为 step65；尚无 `global_step_70/actor`。
+- M2 workers 已从 `actor_rollout_ref_compute_log_prob` 推进到 `actor_rollout_ref_compute_ref_log_prob`；GPU2/3 约 7.2G/6.8G、util 64%/62%。
+- 错误扫描仍只见 NUMA affinity warning，未见 OOM/Traceback/FAILED；evaluation supervisor 最新心跳为 2026-07-26 16:59:45，仍等待 M1 step150。
+- GPU0 仍残留约 74.9G，GPU1 干净空闲，GPU2/3 被 M2 占用；仍无干净 2-GPU lane，继续不启动 M1/M3。
+
+### 2026-07-26 17:13 巡检补充
+
+- 继续等待约 6 分钟后，M2 latest rollout 仍为 `69.jsonl`，checkpoint 仍为 step65；尚无 `global_step_70/actor`。
+- M2 workers 已回到 `actor_rollout_ref_update_actor`，GPU2/3 约 32.1G/32.1G、util 80%/76%；launcher/trainer/workers 均存活。
+- 错误扫描仍只见 NUMA affinity warning，未见 OOM/Traceback/FAILED；evaluation supervisor 最新心跳为 2026-07-26 17:09:46，仍等待 M1 step150。
+- GPU0 仍残留约 74.9G，GPU1 干净空闲，GPU2/3 被 M2 占用；仍无干净 2-GPU lane，继续不启动 M1/M3。
+
+### 2026-07-26 17:21 巡检补充
+
+- 继续等待约 6 分钟后，M2 latest rollout 仍为 `69.jsonl`，checkpoint 仍为 step65；尚无 `global_step_70/actor`，训练日志仍未打印 step69 完整指标行。
+- M2 workers 仍在 `actor_rollout_ref_update_actor`，GPU2/3 约 34.0G/33.9G、util 70%/27%；launcher/trainer/workers 均存活。
+- 错误扫描仍只见 NUMA affinity warning，未见 OOM/Traceback/FAILED；evaluation supervisor 最新心跳为 2026-07-26 17:19:46，仍等待 M1 step150。
+- GPU0 仍残留约 74.9G，GPU1 干净空闲，GPU2/3 被 M2 占用；仍无干净 2-GPU lane，继续不启动 M1/M3。
+
+### 2026-07-26 17:30 巡检补充
+
+- M2 新写出 `rollout_dump/70.jsonl`（2026-07-26 17:27:52），`latest_checkpointed_iteration.txt=70`；`global_step_70/actor` 已验证完整（7 files，约 25G）。
+- M2 rollout summary 与 `dashboard/mm/js/data-m2-rollouts.js` 已刷新并确认 dashboard max step=70；step70 指标：Geo3K accuracy=0.6538（104 samples）、text accuracy=0.5592（152 samples）。
+- M2 继续运行，GPU2/3 约 38.4G/38.5G、util 38%/40%；日志仍只见 NUMA affinity warning，未见 OOM/Traceback/FAILED。
+- GPU0 仍残留约 74.9G，GPU1 干净空闲，GPU2/3 被 M2 占用；仍无干净 2-GPU lane，暂不能恢复 M1 或启动 M3；evaluation supervisor 继续等待 M1 step150。
+
+### 2026-07-26 17:37 巡检补充
+
+- M2 latest rollout 仍为 `70.jsonl`，checkpoint 仍为 step70；尚无 `71.jsonl`、`global_step_71/actor` 或 `global_step_75/actor`。
+- M2 launcher/trainer/workers 均存活，GPU2/3 显存暂降至约 1.5G/1.5G 但仍有活跃 CUDA 进程且 util 85%/100%，因此不能视为可用 lane。
+- 错误扫描仍只见 NUMA affinity warning，未见 OOM/Traceback/FAILED；evaluation supervisor 最新心跳为 2026-07-26 17:34:46，仍等待 M1 step150。
+- GPU0 仍残留约 74.9G，GPU1 干净空闲；当前仍无干净 2-GPU lane，继续不恢复 M1、不启动 M3。
+
+### 2026-07-26 17:45 巡检补充
+
+- M2 latest rollout 仍为 `70.jsonl`，checkpoint 仍为 step70；尚无 `71.jsonl`、`global_step_71/actor` 或 `global_step_75/actor`。
+- M2 workers 从 `actor_rollout_ref_compute_log_prob` 回到 `actor_rollout_ref_update_actor`，GPU2/3 约 30.8G/30.8G、util 66%/58%；launcher/trainer/workers 均存活。
+- 错误扫描仍只见 NUMA affinity warning，未见 OOM/Traceback/FAILED；evaluation supervisor 最新心跳为 2026-07-26 17:44:46，仍等待 M1 step150。
+- GPU0 仍残留约 74.9G，GPU1 干净空闲，GPU2/3 被 M2 占用；仍无干净 2-GPU lane，继续不恢复 M1、不启动 M3。
+
+### 2026-07-26 17:53 巡检补充
+
+- M2 latest rollout 仍为 `70.jsonl`，checkpoint 仍为 step70；尚无 `71.jsonl`、`global_step_71/actor` 或 `global_step_75/actor`。
+- M2 workers 仍在 `actor_rollout_ref_update_actor`，GPU2/3 约 33.8G/33.8G、util 93%/0%（瞬时采样），launcher/trainer/workers 均存活。
+- 错误扫描仍只见 NUMA affinity warning，未见 OOM/Traceback/FAILED；evaluation supervisor 最新心跳为 2026-07-26 17:49:46，仍等待 M1 step150。
+- GPU0 仍残留约 74.9G，GPU1 干净空闲，GPU2/3 被 M2 占用；仍无干净 2-GPU lane，继续不恢复 M1、不启动 M3。
+
+### 2026-07-26 18:00 巡检补充
+
+- M2 latest rollout 仍为 `70.jsonl`，checkpoint 仍为 step70；尚无 `71.jsonl`、`global_step_71/actor` 或 `global_step_75/actor`。
+- M2 workers 仍在 `actor_rollout_ref_update_actor`，GPU2/3 约 33.9G/33.9G、util 49%/47%；launcher/trainer/workers 均存活。
+- 错误扫描仍只见 NUMA affinity warning，未见 OOM/Traceback/FAILED；evaluation supervisor 最新心跳为 2026-07-26 17:59:46，仍等待 M1 step150。
+- GPU0 仍残留约 74.9G，GPU1 干净空闲，GPU2/3 被 M2 占用；仍无干净 2-GPU lane，继续不恢复 M1、不启动 M3。
+
+### 2026-07-26 18:05 巡检补充
+
+- M2 新写出 `rollout_dump/71.jsonl`（2026-07-26 18:02:34），rollout summary 与 `dashboard/mm/js/data-m2-rollouts.js` 已刷新并确认 dashboard max step=71。
+- Step71 指标：Geo3K accuracy=0.6905（168 samples）、text accuracy=0.6364（88 samples）；M2 checkpoint 仍为 step70，尚无 `global_step_71/actor` 或 `global_step_75/actor`。
+- M2 继续运行，GPU2/3 约 38.5G/38.4G、util 41%/41%；日志仍只见 NUMA affinity warning，未见 OOM/Traceback/FAILED。
+- GPU0 仍残留约 74.9G，GPU1 干净空闲，GPU2/3 被 M2 占用；当前仍没有干净 2-GPU lane，不恢复 M1、不启动 M3；evaluation supervisor 继续等待 M1 step150。
+
+### 2026-07-26 18:13 巡检补充
+
+- M2 latest rollout 仍为 `71.jsonl`，checkpoint 仍为 step70；尚无 `72.jsonl`、`global_step_72/actor` 或 `global_step_75/actor`。
+- M2 workers 处于 `actor_rollout_ref_compute_log_prob`，GPU2/3 约 9.9G/10.2G、util 75%/80%；launcher/trainer/workers 均存活。
+- 错误扫描仍只见 NUMA affinity warning，未见 OOM/Traceback/FAILED；evaluation supervisor 最新心跳为 2026-07-26 18:09:46，仍等待 M1 step150。
+- GPU0 仍残留约 74.9G，GPU1 干净空闲，GPU2/3 被 M2 占用；仍无干净 2-GPU lane，继续不恢复 M1、不启动 M3。
+
+### 2026-07-26 18:20 巡检补充
+
+- M2 latest rollout 仍为 `71.jsonl`，checkpoint 仍为 step70；尚无 `72.jsonl`、`global_step_72/actor` 或 `global_step_75/actor`。
+- M2 workers 已回到 `actor_rollout_ref_update_actor`，GPU2/3 约 31.0G/31.1G、util 63%/79%；launcher/trainer/workers 均存活。
+- 错误扫描仍只见 NUMA affinity warning，未见 OOM/Traceback/FAILED；evaluation supervisor 最新心跳为 2026-07-26 18:19:46，仍等待 M1 step150。
+- GPU0 仍残留约 74.9G，GPU1 干净空闲，GPU2/3 被 M2 占用；仍无干净 2-GPU lane，继续不恢复 M1、不启动 M3。
+
+### 2026-07-26 18:29 巡检补充
+
+- 继续等待约 6 分钟后，M2 latest rollout 仍为 `71.jsonl`，checkpoint 仍为 step70；尚无 `72.jsonl`、`global_step_72/actor` 或 `global_step_75/actor`。
+- M2 workers 仍在 `actor_rollout_ref_update_actor`，GPU2/3 约 33.1G/33.7G、util 55%/64%；launcher/trainer/workers 均存活。
+- 错误扫描仍只见 NUMA affinity warning，未见 OOM/Traceback/FAILED；evaluation supervisor 最新心跳为 2026-07-26 18:24:46，仍等待 M1 step150。
+- GPU0 仍残留约 74.9G，GPU1 干净空闲，GPU2/3 被 M2 占用；仍无干净 2-GPU lane，继续不恢复 M1、不启动 M3。
+
+### 2026-07-26 18:40 巡检补充
+
+- M2 新写出 `rollout_dump/72.jsonl`（2026-07-26 18:36:37），rollout summary 与 `dashboard/mm/js/data-m2-rollouts.js` 已刷新并确认 dashboard max step=72。
+- Step72 指标：Geo3K accuracy=0.7500（136 samples）、text accuracy=0.6083（120 samples）；M2 checkpoint 仍为 step70，尚无 `global_step_72/actor` 或 `global_step_75/actor`。
+- M2 launcher/trainer/workers 均存活，GPU2/3 约 38.6G/38.7G、util 43%/44%；日志仍只见 NUMA affinity warning，未见 OOM/Traceback/FAILED。
+- GPU0 仍残留约 74.9G，GPU1 干净空闲，GPU2/3 被 M2 占用；当前仍没有干净 2-GPU lane，不恢复 M1、不启动 M3；evaluation supervisor 继续等待 M1 step150。
+
+### 2026-07-26 18:48 巡检补充
+
+- 继续等待约 6 分钟后，M2 latest rollout 仍为 `72.jsonl`，checkpoint 仍为 step70；尚无 `73.jsonl`、`global_step_73/actor` 或 `global_step_75/actor`。
+- M2 workers 处于 `actor_rollout_ref_compute_ref_log_prob`，GPU2/3 约 6.5G/6.6G、util 100%/100%；launcher/trainer/workers 均存活。
+- 错误扫描仍只见 NUMA affinity warning，未见 OOM/Traceback/FAILED；evaluation supervisor 最新心跳为 2026-07-26 18:44:46，仍等待 M1 step150。
+- GPU0 仍残留约 74.9G，GPU1 干净空闲，GPU2/3 被 M2 活跃占用；仍无干净 2-GPU lane，继续不恢复 M1、不启动 M3。
+
+### 2026-07-26 18:56 巡检补充
+
+- 继续等待约 6 分钟后，M2 latest rollout 仍为 `72.jsonl`，checkpoint 仍为 step70；尚无 `73.jsonl`、`global_step_73/actor` 或 `global_step_75/actor`。
+- M2 workers 已回到 `actor_rollout_ref_update_actor`，GPU2/3 约 31.4G/31.4G、util 56%/65%；launcher/trainer/workers 均存活。
+- 错误扫描仍只见 NUMA affinity warning，未见 OOM/Traceback/FAILED；evaluation supervisor 最新心跳为 2026-07-26 18:54:46，仍等待 M1 step150。
+- GPU0 仍残留约 74.9G，GPU1 干净空闲，GPU2/3 被 M2 活跃占用；仍无干净 2-GPU lane，继续不恢复 M1、不启动 M3。
+
+### 2026-07-26 19:03 巡检补充
+
+- 继续等待约 6 分钟后，M2 latest rollout 仍为 `72.jsonl`，checkpoint 仍为 step70；尚无 `73.jsonl`、`global_step_73/actor` 或 `global_step_75/actor`。
+- M2 workers 仍在 `actor_rollout_ref_update_actor`，GPU2/3 约 33.2G/33.4G、util 74%/68%；launcher/trainer/workers 均存活。
+- 错误扫描仍只见 NUMA affinity warning，未见 OOM/Traceback/FAILED；evaluation supervisor 最新心跳为 2026-07-26 18:59:46，仍等待 M1 step150。
+- GPU0 仍残留约 74.9G，GPU1 干净空闲，GPU2/3 被 M2 活跃占用；仍无干净 2-GPU lane，继续不恢复 M1、不启动 M3。
+
+### 2026-07-26 19:12 巡检补充
+
+- M2 新写出 `rollout_dump/73.jsonl`（2026-07-26 19:11:03），rollout summary 与 `dashboard/mm/js/data-m2-rollouts.js` 已刷新并确认 dashboard max step=73。
+- Step73 指标：Geo3K accuracy=0.6328（128 samples）、text accuracy=0.6094（128 samples）；M2 checkpoint 仍为 step70，尚无 `global_step_73/actor` 或 `global_step_75/actor`。
+- M2 继续运行，GPU2/3 约 38.6G/38.5G、util 38%/39%；训练日志显示进度已到 73/150，错误扫描仍只见 NUMA affinity warning，未见 OOM/Traceback/FAILED。
+- GPU0 仍残留约 74.9G，GPU1 干净空闲，GPU2/3 被 M2 活跃占用；仍无干净 2-GPU lane，继续不恢复 M1、不启动 M3；evaluation supervisor 继续等待 M1 step150。
+
+### 2026-07-26 19:21 巡检补充
+
+- 继续等待约 6 分钟后，M2 latest rollout 仍为 `73.jsonl`，checkpoint 仍为 step70；尚无 `74.jsonl`、`global_step_74/actor` 或 `global_step_75/actor`。
+- M2 workers 处于 `actor_rollout_ref_compute_log_prob`，GPU2/3 约 9.9G/10.0G、util 63%/53%；launcher/trainer/workers 均存活。
+- 错误扫描仍只见 NUMA affinity warning，未见 OOM/Traceback/FAILED；evaluation supervisor 最新心跳为 2026-07-26 19:19:46，仍等待 M1 step150。
+- GPU0 仍残留约 74.9G，GPU1 干净空闲，GPU2/3 被 M2 活跃占用；仍无干净 2-GPU lane，继续不恢复 M1、不启动 M3。
+
+### 2026-07-26 19:28 巡检补充
+
+- 继续等待约 6 分钟后，M2 latest rollout 仍为 `73.jsonl`，checkpoint 仍为 step70；尚无 `74.jsonl`、`global_step_74/actor` 或 `global_step_75/actor`。
+- M2 workers 已回到 `actor_rollout_ref_update_actor`，GPU2/3 约 31.1G/31.0G、util 68%/69%；launcher/trainer/workers 均存活。
+- 错误扫描仍只见 NUMA affinity warning，未见 OOM/Traceback/FAILED；evaluation supervisor 最新心跳为 2026-07-26 19:24:46，仍等待 M1 step150。
+- GPU0 仍残留约 74.9G，GPU1 干净空闲，GPU2/3 被 M2 活跃占用；仍无干净 2-GPU lane，继续不恢复 M1、不启动 M3。
+
+### 2026-07-26 19:36 巡检补充
+
+- 继续等待约 6 分钟后，M2 latest rollout 仍为 `73.jsonl`，checkpoint 仍为 step70；尚无 `74.jsonl`、`global_step_74/actor` 或 `global_step_75/actor`。
+- M2 workers 仍在 `actor_rollout_ref_update_actor`，GPU2/3 约 33.8G/33.8G、util 84%/89%；launcher/trainer/workers 均存活。
+- 错误扫描仍只见 NUMA affinity warning，未见 OOM/Traceback/FAILED；evaluation supervisor 最新心跳为 2026-07-26 19:34:46，仍等待 M1 step150。
+- GPU0 仍残留约 74.9G，GPU1 干净空闲，GPU2/3 被 M2 活跃占用；仍无干净 2-GPU lane，继续不恢复 M1、不启动 M3。
+
+### 2026-07-26 19:44 巡检补充
+
+- 继续等待约 6 分钟后，M2 latest rollout 仍为 `73.jsonl`，checkpoint 仍为 step70；尚无 `74.jsonl`、`global_step_74/actor` 或 `global_step_75/actor`。
+- M2 workers 仍在 `actor_rollout_ref_update_actor`，GPU2/3 约 33.8G/33.8G、util 62%/64%；launcher/trainer/workers 均存活。
+- 错误扫描仍只见 NUMA affinity warning，未见 OOM/Traceback/FAILED；evaluation supervisor 最新心跳为 2026-07-26 19:39:46，仍等待 M1 step150。
+- GPU0 仍残留约 74.9G，GPU1 干净空闲，GPU2/3 被 M2 活跃占用；仍无干净 2-GPU lane，继续不恢复 M1、不启动 M3。
+
+### 2026-07-26 19:45 巡检补充
+
+- M2 新写出 `rollout_dump/74.jsonl`（2026-07-26 19:44:46），rollout summary 与 `dashboard/mm/js/data-m2-rollouts.js` 已刷新并确认 dashboard max step=74。
+- Step74 指标：Geo3K accuracy=0.6597（144 samples）、text accuracy=0.4643（112 samples）；M2 checkpoint 仍为 step70，尚无 `global_step_74/actor` 或 `global_step_75/actor`。
+- M2 继续运行，GPU2/3 约 38.6G/38.5G、util 39%/38%；launcher/trainer/workers 均存活，错误扫描仍只见 NUMA affinity warning，未见 OOM/Traceback/FAILED。
+- GPU0 仍残留约 74.9G，GPU1 干净空闲，GPU2/3 被 M2 活跃占用；仍无干净 2-GPU lane，继续不恢复 M1、不启动 M3；evaluation supervisor 继续等待 M1 step150。
+
+### 2026-07-26 19:53 巡检补充
+
+- 继续等待约 6 分钟后，M2 latest rollout 仍为 `74.jsonl`，checkpoint 仍为 step70；尚无 `75.jsonl`、`global_step_75/actor` 或 `global_step_76/actor`。
+- M2 launcher/trainer/workers 均存活，GPU2/3 约 38.6G/38.5G、util 29%/31%；错误扫描仍只见 NUMA affinity warning，未见 OOM/Traceback/FAILED。
+- evaluation supervisor 最新心跳为 2026-07-26 19:49:46，仍等待 M1 step150。
+- GPU0 仍残留约 74.9G，GPU1 干净空闲，GPU2/3 被 M2 活跃占用；仍无干净 2-GPU lane，继续不恢复 M1、不启动 M3。
+
+### 2026-07-26 20:01 巡检补充
+
+- 继续等待约 6 分钟后，M2 latest rollout 仍为 `74.jsonl`，checkpoint 仍为 step70；尚无 `75.jsonl`、`global_step_75/actor` 或 `global_step_76/actor`。
+- M2 workers 已回到 `actor_rollout_ref_update_actor`，GPU2/3 约 30.5G/30.5G、util 66%/45%；launcher/trainer/workers 均存活。
+- 错误扫描仍只见 NUMA affinity warning，未见 OOM/Traceback/FAILED；evaluation supervisor 最新心跳为 2026-07-26 19:59:46，仍等待 M1 step150。
+- GPU0 仍残留约 74.9G，GPU1 干净空闲，GPU2/3 被 M2 活跃占用；仍无干净 2-GPU lane，继续不恢复 M1、不启动 M3。
+
+### 2026-07-26 20:09 巡检补充
+
+- 继续等待约 6 分钟后，M2 latest rollout 仍为 `74.jsonl`，checkpoint 仍为 step70；尚无 `75.jsonl`、`global_step_75/actor` 或 `global_step_76/actor`。
+- M2 workers 仍在 `actor_rollout_ref_update_actor`，GPU2/3 约 32.5G/32.5G、util 67%/86%；launcher/trainer/workers 均存活。
+- 错误扫描仍只见 NUMA affinity warning，未见 OOM/Traceback/FAILED；evaluation supervisor 最新心跳为 2026-07-26 20:04:46，仍等待 M1 step150。
+- GPU0 仍残留约 74.9G，GPU1 干净空闲，GPU2/3 被 M2 活跃占用；仍无干净 2-GPU lane，继续不恢复 M1、不启动 M3。
+
+### 2026-07-26 20:16 巡检补充
+
+- 继续等待约 6 分钟后，M2 latest rollout 仍为 `74.jsonl`，checkpoint 仍为 step70；尚无 `75.jsonl`、`global_step_75/actor` 或 `global_step_76/actor`。
+- M2 workers 仍在 `actor_rollout_ref_update_actor`，GPU2/3 约 33.8G/34.0G、util 50%/62%；launcher/trainer/workers 均存活。
+- 错误扫描仍只见 NUMA affinity warning，未见 OOM/Traceback/FAILED；evaluation supervisor 最新心跳为 2026-07-26 20:14:46，仍等待 M1 step150。
+- GPU0 仍残留约 74.9G，GPU1 干净空闲，GPU2/3 被 M2 活跃占用；仍无干净 2-GPU lane，继续不恢复 M1、不启动 M3。
+
+### 2026-07-26 20:24 巡检补充
+
+- M2 新写出 `rollout_dump/75.jsonl`（2026-07-26 20:21:39），`latest_checkpointed_iteration.txt=75`；`global_step_75/actor` 已验证完整（7 files，约 25G）。
+- M2 rollout summary 与 `dashboard/mm/js/data-m2-rollouts.js` 已刷新并确认 dashboard max step=75；step75 指标：Geo3K accuracy=0.6029（136 samples）、text accuracy=0.7583（120 samples）。
+- M2 继续运行，GPU2/3 约 38.1G/38.1G、util 35%/29%；错误扫描仍只见 NUMA affinity warning，未见 OOM/Traceback/FAILED；下一 checkpoint 目标 step80。
+- GPU0 仍残留约 74.9G，GPU1 干净空闲，GPU2/3 被 M2 活跃占用；仍无干净 2-GPU lane，继续不恢复 M1、不启动 M3；evaluation supervisor 继续等待 M1 step150。
+
+### 2026-07-26 20:33 巡检补充
+
+- 继续等待约 6 分钟后，M2 latest rollout 仍为 `75.jsonl`，checkpoint 仍为 step75；`global_step_75/actor` 仍完整（7 files，约 25G），尚无 `76.jsonl`、`global_step_76/actor` 或 `global_step_80/actor`。
+- M2 launcher/trainer/workers 均存活，GPU2/3 约 38.5G/38.7G、util 48%/42%；错误扫描仍只见 NUMA affinity warning，未见 OOM/Traceback/FAILED。
+- evaluation supervisor 最新心跳为 2026-07-26 20:29:46，仍等待 M1 step150。
+- GPU0 仍残留约 74.9G，GPU1 干净空闲，GPU2/3 被 M2 活跃占用；仍无干净 2-GPU lane，继续不恢复 M1、不启动 M3。
+
+### 2026-07-26 20:42 巡检补充
+
+- 继续等待约 6 分钟后，M2 latest rollout 仍为 `75.jsonl`，checkpoint 仍为 step75；`global_step_75/actor` 仍完整（7 files，约 25G），尚无 `76.jsonl`、`global_step_76/actor` 或 `global_step_80/actor`。
+- M2 workers 处于 `actor_rollout_ref_compute_log_prob`，GPU2/3 约 9.9G/10.3G、util 52%/50%；launcher/trainer/workers 均存活。
+- 错误扫描仍只见 NUMA affinity warning，未见 OOM/Traceback/FAILED；evaluation supervisor 最新心跳为 2026-07-26 20:39:46，仍等待 M1 step150。
+- GPU0 仍残留约 74.9G，GPU1 干净空闲，GPU2/3 被 M2 活跃占用；仍无干净 2-GPU lane，继续不恢复 M1、不启动 M3。
+
+### 2026-07-26 20:50 巡检补充
+
+- 继续等待约 6 分钟后，M2 latest rollout 仍为 `75.jsonl`，checkpoint 仍为 step75；`global_step_75/actor` 仍完整（7 files，约 25G），尚无 `76.jsonl`、`global_step_76/actor` 或 `global_step_80/actor`。
+- M2 workers 已回到 `actor_rollout_ref_update_actor`，GPU2/3 约 31.2G/31.1G、util 58%/100%；launcher/trainer/workers 均存活。
+- 错误扫描仍只见 NUMA affinity warning，未见 OOM/Traceback/FAILED；evaluation supervisor 最新心跳为 2026-07-26 20:49:46，仍等待 M1 step150。
+- GPU0 仍残留约 74.9G，GPU1 干净空闲，GPU2/3 被 M2 活跃占用；仍无干净 2-GPU lane，继续不恢复 M1、不启动 M3。
+
+### 2026-07-26 20:57 巡检补充
+
+- 继续等待约 6 分钟后，M2 latest rollout 仍为 `75.jsonl`，checkpoint 仍为 step75；`global_step_75/actor` 仍完整（7 files，约 25G），尚无 `76.jsonl`、`global_step_76/actor` 或 `global_step_80/actor`。
+- M2 workers 仍在 `actor_rollout_ref_update_actor`，GPU2/3 约 32.4G/32.3G、util 82%/65%；launcher/trainer/workers 均存活。
+- 错误扫描仍只见 NUMA affinity warning，未见 OOM/Traceback/FAILED；evaluation supervisor 最新心跳为 2026-07-26 20:54:46，仍等待 M1 step150。
+- GPU0 仍残留约 74.9G，GPU1 干净空闲，GPU2/3 被 M2 活跃占用；仍无干净 2-GPU lane，继续不恢复 M1、不启动 M3。
+
+### 2026-07-26 21:06 巡检补充
+
+- 继续等待约 6 分钟后，M2 latest rollout 仍为 `75.jsonl`，checkpoint 仍为 step75；`global_step_75/actor` 仍完整（7 files，约 25G），尚无 `76.jsonl`、`global_step_76/actor` 或 `global_step_80/actor`。
+- M2 workers 仍在 `actor_rollout_ref_update_actor`，GPU2/3 约 33.9G/33.9G、util 24%/71%；launcher/trainer/workers 均存活。
+- 错误扫描仍只见 NUMA affinity warning，未见 OOM/Traceback/FAILED；evaluation supervisor 最新心跳为 2026-07-26 21:04:46，仍等待 M1 step150。
+- GPU0 仍残留约 74.9G，GPU1 干净空闲，GPU2/3 被 M2 活跃占用；仍无干净 2-GPU lane，继续不恢复 M1、不启动 M3。
+
+### 2026-07-26 21:14 巡检补充
+
+- M2 新写出 `rollout_dump/76.jsonl`（2026-07-26 21:12:56），rollout summary 与 `dashboard/mm/js/data-m2-rollouts.js` 已刷新并确认 dashboard max step=76。
+- Step76 指标：Geo3K accuracy=0.6979（96 samples）、text accuracy=0.5688（160 samples）；M2 checkpoint 仍为 step75，`global_step_75/actor` 仍完整（7 files，约 25G），尚无 `global_step_76/actor` 或 `global_step_80/actor`。
+- M2 继续运行，GPU2/3 约 38.6G/38.6G、util 38%/39%；错误扫描仍只见 NUMA affinity warning，未见 OOM/Traceback/FAILED；下一 checkpoint 目标 step80。
+- GPU0 仍残留约 74.9G，GPU1 干净空闲，GPU2/3 被 M2 活跃占用；仍无干净 2-GPU lane，继续不恢复 M1、不启动 M3；evaluation supervisor 继续等待 M1 step150。
+
+### 2026-07-26 21:22 巡检补充
+
+- 继续等待约 6 分钟后，M2 latest rollout 仍为 `76.jsonl`，checkpoint 仍为 step75；尚无 `77.jsonl`、`global_step_77/actor` 或 `global_step_80/actor`。
+- M2 workers 处于 `actor_rollout_ref_compute_log_prob`，GPU2/3 约 9.8G/10.1G、util 74%/91%；launcher/trainer/workers 均存活。
+- 错误扫描仍只见 NUMA affinity warning，未见 OOM/Traceback/FAILED；evaluation supervisor 最新心跳为 2026-07-26 21:19:46，仍等待 M1 step150。
+- GPU0 仍残留约 74.9G，GPU1 干净空闲，GPU2/3 被 M2 活跃占用；仍无干净 2-GPU lane，继续不恢复 M1、不启动 M3。
+
+### 2026-07-26 21:30 巡检补充
+
+- 继续等待约 6 分钟后，M2 latest rollout 仍为 `76.jsonl`，checkpoint 仍为 step75；尚无 `77.jsonl`、`global_step_77/actor` 或 `global_step_80/actor`。
+- M2 workers 已回到 `actor_rollout_ref_update_actor`，GPU2/3 约 31.0G/30.9G、util 95%/92%；launcher/trainer/workers 均存活。
+- 错误扫描仍只见 NUMA affinity warning，未见 OOM/Traceback/FAILED；evaluation supervisor 最新心跳为 2026-07-26 21:29:46，仍等待 M1 step150。
+- GPU0 仍残留约 74.9G，GPU1 干净空闲，GPU2/3 被 M2 活跃占用；仍无干净 2-GPU lane，继续不恢复 M1、不启动 M3。
+
+### 2026-07-26 21:38 巡检补充
+
+- 继续等待约 6 分钟后，M2 latest rollout 仍为 `76.jsonl`，checkpoint 仍为 step75；尚无 `77.jsonl`、`global_step_77/actor` 或 `global_step_80/actor`。
+- M2 workers 仍在 `actor_rollout_ref_update_actor`，GPU2/3 约 33.8G/33.8G、util 85%/85%；launcher/trainer/workers 均存活。
+- 错误扫描仍只见 NUMA affinity warning，未见 OOM/Traceback/FAILED；evaluation supervisor 最新心跳为 2026-07-26 21:34:46，仍等待 M1 step150。
+- GPU0 仍残留约 74.9G，GPU1 干净空闲，GPU2/3 被 M2 活跃占用；仍无干净 2-GPU lane，继续不恢复 M1、不启动 M3。
+
+### 2026-07-26 21:46 巡检补充
+
+- M2 新写出 `rollout_dump/77.jsonl`（2026-07-26 21:46:36），rollout summary 与 `dashboard/mm/js/data-m2-rollouts.js` 已刷新并确认 dashboard max step=77。
+- Step77 指标：Geo3K accuracy=0.7500（128 samples）、text accuracy=0.6094（128 samples）；M2 checkpoint 仍为 step75，尚无 `global_step_77/actor` 或 `global_step_80/actor`。
+- M2 继续运行，GPU2/3 约 38.5G/38.5G、util 37%/39%；错误扫描仍只见 NUMA affinity warning，未见 OOM/Traceback/FAILED；下一 checkpoint 目标 step80。
+- GPU0 仍残留约 74.9G，GPU1 干净空闲，GPU2/3 被 M2 活跃占用；仍无干净 2-GPU lane，继续不恢复 M1、不启动 M3；evaluation supervisor 继续等待 M1 step150。
+
+### 2026-07-26 21:56 巡检补充
+
+- 继续等待约 6 分钟后，M2 latest rollout 仍为 `77.jsonl`，checkpoint 仍为 step75；尚无 `78.jsonl`、`global_step_78/actor` 或 `global_step_80/actor`。
+- M2 workers 处于 `actor_rollout_ref_compute_log_prob`，GPU2/3 约 9.8G/10.2G、util 84%/70%；launcher/trainer/workers 均存活。
+- 错误扫描仍只见 NUMA affinity warning，未见 OOM/Traceback/FAILED；evaluation supervisor 最新心跳为 2026-07-26 21:54:46，仍等待 M1 step150。
+- GPU0 仍残留约 74.9G，GPU1 干净空闲，GPU2/3 被 M2 活跃占用；仍无干净 2-GPU lane，继续不恢复 M1、不启动 M3。
