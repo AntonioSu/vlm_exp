@@ -36,6 +36,12 @@
             <div class="chart-wrap"><canvas id="chart-e2-pass" height="240"></canvas><div class="tooltip" id="tip-e2-pass"></div></div>
           </div>
           <p class="caption">细线=逐 step；粗线=5-step 移动平均。</p>
+          <h2 style="margin-top:16px">Rollout Sample Accuracy（%）</h2>
+          <div class="chart-card">
+            <div class="legend" id="legend-e2-racc"></div>
+            <div class="chart-wrap"><canvas id="chart-e2-racc" height="240"></canvas><div class="tooltip" id="tip-e2-racc"></div></div>
+          </div>
+          <p class="caption">每步 256 个 rollout 样本中正确率，从 rollout_dump 直接统计；5-step 移动平均。</p>
           <section class="grid2" style="margin-top:16px">
             <div>
               <h2>平均响应长度（tokens）</h2>
