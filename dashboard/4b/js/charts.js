@@ -159,7 +159,8 @@ function drawBarChart(canvasId, tipId, { categories, data, colors, valueSuffix =
   const padL = 40, padR = 12, padT = 10, padB = 26;
   const plotW = cssWidth - padL - padR;
   const plotH = height - padT - padB;
-  const max = Math.max(...data) * 1.15;
+  const safeData = data.map((v) => (v == null || isNaN(v) ? 0 : v));
+  const max = Math.max(...safeData) * 1.15 || 1;
 
   const bandW = plotW / categories.length;
   const barW = bandW * 0.5;
@@ -182,7 +183,7 @@ function drawBarChart(canvasId, tipId, { categories, data, colors, valueSuffix =
 
   categories.forEach((c, i) => {
     const bx = padL + i * bandW + (bandW - barW) / 2;
-    const v = data[i];
+    const v = safeData[i];
     const h = (v / max) * plotH;
     const y = padT + plotH - h;
     ctx.fillStyle = colors[i];
@@ -529,7 +530,7 @@ function renderExpPanel(key) {
     }
     if (document.getElementById(`chart-${key}-timing-mean`)) {
       const meanCats = ["gen", "update_actor", "ref", "old_log_prob", "update_weights", "adv"];
-      const meanVals = meanCats.map((k) => tm[k]);
+      const meanVals = meanCats.map((k) => tm[k] ?? 0);
       const meanColors = [COLORS.danger, e.color, COLORS.e3, COLORS.e2, COLORS.e4, COLORS.e5];
       drawBarChart(`chart-${key}-timing-mean`, `tip-${key}-timing-mean`, {
         categories: meanCats,
