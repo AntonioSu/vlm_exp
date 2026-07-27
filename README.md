@@ -56,20 +56,10 @@ vlm_exp/
 ├── data_process/
 │   └── build_mm_mix.py         # text subsets + Geo3K val probe
 ├── scripts/
-│   ├── run_smoke_mm.sh         # smoke test before full runs
-│   ├── run_mm_mix_2b.sh        # shared GRPO trainer skeleton
-│   ├── run_m{1,2,3}_*.sh       # group entrypoints
-│   ├── run_mm_training_pipeline.sh
-│   ├── run_mm_evaluation_pipeline.sh
-│   ├── evaluate_mm_checkpoint.sh
-│   ├── evaluate_m0_text.sh / run_m0_baseline_supervisor.sh
-│   ├── eval_geo3k.py
-│   ├── reward_mm_mixed.py / test_reward_mm_mixed.py
-│   ├── summarize_mm_rollouts.py
-│   ├── gen_mm_rollout_dashboard_data.py
-│   ├── gen_mm_eval_dashboard_data.py
-│   ├── gen_mm_train_dashboard_data.py   # timing / stability / efficiency from train logs
-│   └── archive_mm_results.sh
+│   ├── train/                  # smoke, GRPO trainer, M1–M3 entrypoints, reward
+│   ├── eval/                   # Geo3K / text eval + evaluation supervisors
+│   ├── analysis/               # rollout summaries + dashboard JS generators
+│   └── archive/                # metadata snapshot (no large ckpts)
 ├── parquet/mm/                 # gitignored: Geo3K + mix slices
 ├── model/exp2card_mm/          # gitignored: checkpoints
 ├── logs/exp2card_mm/           # gitignored: train / pipeline logs
@@ -116,7 +106,7 @@ Mixing does **not** require a merged schema: verl concatenates `data.train_files
 
 ```bash
 conda activate verl_qwen35
-bash scripts/run_smoke_mm.sh
+bash scripts/train/run_smoke_mm.sh
 ```
 
 Checks multimodal FSDP2 + vLLM rollout, mixed parquet batches, `reward_mm_mixed.py` dispatch, and dual val metrics (text + Geo3K).
@@ -126,15 +116,15 @@ Checks multimodal FSDP2 + vLLM rollout, mixed parquet batches, `reward_mm_mixed.
 Per group:
 
 ```bash
-bash scripts/run_m1_geo3k_2b.sh   # 100% Geo3K
-bash scripts/run_m2_mix50_2b.sh   # 50/50
-bash scripts/run_m3_mix20_2b.sh   # 20/80
+bash scripts/train/run_m1_geo3k_2b.sh   # 100% Geo3K
+bash scripts/train/run_m2_mix50_2b.sh   # 50/50
+bash scripts/train/run_m3_mix20_2b.sh   # 20/80
 ```
 
 Unattended M1 → M2 → M3 with auto-resume and stale-process protection:
 
 ```bash
-bash scripts/run_mm_training_pipeline.sh
+bash scripts/train/run_mm_training_pipeline.sh
 ```
 
 Resume: re-run the same entry script (`resume_mode=auto`).
@@ -152,17 +142,17 @@ Artifacts:
 One checkpoint (merge FSDP → HF, Geo3K 601, then text evalscope):
 
 ```bash
-CUDA_VISIBLE_DEVICES=0 bash scripts/evaluate_mm_checkpoint.sh <experiment_name>
+CUDA_VISIBLE_DEVICES=0 bash scripts/eval/evaluate_mm_checkpoint.sh <experiment_name>
 # optional: EVAL_STEP=70 for mid-run checkpoints
 ```
 
 Background waiter for M1–M3 step-150:
 
 ```bash
-EVAL_GPU=2 bash scripts/run_mm_evaluation_pipeline.sh
+EVAL_GPU=2 bash scripts/eval/run_mm_evaluation_pipeline.sh
 ```
 
-M0 baseline uses the existing E1 merged weights under `polaris` (`evaluate_m0_text.sh` / `run_m0_baseline_supervisor.sh`).
+M0 baseline uses the existing E1 merged weights under `polaris` (`scripts/eval/evaluate_m0_text.sh` / `run_m0_baseline_supervisor.sh`).
 
 **Scoring**
 
@@ -177,29 +167,29 @@ Done markers: `evaluation/completed/<exp>.done`.
 
 ```bash
 # Per-step Geo3K vs text accuracy from rollout dumps
-python scripts/summarize_mm_rollouts.py ...
+python scripts/analysis/summarize_mm_rollouts.py ...
 
 # Feed static MM dashboard JS
-python scripts/gen_mm_rollout_dashboard_data.py
-python scripts/gen_mm_eval_dashboard_data.py
-python scripts/gen_mm_train_dashboard_data.py   # timing / stability / efficiency
+python scripts/analysis/gen_mm_rollout_dashboard_data.py
+python scripts/analysis/gen_mm_eval_dashboard_data.py
+python scripts/analysis/gen_mm_train_dashboard_data.py   # timing / stability / efficiency
 ```
 
 ### 6. Archive (metadata only; no large ckpts)
 
 ```bash
-bash scripts/archive_mm_results.sh
+bash scripts/archive/archive_mm_results.sh
 # → $ROOT/polaris/archive/mm_exp2card/
 ```
 
 ## Reward
 
-[`scripts/reward_mm_mixed.py`](./scripts/reward_mm_mixed.py) dispatches by `data_source`:
+[`scripts/train/reward_mm_mixed.py`](./scripts/train/reward_mm_mixed.py) dispatches by `data_source`:
 
 - `hiyouga/geometry3k` → Geo3K official-style score  
 - otherwise → text boxed Math-Verify  
 
-Unit check: `python scripts/test_reward_mm_mixed.py`.
+Unit check: `python scripts/train/test_reward_mm_mixed.py`.
 
 ## Dashboard
 
@@ -227,19 +217,19 @@ Root `./start.sh` / `./stop.sh` also serve the repo tree on port 3000; prefer `d
 
 | Script | Purpose |
 | --- | --- |
-| `run_smoke_mm.sh` | 2-step multimodal smoke |
-| `run_mm_mix_2b.sh` | Shared trainer (do not call alone) |
-| `run_m1_geo3k_2b.sh` | M1 100% image–text |
-| `run_m2_mix50_2b.sh` | M2 50% mix |
-| `run_m3_mix20_2b.sh` | M3 20% mix |
-| `run_mm_training_pipeline.sh` | Supervise M1→M2→M3 |
-| `run_mm_evaluation_pipeline.sh` | Wait + eval step-150 |
-| `evaluate_mm_checkpoint.sh` | Merge + Geo3K + text eval |
-| `eval_geo3k.py` | Offline Geo3K (JSONL, resumable) |
-| `reward_mm_mixed.py` | Mixed reward for verl |
-| `summarize_mm_rollouts.py` | Rollout CSV summaries |
-| `gen_mm_*_dashboard_data.py` | Emit dashboard JS snapshots |
-| `archive_mm_results.sh` | Snapshot scripts/logs/eval (no weights) |
+| `train/run_smoke_mm.sh` | 2-step multimodal smoke |
+| `train/run_mm_mix_2b.sh` | Shared trainer (do not call alone) |
+| `train/run_m1_geo3k_2b.sh` | M1 100% image–text |
+| `train/run_m2_mix50_2b.sh` | M2 50% mix |
+| `train/run_m3_mix20_2b.sh` | M3 20% mix |
+| `train/run_mm_training_pipeline.sh` | Supervise M1→M2→M3 |
+| `train/reward_mm_mixed.py` | Mixed reward for verl |
+| `eval/run_mm_evaluation_pipeline.sh` | Wait + eval step-150 |
+| `eval/evaluate_mm_checkpoint.sh` | Merge + Geo3K + text eval |
+| `eval/eval_geo3k.py` | Offline Geo3K (JSONL, resumable) |
+| `analysis/summarize_mm_rollouts.py` | Rollout CSV summaries |
+| `analysis/gen_mm_*_dashboard_data.py` | Emit dashboard JS snapshots |
+| `archive/archive_mm_results.sh` | Snapshot scripts/logs/eval (no weights) |
 
 ## Comparison metrics
 
