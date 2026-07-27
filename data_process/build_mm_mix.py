@@ -18,8 +18,8 @@ import pandas as pd
 import pyarrow as pa
 import pyarrow.parquet as pq
 
-POLARIS = "/data/juicefs-white/5281-gpu-a100/lijunyi/polaris"          # 主仓库：共享的纯文本数据源
-VLM_EXP = "/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp"             # 本实验独立仓库：Geo3K 数据与切片产出
+POLARIS = "/data/lijunyi/polaris"          # 主仓库：共享的纯文本数据源
+VLM_EXP = "/data/lijunyi/vlm_exp"             # 本实验独立仓库：Geo3K 数据与切片产出
 SEED = 1
 
 TEXT_SRC = f"{POLARIS}/parquet/stage1/polaris_easy_boxed.parquet"

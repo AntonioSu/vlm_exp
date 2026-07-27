@@ -340,6 +340,14 @@ function renderExpPanel(key) {
     });
   }
 
+  if (e.promptLen && document.getElementById(`chart-${key}-promptlen`)) {
+    drawLineChart(`chart-${key}-promptlen`, `tip-${key}-promptlen`, {
+      categories: e.cats,
+      series: [{ name: e.label + " prompt length", data: e.promptLen, color: e.color }],
+      valueSuffix: " tok", height: 200,
+    });
+  }
+
   const lossLegend = document.getElementById(`legend-${key}-loss`);
   const lossMA = movingAvg(e.loss, 5);
   if (lossLegend) {
@@ -612,38 +620,4 @@ function renderEvalPanel() {
   }
 }
 
-render();
-let resizeTimer;
-window.addEventListener("resize", () => {
-  clearTimeout(resizeTimer);
-  resizeTimer = setTimeout(() => {
-    const activeSub = document.querySelector(".subtab-btn.active");
-    if (!activeSub || activeSub.dataset.subtab === "compare") render();
-    else if (activeSub.dataset.subtab === "eval") renderEvalPanel();
-    else renderExpPanel(activeSub.dataset.subtab);
-  }, 120);
-});
-
-// ---- Sub-tab switching: 对比总览 vs 单组详细监控 vs 评测结果 ----
-const subtabBtns = document.querySelectorAll(".subtab-btn");
-const subpanels = {
-  compare: document.getElementById("subpanel-compare"),
-  e1: document.getElementById("subpanel-e1"),
-  e2: document.getElementById("subpanel-e2"),
-  e3: document.getElementById("subpanel-e3"),
-  e4: document.getElementById("subpanel-e4"),
-  e5: document.getElementById("subpanel-e5"),
-  eval: document.getElementById("subpanel-eval"),
-};
-subtabBtns.forEach((btn) => {
-  btn.addEventListener("click", () => {
-    const sub = btn.dataset.subtab;
-    subtabBtns.forEach((b) => b.classList.toggle("active", b === btn));
-    Object.entries(subpanels).forEach(([k, el]) => {
-      if (el) el.classList.toggle("active", k === sub);
-    });
-    if (sub === "compare") render();
-    else if (sub === "eval") renderEvalPanel();
-    else renderExpPanel(sub);
-  });
-});
+// Tab switching and initial render are handled by js/tab-loader.js

@@ -159,7 +159,8 @@ function drawBarChart(canvasId, tipId, { categories, data, colors, valueSuffix =
   const padL = 40, padR = 12, padT = 10, padB = 26;
   const plotW = cssWidth - padL - padR;
   const plotH = height - padT - padB;
-  const max = Math.max(...data) * 1.15;
+  const safeData = data.map((v) => (v == null || isNaN(v) ? 0 : v));
+  const max = Math.max(...safeData) * 1.15 || 1;
 
   const bandW = plotW / categories.length;
   const barW = bandW * 0.5;
@@ -182,7 +183,7 @@ function drawBarChart(canvasId, tipId, { categories, data, colors, valueSuffix =
 
   categories.forEach((c, i) => {
     const bx = padL + i * bandW + (bandW - barW) / 2;
-    const v = data[i];
+    const v = safeData[i];
     const h = (v / max) * plotH;
     const y = padT + plotH - h;
     ctx.fillStyle = colors[i];
@@ -307,129 +308,175 @@ function fillExpStats(key, e) {
 
 function renderExpPanel(key) {
   const e = EXP[key];
+  const s3Key = "s3_" + key;
+  const s = EXP[s3Key] || null;
   fillExpStats(key, e);
 
   const passLegend = document.getElementById(`legend-${key}-pass`);
   const passMA = movingAvg(e.pass, 5);
+  const allPass = e.pass.filter(v => v != null);
+  if (s) allPass.push(...s.pass.filter(v => v != null));
+  const passMax = Math.max(...allPass);
+  const passYMax = Math.min(100, Math.ceil((passMax + 10) / 10) * 10);
   if (passLegend) {
-    renderLegend(passLegend, [
-      { name: "pass / step", data: e.pass, color: COLORS.neutral },
-      { name: "5-step MA", data: passMA, color: e.color },
-    ], (visible) => drawLineChart(`chart-${key}-pass`, `tip-${key}-pass`, {
+    const items = [
+      { name: "Easy-Boxed", data: passMA, color: e.color },
+    ];
+    if (s) items.push({ name: "S3", data: movingAvg(s.pass, 5), color: COLORS.s3 });
+    renderLegend(passLegend, items, (visible) => drawLineChart(`chart-${key}-pass`, `tip-${key}-pass`, {
       categories: e.cats,
       series: visible,
-      yMin: 0, yMax: 90, valueSuffix: "%", height: 240,
+      yMin: 0, yMax: passYMax, valueSuffix: "%", height: 240,
     }));
   } else {
+    const items = [{ name: "Easy-Boxed pass", data: e.pass, color: e.color }];
+    if (s) items.push({ name: "S3 pass", data: s.pass, color: COLORS.s3 });
     drawLineChart(`chart-${key}-pass`, `tip-${key}-pass`, {
-      categories: e.cats,
-      series: [{ name: e.label + " pass rate", data: e.pass, color: e.color }],
-      yMin: 0, yMax: 90, valueSuffix: "%", height: 200,
+      categories: e.cats, series: items,
+      yMin: 0, yMax: passYMax, valueSuffix: "%", height: 200,
     });
   }
 
-  drawLineChart(`chart-${key}-len`, `tip-${key}-len`, {
-    categories: e.cats,
-    series: [{ name: e.label + " length", data: e.len, color: e.color }],
-    valueSuffix: " tok", height: 200,
-    referenceLines: [{ value: 16384, label: "16K cap", tone: "danger" }],
-  });
+  {
+    const items = [{ name: "Easy-Boxed", data: e.len, color: e.color }];
+    if (s) items.push({ name: "S3", data: s.len, color: COLORS.s3 });
+    const lenLegend = document.getElementById(`legend-${key}-len`);
+    if (lenLegend) {
+      renderLegend(lenLegend, items, (visible) => drawLineChart(`chart-${key}-len`, `tip-${key}-len`, {
+        categories: e.cats, series: visible,
+        valueSuffix: " tok", height: 200,
+        referenceLines: [{ value: 16384, label: "16K cap", tone: "danger" }],
+      }));
+    } else {
+      drawLineChart(`chart-${key}-len`, `tip-${key}-len`, {
+        categories: e.cats, series: items,
+        valueSuffix: " tok", height: 200,
+        referenceLines: [{ value: 16384, label: "16K cap", tone: "danger" }],
+      });
+    }
+  }
 
   if (e.trunc && document.getElementById(`chart-${key}-trunc`)) {
+    const items = [{ name: "Easy-Boxed clip@16K", data: e.trunc, color: e.color }];
+    if (s && s.trunc) items.push({ name: "S3 clip@16K", data: s.trunc, color: COLORS.s3 });
     drawLineChart(`chart-${key}-trunc`, `tip-${key}-trunc`, {
-      categories: e.cats,
-      series: [{ name: "clip@16K", data: e.trunc, color: COLORS.e2 }],
+      categories: e.cats, series: items,
       valueSuffix: "%", height: 200, yMin: 0,
     });
   }
 
-  const lossLegend = document.getElementById(`legend-${key}-loss`);
-  const lossMA = movingAvg(e.loss, 5);
-  if (lossLegend) {
-    renderLegend(lossLegend, [
-      { name: "actor/loss", data: e.loss, color: COLORS.neutral },
-      { name: "5-step MA", data: lossMA, color: COLORS.e1 },
-    ], (visible) => drawLineChart(`chart-${key}-loss`, `tip-${key}-loss`, {
-      categories: e.cats,
-      series: visible,
-      height: 220,
-    }));
-  } else {
-    drawLineChart(`chart-${key}-loss`, `tip-${key}-loss`, {
-      categories: e.cats,
-      series: [{ name: e.label + " actor/loss", data: e.loss, color: e.color }],
-      height: 200,
-    });
+  if (e.promptLen && document.getElementById(`chart-${key}-promptlen`)) {
+    const items = [{ name: "Easy-Boxed", data: e.promptLen, color: e.color }];
+    if (s && s.promptLen) items.push({ name: "S3", data: s.promptLen, color: COLORS.s3 });
+    const plLegend = document.getElementById(`legend-${key}-promptlen`);
+    if (plLegend && items.length > 1) {
+      renderLegend(plLegend, items, (visible) => drawLineChart(`chart-${key}-promptlen`, `tip-${key}-promptlen`, {
+        categories: e.cats, series: visible,
+        valueSuffix: " tok", height: 200,
+      }));
+    } else {
+      drawLineChart(`chart-${key}-promptlen`, `tip-${key}-promptlen`, {
+        categories: e.cats, series: items,
+        valueSuffix: " tok", height: 200,
+      });
+    }
   }
 
-  drawLineChart(`chart-${key}-ent`, `tip-${key}-ent`, {
-    categories: e.cats,
-    series: [{ name: e.label + " entropy", data: e.ent, color: e.color }],
-    height: 200,
-  });
+  const lossLegend = document.getElementById(`legend-${key}-loss`);
+  {
+    const items = [
+      { name: "Easy-Boxed loss", data: e.loss, color: e.color },
+    ];
+    if (s) items.push({ name: "S3 loss", data: s.loss, color: COLORS.s3 });
+    if (lossLegend) {
+      renderLegend(lossLegend, items, (visible) => drawLineChart(`chart-${key}-loss`, `tip-${key}-loss`, {
+        categories: e.cats, series: visible, height: 220,
+      }));
+    } else {
+      drawLineChart(`chart-${key}-loss`, `tip-${key}-loss`, {
+        categories: e.cats, series: items, height: 200,
+      });
+    }
+  }
+
+  {
+    const items = [{ name: "Easy-Boxed entropy", data: e.ent, color: e.color }];
+    if (s) items.push({ name: "S3 entropy", data: s.ent, color: COLORS.s3 });
+    drawLineChart(`chart-${key}-ent`, `tip-${key}-ent`, {
+      categories: e.cats, series: items, height: 200,
+    });
+  }
 
   if (e.klLoss && e.klLoss.some((x) => x != null) && document.getElementById(`chart-${key}-klloss`)) {
+    const items = [{ name: "Easy-Boxed kl_loss ×100", data: e.klLoss, color: e.color }];
+    if (s && s.klLoss && s.klLoss.some(x => x != null)) items.push({ name: "S3 kl_loss ×100", data: s.klLoss, color: COLORS.s3 });
     drawLineChart(`chart-${key}-klloss`, `tip-${key}-klloss`, {
-      categories: e.cats,
-      series: [{ name: "kl_loss \u00d7100", data: e.klLoss, color: COLORS.danger }],
-      height: 200, yMin: 0,
+      categories: e.cats, series: items, height: 200, yMin: 0,
     });
   }
 
-  drawLineChart(`chart-${key}-grad`, `tip-${key}-grad`, {
-    categories: e.cats,
-    series: [{ name: e.label + " grad_norm", data: e.grad, color: e.color }],
-    height: 200,
-  });
-  drawLineChart(`chart-${key}-ppokl`, `tip-${key}-ppokl`, {
-    categories: e.cats,
-    series: [{ name: e.label + " ppo_kl \u00d71e5", data: e.ppokl, color: e.color }],
-    height: 200,
-    referenceLines: [{ value: 0, label: "0", tone: "neutral" }],
-  });
-  const clipSeries = [{ name: "pg_clipfrac", data: e.clip, color: e.color }];
-  if (e.clipLower) clipSeries.push({ name: "pg_clipfrac_lower", data: e.clipLower, color: COLORS.danger });
-  drawLineChart(`chart-${key}-clip`, `tip-${key}-clip`, {
-    categories: e.cats,
-    series: clipSeries,
-    valueSuffix: "%", height: 200, yMin: 0,
-  });
-  drawLineChart(`chart-${key}-corr`, `tip-${key}-corr`, {
-    categories: e.cats,
-    series: [{ name: "(1\u2212corr)\u00d71e4", data: e.pearsonDev, color: e.color }],
-    height: 200, yMin: 0,
-  });
+  {
+    const items = [{ name: "Easy-Boxed grad_norm", data: e.grad, color: e.color }];
+    if (s) items.push({ name: "S3 grad_norm", data: s.grad, color: COLORS.s3 });
+    drawLineChart(`chart-${key}-grad`, `tip-${key}-grad`, {
+      categories: e.cats, series: items, height: 200,
+    });
+  }
+  {
+    const items = [{ name: "Easy-Boxed ppo_kl ×1e5", data: e.ppokl, color: e.color }];
+    if (s) items.push({ name: "S3 ppo_kl ×1e5", data: s.ppokl, color: COLORS.s3 });
+    drawLineChart(`chart-${key}-ppokl`, `tip-${key}-ppokl`, {
+      categories: e.cats, series: items, height: 200,
+      referenceLines: [{ value: 0, label: "0", tone: "neutral" }],
+    });
+  }
+  {
+    const clipItems = [{ name: "Easy-Boxed clipfrac", data: e.clip, color: e.color }];
+    if (e.clipLower) clipItems.push({ name: "Easy-Boxed clipfrac_lower", data: e.clipLower, color: COLORS.danger });
+    if (s) clipItems.push({ name: "S3 clipfrac", data: s.clip, color: COLORS.s3 });
+    if (s && s.clipLower) clipItems.push({ name: "S3 clipfrac_lower", data: s.clipLower, color: "#f472b6" });
+    drawLineChart(`chart-${key}-clip`, `tip-${key}-clip`, {
+      categories: e.cats, series: clipItems,
+      valueSuffix: "%", height: 200, yMin: 0,
+    });
+  }
+  {
+    const items = [{ name: "Easy-Boxed (1−corr)×1e4", data: e.pearsonDev, color: e.color }];
+    if (s) items.push({ name: "S3 (1−corr)×1e4", data: s.pearsonDev, color: COLORS.s3 });
+    drawLineChart(`chart-${key}-corr`, `tip-${key}-corr`, {
+      categories: e.cats, series: items, height: 200, yMin: 0,
+    });
+  }
 
   if (e.rolloutKl && document.getElementById(`chart-${key}-rollkl`)) {
+    const items = [{ name: "Easy-Boxed rollout_kl ×1e4", data: e.rolloutKl, color: e.color }];
+    if (s && s.rolloutKl) items.push({ name: "S3 rollout_kl ×1e4", data: s.rolloutKl, color: COLORS.s3 });
     drawLineChart(`chart-${key}-rollkl`, `tip-${key}-rollkl`, {
-      categories: e.cats,
-      series: [{ name: "rollout_corr/kl \u00d71e4", data: e.rolloutKl, color: COLORS.e3 }],
-      height: 200, yMin: 0,
+      categories: e.cats, series: items, height: 200, yMin: 0,
     });
   }
   if (e.stepMin && document.getElementById(`chart-${key}-stepmin`)) {
+    const items = [{ name: "Easy-Boxed", data: e.stepMin, color: e.color }];
+    if (s && s.stepMin) items.push({ name: "S3", data: s.stepMin, color: COLORS.s3 });
     drawLineChart(`chart-${key}-stepmin`, `tip-${key}-stepmin`, {
-      categories: e.cats,
-      series: [{ name: "wall time / step", data: e.stepMin, color: COLORS.neutral }],
+      categories: e.cats, series: items,
       valueSuffix: " min", height: 200, yMin: 0,
     });
   }
   if (e.mfu && document.getElementById(`chart-${key}-mfu`)) {
-    const avgMfu = meanOf(e.mfu);
+    const items = [{ name: "Easy-Boxed MFU", data: e.mfu, color: e.color }];
+    if (s && s.mfu) items.push({ name: "S3 MFU", data: s.mfu, color: COLORS.s3 });
     drawLineChart(`chart-${key}-mfu`, `tip-${key}-mfu`, {
-      categories: e.cats,
-      series: [{ name: "perf/mfu/actor", data: e.mfu, color: COLORS.e1 }],
+      categories: e.cats, series: items,
       valueSuffix: "%", height: 200,
-      referenceLines: avgMfu != null ? [{ value: avgMfu, label: `mean ${avgMfu.toFixed(1)}%`, tone: "neutral" }] : [],
     });
   }
   if (e.throughput && document.getElementById(`chart-${key}-thru`)) {
-    const avgThru = meanOf(e.throughput);
+    const items = [{ name: "Easy-Boxed throughput", data: e.throughput, color: e.color }];
+    if (s && s.throughput) items.push({ name: "S3 throughput", data: s.throughput, color: COLORS.s3 });
     drawLineChart(`chart-${key}-thru`, `tip-${key}-thru`, {
-      categories: e.cats,
-      series: [{ name: "perf/throughput", data: e.throughput, color: COLORS.neutral }],
+      categories: e.cats, series: items,
       valueSuffix: " tok/s", height: 200,
-      referenceLines: avgThru != null ? [{ value: avgThru, label: `mean ${Math.round(avgThru)}`, tone: "neutral" }] : [],
     });
   }
 
@@ -504,9 +551,10 @@ function renderExpPanel(key) {
       }));
     }
     if (document.getElementById(`chart-${key}-timing-step`)) {
+      const items = [{ name: "Easy-Boxed step", data: t.step, color: e.color }];
+      if (s && s.timing) items.push({ name: "S3 step", data: s.timing.step, color: COLORS.s3 });
       drawLineChart(`chart-${key}-timing-step`, `tip-${key}-timing-step`, {
-        categories: e.cats,
-        series: [{ name: "timing_s/step", data: t.step, color: COLORS.neutral }],
+        categories: e.cats, series: items,
         valueSuffix: " s", height: 240, yMin: 0,
       });
     }
@@ -524,7 +572,7 @@ function renderExpPanel(key) {
     }
     if (document.getElementById(`chart-${key}-timing-mean`)) {
       const meanCats = ["gen", "update_actor", "ref", "old_log_prob", "update_weights", "adv"];
-      const meanVals = meanCats.map((k) => tm[k]);
+      const meanVals = meanCats.map((k) => tm[k] ?? 0);
       const meanColors = [COLORS.danger, e.color, COLORS.e3, COLORS.e2, COLORS.e4, COLORS.e5];
       drawBarChart(`chart-${key}-timing-mean`, `tip-${key}-timing-mean`, {
         categories: meanCats,
@@ -595,38 +643,4 @@ function renderEvalPanel() {
 }
 
 
-render();
-let resizeTimer;
-window.addEventListener("resize", () => {
-  clearTimeout(resizeTimer);
-  resizeTimer = setTimeout(() => {
-    const activeSub = document.querySelector(".subtab-btn.active");
-    if (!activeSub || activeSub.dataset.subtab === "compare") render();
-    else if (activeSub.dataset.subtab === "eval") renderEvalPanel();
-    else renderExpPanel(activeSub.dataset.subtab);
-  }, 120);
-});
-
-// ---- Sub-tab switching: 对比总览 vs 单组详细监控 vs 评测结果 ----
-const subtabBtns = document.querySelectorAll(".subtab-btn");
-const subpanels = {
-  compare: document.getElementById("subpanel-compare"),
-  e1: document.getElementById("subpanel-e1"),
-  e2: document.getElementById("subpanel-e2"),
-  e3: document.getElementById("subpanel-e3"),
-  e4: document.getElementById("subpanel-e4"),
-  e5: document.getElementById("subpanel-e5"),
-  eval: document.getElementById("subpanel-eval"),
-};
-subtabBtns.forEach((btn) => {
-  btn.addEventListener("click", () => {
-    const sub = btn.dataset.subtab;
-    subtabBtns.forEach((b) => b.classList.toggle("active", b === btn));
-    Object.entries(subpanels).forEach(([k, el]) => {
-      if (el) el.classList.toggle("active", k === sub);
-    });
-    if (sub === "compare") render();
-    else if (sub === "eval") renderEvalPanel();
-    else renderExpPanel(sub);
-  });
-});
+// Tab switching and initial render are handled by js/tab-loader.js

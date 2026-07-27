@@ -14,7 +14,7 @@ Scientific constraint: the **only** independent variable is the multimodal sampl
 ## Layout relative to sibling repos
 
 ```
-$ROOT=/data/juicefs-white/5281-gpu-a100/lijunyi
+$ROOT=/data/lijunyi
 ├── vlm_exp/          ← this repo (MM scripts, data slices, ckpts, logs, dashboard)
 ├── polaris/          ← shared infra: verl_env.sh, text parquet, aime24, weight merge, E1 baseline
 ├── verl-main/        ← training framework

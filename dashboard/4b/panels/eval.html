@@ -1,0 +1,111 @@
+    <div class="detail-layout">
+      <nav class="detail-toc" aria-label="目录" id="eval-toc">
+        <p class="toc-heading">目录</p>
+        <ol class="toc-list">
+          <li><a href="#eval-sec-overview"><span class="toc-num">0</span><span class="toc-title">概览</span></a></li>
+          <li><a href="#eval-sec-aime"><span class="toc-num">1</span><span class="toc-title">数学推理 AIME</span></a></li>
+          <li><a href="#eval-sec-mmlu"><span class="toc-num">2</span><span class="toc-title">通识 MMLU</span></a></li>
+          <li><a href="#eval-sec-agent"><span class="toc-num">3</span><span class="toc-title">Agent / 工具调用</span></a></li>
+        </ol>
+      </nav>
+
+      <div class="detail-main">
+
+        <section class="detail-sec" id="eval-sec-overview">
+          <h2 class="sec-title">概览</h2>
+          <p class="sec-sub">评测配置 · step150 汇总对比</p>
+          <p class="tertiary">Source: <code>/data/lijunyi/evalscope</code>（<code>run_queue_4b.sh</code> + <code>eval_exp4b.sh</code>，verl_qwen35 vLLM 0.24 serving）。评测配置：aime25 <code>temperature=0.6, top_p=0.95, max_tokens=16384, n=8</code>；mmlu_temp <code>n=2</code>；<code>enable_thinking=False</code>。权重路径 <code>model/exp2card/&lt;exp&gt;/merged_&lt;step&gt;</code>。汇总表见 <code>archive/eval_4b/summary.md</code>。</p>
+          <div class="callout" style="margin-top:10px">
+            <div class="title">已同步最新 offline 报告（75/75 完成 · E1–E5 全齐）</div>
+            <strong>mmlu_temp</strong> 全程 90–92%；峰值 <strong>E3@120 = 92.47%</strong>（其次 E2@100 = 92.38%）。<strong>offline aime24（n=8）</strong> 峰值 <strong>E2@80 = 80.42%</strong>，其次 E5@140（78.75%）、E4@140（76.67%）。<strong>aime25</strong> 峰值 <strong>E2@80 = 62.50%</strong>，step150 最高仍是 E2（59.59%）。GPU0/GPU1 队列均已 DONE。刷新：<code>python3 scripts/sync_4b_eval_dashboard.py</code>。
+          </div>
+          <section class="grid2" style="margin-top:20px">
+            <div>
+              <h2>step150 mmlu_temp 对比</h2>
+              <div class="chart-card">
+                <div class="chart-wrap"><canvas id="chart-eval-mmlu150" height="200"></canvas><div class="tooltip" id="tip-eval-mmlu150"></div></div>
+              </div>
+            </div>
+            <div>
+              <h2>step150 aime25 对比</h2>
+              <div class="chart-card">
+                <div class="chart-wrap"><canvas id="chart-eval-aime25-150" height="200"></canvas><div class="tooltip" id="tip-eval-aime25-150"></div></div>
+              </div>
+            </div>
+          </section>
+        </section>
+
+        <section class="detail-sec" id="eval-sec-aime">
+          <h2 class="sec-title">数学推理（AIME）</h2>
+          <p class="sec-sub">aime24 / aime25 · evalscope offline · 240 题 × n=8</p>
+          <section class="grid2" style="margin-top:12px">
+            <div>
+              <h2>evalscope offline · aime24（n=8）</h2>
+              <div class="chart-card">
+                <div class="legend" id="legend-evalfull-aime24"></div>
+                <div class="chart-wrap"><canvas id="chart-evalfull-aime24" height="240"></canvas><div class="tooltip" id="tip-evalfull-aime24"></div></div>
+              </div>
+              <p class="caption">X: step（缺 report 处断开；≠ 训练验证） · Y: aime24 mean_acc（%，240 题 × n=8）。</p>
+            </div>
+            <div>
+              <h2>aime25（E1–E5 全 step）</h2>
+              <div class="chart-card">
+                <div class="legend" id="legend-evalfull-aime25"></div>
+                <div class="chart-wrap"><canvas id="chart-evalfull-aime25" height="240"></canvas><div class="tooltip" id="tip-evalfull-aime25"></div></div>
+              </div>
+              <p class="caption">X: checkpoint step（10–150） · Y: aime25 mean_acc（%，240 题 × n=8）。</p>
+            </div>
+          </section>
+        </section>
+
+        <section class="detail-sec" id="eval-sec-mmlu">
+          <h2 class="sec-title">通识（MMLU）</h2>
+          <p class="sec-sub">mmlu_temp · n=2</p>
+          <div style="margin-top:12px">
+            <h2>mmlu_temp（E1–E5 全 step）</h2>
+            <div class="chart-card">
+              <div class="legend" id="legend-evalfull-mmlu"></div>
+              <div class="chart-wrap"><canvas id="chart-evalfull-mmlu" height="240"></canvas><div class="tooltip" id="tip-evalfull-mmlu"></div></div>
+            </div>
+            <p class="caption">X: checkpoint step（10–150） · Y: mmlu_temp acc（%）。</p>
+          </div>
+        </section>
+
+        <section class="detail-sec" id="eval-sec-agent">
+          <h2 class="sec-title">Agent / 工具调用能力</h2>
+          <p class="sec-sub">BFCL-v3 + tau-bench</p>
+          <p class="tertiary">Source: <code>/data/lijunyi/evalscope/outputs/agent2</code>（<code>run_agent2_queue_4b.sh</code>，vLLM <code>qwen3_xml</code>）。BFCL-v3：10 subset × 30、prompt 模式；tau-bench：retail+airline 共 40、user-sim=<code>gpt-5p5-apipro</code>。已评测 step（tau 非空）：10/20/30/40/50/60/70/80/90/100/110/120/130/140/150。协议说明见 <a href="../benchmark/index.html">Benchmark 介绍</a>。</p>
+          <div class="callout" style="margin-top:10px">
+            <div class="title">数学 RL 对 agent 能力几乎无增益</div>
+            <strong>BFCL 总体持平</strong>：各算法各 step 都落在 41–48%，训练步几乎不改变函数调用能力。<strong>多轮 agentic（MULTI_TURN）普遍趴在 4–11%</strong>——这是数学 RL 模型最弱的一环，换算法也救不回来。<strong>tau-bench 区分度最高</strong>：非空 step 均值 E1 62.5% · E2 57.3% · E3 60.2% · E4 58.7% · E5 59.3%；但每点仅 40 条、噪声约 ±8pt，step 间抖动需谨慎解读。
+          </div>
+          <div style="margin-top:16px">
+            <h2>BFCL-v3 OVERALL 随 checkpoint 变化（E1–E5）</h2>
+            <div class="chart-card">
+              <div class="legend" id="legend-agent-bfcl"></div>
+              <div class="chart-wrap"><canvas id="chart-agent-bfcl" height="240"></canvas><div class="tooltip" id="tip-agent-bfcl"></div></div>
+            </div>
+            <p class="caption">X: 已评测 checkpoint step · Y: BFCL-v3 OVERALL acc（%，mean of non_live / live / multi_turn）。单轮为主时靠 AST 比对调用，不 exec。</p>
+          </div>
+          <section class="grid2" style="margin-top:16px">
+            <div>
+              <h2>BFCL-v3 MULTI_TURN（多轮 agentic 工具调用）</h2>
+              <div class="chart-card">
+                <div class="legend" id="legend-agent-mt"></div>
+                <div class="chart-wrap"><canvas id="chart-agent-mt" height="240"></canvas><div class="tooltip" id="tip-agent-mt"></div></div>
+              </div>
+              <p class="caption">X: step · Y: MULTI_TURN acc（%，4 subset × 30）。多轮会 exec 工具，按每轮环境状态验收（非逐步 AST 硬比对）。数学 RL 普遍 &lt;12%。</p>
+            </div>
+            <div>
+              <h2>tau-bench 随 checkpoint 变化（E1–E5）</h2>
+              <div class="chart-card">
+                <div class="legend" id="legend-agent-tau"></div>
+                <div class="chart-wrap"><canvas id="chart-agent-tau" height="240"></canvas><div class="tooltip" id="tip-agent-tau"></div></div>
+              </div>
+              <p class="caption">X: step · Y: tau-bench mean_acc（%，40 条 · user-sim=gpt-5p5-apipro）。任务完成看最终 DB；每点噪声约 ±8pt。</p>
+            </div>
+          </section>
+        </section>
+
+      </div><!-- /.detail-main -->
+    </div><!-- /.detail-layout -->

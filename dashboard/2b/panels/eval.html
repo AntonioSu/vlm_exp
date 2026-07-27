@@ -1,0 +1,26 @@
+<p class="tertiary">Source: <code>/data/lijunyi/evalscope</code>（evalscope 框架，本地 vLLM 0.24 serving 出的 checkpoint 权重，非训练时 verl 内置验证）。评测配置：math 类（aime24/aime25）<code>temperature=0.6, top_p=0.95, max_tokens=16384, n=8</code>（8 采样取均值 acc）；mmlu_temp 用默认贪心解码。权重来自 FSDP → HuggingFace 合并（<code>trans_weight.sh</code>），路径 <code>model/exp2card/&lt;exp&gt;/merged_&lt;step&gt;</code>。汇总表见 <code>archive/eval_2b/summary.md</code>。</p>
+<div class="callout" style="margin-top:10px">
+  <div class="title">mmlu_temp 单调上升、5 组都在 step150 达到本组最高；aime25 噪声更大，没有单一算法双项都赢</div>
+</div>
+
+<section class="grid2" style="margin-top:16px">
+  <div>
+    <h2>MMLU-Temp（趋势，step 10→150）</h2>
+    <div class="chart-card"><div class="legend" id="legend-eval-mmlu"></div><div class="chart-wrap"><canvas id="chart-eval-mmlu" height="240"></canvas><div class="tooltip" id="tip-eval-mmlu"></div></div></div>
+  </div>
+  <div>
+    <h2>AIME-25（趋势，step 10→150）</h2>
+    <div class="chart-card"><div class="legend" id="legend-eval-aime25"></div><div class="chart-wrap"><canvas id="chart-eval-aime25" height="240"></canvas><div class="tooltip" id="tip-eval-aime25"></div></div></div>
+  </div>
+</section>
+
+<section class="grid2" style="margin-top:16px">
+  <div>
+    <h2>MMLU-Temp @ step 150（柱状）</h2>
+    <div class="chart-card"><div class="chart-wrap"><canvas id="chart-eval-mmlu150" height="200"></canvas><div class="tooltip" id="tip-eval-mmlu150"></div></div></div>
+  </div>
+  <div>
+    <h2>AIME-25 @ step 150（柱状）</h2>
+    <div class="chart-card"><div class="chart-wrap"><canvas id="chart-eval-aime25-150" height="200"></canvas><div class="tooltip" id="tip-eval-aime25-150"></div></div></div>
+  </div>
+</section>
