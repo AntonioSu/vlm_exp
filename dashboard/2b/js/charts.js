@@ -220,6 +220,15 @@ function render() {
     yMin: 0, yMax: 80, valueSuffix: "%", height: 280,
   }));
 
+  const raccLegend = document.getElementById("legend-racc");
+  if (raccLegend && typeof E2_ROLLOUT_ACC_MA !== "undefined") {
+    drawLineChart("chart-racc", "tip-racc", {
+      categories: STEP_CATS,
+      series: [{ name: "E2 DAPO", data: E2_ROLLOUT_ACC_MA, color: COLORS.e2 }],
+      yMin: 0, yMax: 80, valueSuffix: "%", height: 280,
+    });
+  }
+
   renderLegend(document.getElementById("legend-len"), [
     { name: "E1 GRPO", data: E1_LEN, color: COLORS.e1 },
     { name: "E2 DAPO", data: E2_LEN, color: COLORS.e2 },
@@ -293,6 +302,15 @@ function render() {
     series: visible,
     yMin: 0, yMax: 80, valueSuffix: "%", height: 280,
   }));
+
+  const s3RaccLegend = document.getElementById("legend-s3-racc");
+  if (s3RaccLegend && typeof S3_E2_ROLLOUT_ACC_MA !== "undefined") {
+    drawLineChart("chart-s3-racc", "tip-s3-racc", {
+      categories: STEP_CATS,
+      series: [{ name: "S3 E2 DAPO", data: S3_E2_ROLLOUT_ACC_MA, color: COLORS.e2 }],
+      yMin: 0, yMax: 80, valueSuffix: "%", height: 280,
+    });
+  }
 
   renderLegend(document.getElementById("legend-s3-len"), [
     { name: "S3 E1 GRPO", data: S3_E1_LEN, color: COLORS.e1 },
@@ -409,6 +427,27 @@ function renderExpPanel(key) {
       categories: e.cats, series: items,
       yMin: 0, yMax: passYMax, valueSuffix: "%", height: 200,
     });
+  }
+
+  if (e.rolloutAcc && e.rolloutAcc.length && document.getElementById(`chart-${key}-racc`)) {
+    const raccMA = movingAvg(e.rolloutAcc, 5);
+    const raccItems = [{ name: "Easy-Boxed", data: raccMA, color: e.color }];
+    if (s && s.rolloutAcc) raccItems.push({ name: "S3", data: movingAvg(s.rolloutAcc, 5), color: COLORS.s3 });
+    const allRacc = e.rolloutAcc.filter(v => v != null);
+    if (s && s.rolloutAcc) allRacc.push(...s.rolloutAcc.filter(v => v != null));
+    const raccYMax = Math.min(100, Math.ceil((Math.max(...allRacc) + 10) / 10) * 10);
+    const raccLegend = document.getElementById(`legend-${key}-racc`);
+    if (raccLegend) {
+      renderLegend(raccLegend, raccItems, (visible) => drawLineChart(`chart-${key}-racc`, `tip-${key}-racc`, {
+        categories: e.cats, series: visible,
+        yMin: 0, yMax: raccYMax, valueSuffix: "%", height: 240,
+      }));
+    } else {
+      drawLineChart(`chart-${key}-racc`, `tip-${key}-racc`, {
+        categories: e.cats, series: raccItems,
+        yMin: 0, yMax: raccYMax, valueSuffix: "%", height: 240,
+      });
+    }
   }
 
   {
