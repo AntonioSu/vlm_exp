@@ -8,11 +8,11 @@
 const EVAL_STEPS = ["10", "20", "30", "40", "50", "60", "70", "80", "90", "100", "110", "120", "130", "140", "150"];
 
 const EVAL = {
-  e1: { label: "E1 GRPO",       color: COLORS.e1, mmlu: [76.98, null, null, null, 78.04, null, null, null, null, 77.47, null, null, null, null, 78.12], aime25: [19.58, null, null, null, 27.08, null, null, null, null, 32.50, null, null, null, null, null], aime24: [19.17, null, null, null, 38.33, null, null, null, null, 33.33, null, null, null, null, null], math500: [79.95, null, null, null, 85.05, null, null, null, null, 85.82, null, null, null, null, 86.70] },
+  e1: { label: "E1 GRPO",       color: COLORS.e1, mmlu: [76.98, 76.83, null, null, 78.04, null, null, null, null, 77.47, null, null, null, null, 78.12], aime25: [19.58, 21.25, null, null, 27.08, null, null, null, null, 32.50, null, null, null, null, null], aime24: [19.17, 31.67, null, null, 38.33, null, null, null, null, 33.33, null, null, null, null, null], math500: [79.95, null, null, null, 85.05, null, null, null, null, 85.82, null, null, null, null, 86.70] },
   e2: { label: "E2 DAPO",       color: COLORS.e2, mmlu: [null, null, null, null, 78.69, null, null, null, null, 78.20, null, null, null, null, 77.71], aime25: [null, null, null, null, 23.75, null, null, null, null, 28.75, null, null, null, null, 30.00], aime24: [null, null, null, null, 36.25, null, null, null, null, 42.50, null, null, null, null, 35.42], math500: [null, null, null, null, 85.18, null, null, null, null, 86.40, null, null, null, null, 84.47] },
-  e3: { label: "E3 Dr.GRPO",    color: COLORS.e3, mmlu: [73.82, null, null, null, 79.58, null, null, null, null, 82.42, null, null, null, null, 79.66], aime25: [21.25, null, null, null, 33.33, null, null, null, null, 37.50, null, null, null, null, 35.00], aime24: [20.00, null, null, null, 34.17, null, null, null, null, 35.83, null, null, null, null, 40.83], math500: [78.82, null, null, null, 86.00, null, null, null, null, 88.05, null, null, null, null, 88.13] },
+  e3: { label: "E3 Dr.GRPO",    color: COLORS.e3, mmlu: [73.82, 76.01, null, null, 79.58, null, null, null, null, 82.42, null, null, null, null, 79.66], aime25: [21.25, 26.25, null, null, 33.33, null, null, null, null, 37.50, null, null, null, null, 35.00], aime24: [20.00, 26.25, null, null, 34.17, null, null, null, null, 35.83, null, null, null, null, 40.83], math500: [78.82, null, null, null, 86.00, null, null, null, null, 88.05, null, null, null, null, 88.13] },
   e4: { label: "E4 RLOO",       color: COLORS.e4, mmlu: [null, null, null, null, 78.61, null, null, null, null, 79.09, null, null, null, null, 79.74], aime25: [null, null, null, null, 30.42, null, null, null, null, 30.42, null, null, null, null, 37.50], aime24: [null, null, null, null, 31.67, null, null, null, null, 30.83, null, null, null, null, 35.00], math500: [null, null, null, null, 85.40, null, null, null, null, 86.50, null, null, null, null, 87.40] },
-  e5: { label: "E5 REINFORCE++", color: COLORS.e5, mmlu: [74.31, null, null, null, 77.39, null, null, null, null, 77.79, null, null, null, null, 81.93], aime25: [20.84, null, null, null, 25.41, null, null, null, null, 31.25, null, null, null, null, 36.66], aime24: [25.83, null, null, null, 30.42, null, null, null, null, 39.17, null, null, null, null, null], math500: [78.47, null, null, null, 82.60, null, null, null, null, null, null, null, null, null, null] },
+  e5: { label: "E5 REINFORCE++", color: COLORS.e5, mmlu: [74.31, 74.80, null, null, 77.39, null, null, null, null, 77.79, null, null, null, null, 81.93], aime25: [20.84, 24.59, null, null, 25.41, null, null, null, null, 31.25, null, null, null, null, 36.66], aime24: [25.83, 23.33, null, null, 30.42, null, null, null, null, 39.17, null, null, null, null, null], math500: [78.47, null, null, null, 82.60, null, null, null, null, 85.90, null, null, null, null, null] },
 };
 
 const EVAL_ORDER = ["e1", "e2", "e3", "e4", "e5"];
@@ -23,9 +23,9 @@ const EVAL_FULL_STEPS = ["10", "20", "30", "40", "50", "60", "70", "80", "90", "
 const EVAL_FULL = {
   e1: {
     label: "E1 GRPO", color: COLORS.e1,
-    mmlu:   [76.98, null, null, null, 78.04, null, null, null, null, 77.47, null, null, null, null, 78.12],
-    aime24: [19.17, null, null, null, 38.33, null, null, null, null, 33.33, null, null, null, null, null],
-    aime25: [19.58, null, null, null, 27.08, null, null, null, null, 32.50, null, null, null, null, null],
+    mmlu:   [76.98, 76.83, null, null, 78.04, null, null, null, null, 77.47, null, null, null, null, 78.12],
+    aime24: [19.17, 31.67, null, null, 38.33, null, null, null, null, 33.33, null, null, null, null, null],
+    aime25: [19.58, 21.25, null, null, 27.08, null, null, null, null, 32.50, null, null, null, null, null],
     math500:[79.95, null, null, null, 85.05, null, null, null, null, 85.82, null, null, null, null, 86.70],
   },
   e2: {
@@ -37,9 +37,9 @@ const EVAL_FULL = {
   },
   e3: {
     label: "E3 Dr.GRPO", color: COLORS.e3,
-    mmlu:   [73.82, null, null, null, 79.58, null, null, null, null, 82.42, null, null, null, null, 79.66],
-    aime24: [20.00, null, null, null, 34.17, null, null, null, null, 35.83, null, null, null, null, 40.83],
-    aime25: [21.25, null, null, null, 33.33, null, null, null, null, 37.50, null, null, null, null, 35.00],
+    mmlu:   [73.82, 76.01, null, null, 79.58, null, null, null, null, 82.42, null, null, null, null, 79.66],
+    aime24: [20.00, 26.25, null, null, 34.17, null, null, null, null, 35.83, null, null, null, null, 40.83],
+    aime25: [21.25, 26.25, null, null, 33.33, null, null, null, null, 37.50, null, null, null, null, 35.00],
     math500:[78.82, null, null, null, 86.00, null, null, null, null, 88.05, null, null, null, null, 88.13],
   },
   e4: {
@@ -51,10 +51,10 @@ const EVAL_FULL = {
   },
   e5: {
     label: "E5 REINFORCE++", color: COLORS.e5,
-    mmlu:   [74.31, null, null, null, 77.39, null, null, null, null, 77.79, null, null, null, null, 81.93],
-    aime24: [25.83, null, null, null, 30.42, null, null, null, null, 39.17, null, null, null, null, null],
-    aime25: [20.84, null, null, null, 25.41, null, null, null, null, 31.25, null, null, null, null, 36.66],
-    math500:[78.47, null, null, null, 82.60, null, null, null, null, null, null, null, null, null, null],
+    mmlu:   [74.31, 74.80, null, null, 77.39, null, null, null, null, 77.79, null, null, null, null, 81.93],
+    aime24: [25.83, 23.33, null, null, 30.42, null, null, null, null, 39.17, null, null, null, null, null],
+    aime25: [20.84, 24.59, null, null, 25.41, null, null, null, null, 31.25, null, null, null, null, 36.66],
+    math500:[78.47, null, null, null, 82.60, null, null, null, null, 85.90, null, null, null, null, null],
   },
 };
 
