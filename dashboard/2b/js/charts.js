@@ -705,18 +705,33 @@ function renderExpPanel(key) {
     } else if (typeof EVAL !== "undefined" && EVAL[key]) {
       steps = EVAL_STEPS; ev = EVAL[key];
     }
+    const s3ev = (typeof EVAL_FULL_S3 !== "undefined" && EVAL_FULL_S3[key]) ? EVAL_FULL_S3[key] : null;
     if (ev && steps) {
-      drawLineChart(`chart-${key}-eval-mmlu`, `tip-${key}-eval-mmlu`, {
-        categories: steps,
-        series: [{ name: "mmlu_temp", data: ev.mmlu, color: ev.color }],
-        valueSuffix: "%", yMin: yMmlu[0], yMax: yMmlu[1], height: 200,
-      });
+      const mmluItems = [{ name: "Easy-Boxed", data: ev.mmlu, color: ev.color }];
+      if (s3ev) mmluItems.push({ name: "S3", data: s3ev.mmlu, color: COLORS.s3, dash: [6, 4] });
+      const mmluLegendEl = document.getElementById(`legend-${key}-eval-mmlu`);
+      if (mmluLegendEl) {
+        renderLegend(mmluLegendEl, mmluItems, (visible) => drawLineChart(`chart-${key}-eval-mmlu`, `tip-${key}-eval-mmlu`, {
+          categories: steps, series: visible,
+          valueSuffix: "%", yMin: yMmlu[0], yMax: yMmlu[1], height: 200,
+        }));
+      } else {
+        drawLineChart(`chart-${key}-eval-mmlu`, `tip-${key}-eval-mmlu`, {
+          categories: steps, series: mmluItems,
+          valueSuffix: "%", yMin: yMmlu[0], yMax: yMmlu[1], height: 200,
+        });
+      }
       const aimeLegendEl = document.getElementById(`legend-${key}-eval-aime`);
       if (aimeLegendEl) {
-        renderLegend(aimeLegendEl, [
+        const aimeItems = [
           { name: "aime24", data: ev.aime24, color: COLORS.danger },
           { name: "aime25", data: ev.aime25, color: ev.color },
-        ], (visible) => drawLineChart(`chart-${key}-eval-aime`, `tip-${key}-eval-aime`, {
+        ];
+        if (s3ev) {
+          aimeItems.push({ name: "aime24 (S3)", data: s3ev.aime24, color: COLORS.danger, dash: [6, 4] });
+          aimeItems.push({ name: "aime25 (S3)", data: s3ev.aime25, color: COLORS.s3, dash: [6, 4] });
+        }
+        renderLegend(aimeLegendEl, aimeItems, (visible) => drawLineChart(`chart-${key}-eval-aime`, `tip-${key}-eval-aime`, {
           categories: steps,
           series: visible,
           valueSuffix: "%", yMin: yAime[0], yMax: yAime[1], height: 200,
