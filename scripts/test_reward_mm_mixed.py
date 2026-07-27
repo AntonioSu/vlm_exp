@@ -1,26 +1,11 @@
 #!/usr/bin/env python3
-"""Small wiring test for both branches of reward_mm_mixed."""
+"""Compatibility shim → train/test_reward_mm_mixed.py. Prefer the categorized path."""
+from __future__ import annotations
 
-from reward_mm_mixed import compute_score
+import runpy
+import sys
+from pathlib import Path
 
-
-def main() -> None:
-    geo = compute_score(
-        "hiyouga/geometry3k",
-        r"<think>reasoning</think>\boxed{48}",
-        "48",
-    )
-    text = compute_score(
-        "math_dapo",
-        r"reasoning \boxed{2}",
-        "2",
-    )
-    assert geo["acc"] is True and geo["is_geo3k"] is True, geo
-    assert text["acc"] is True and text["is_geo3k"] is False, text
-    assert geo["score"] == 1.0, geo
-    assert text["score"] == 1.0, text
-    print("reward_mm_mixed: geo3k and text branches passed")
-
-
-if __name__ == "__main__":
-    main()
+_TARGET = Path(__file__).resolve().parent / "train/test_reward_mm_mixed.py"
+sys.argv[0] = str(_TARGET)
+runpy.run_path(str(_TARGET), run_name="__main__")
