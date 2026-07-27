@@ -1,9 +1,9 @@
 // ---- Multimodal offline eval (Geo3K + evalscope) ----
-// Auto-generated 2026-07-25 by scripts/gen_mm_eval_dashboard_data.py
-// Refresh: python3 scripts/gen_mm_eval_dashboard_data.py
+// Auto-generated 2026-07-25 by scripts/analysis/gen_mm_eval_dashboard_data.py
+// Refresh: python3 scripts/analysis/gen_mm_eval_dashboard_data.py
 window.MM_EVAL = {
   "generatedAt": "2026-07-25",
-  "generatedBy": "scripts/gen_mm_eval_dashboard_data.py",
+  "generatedBy": "scripts/analysis/gen_mm_eval_dashboard_data.py",
   "note": "M0 为正式基线；M1 light Geo3K steps：70/100（n=1 max_tokens=512，非 formal n=8/16K）。全 step 曲线对齐 4B E1 EVAL_FULL（10–150 /10）；缺测为 null。M2/M3 待 formal 评测完成后补齐。",
   "metrics": [
     {

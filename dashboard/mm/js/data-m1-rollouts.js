@@ -1,7 +1,7 @@
 window.MM_M1_ROLLOUT_SUMMARY = {
   "source": "m1_geo3k100_2b rollout summary",
   "generatedFrom": "/data/lijunyi/vlm_exp/logs/exp2card_mm/m1_geo3k100_2b/rollout_dump",
-  "generatedBy": "scripts/summarize_mm_rollouts.py",
+  "generatedBy": "scripts/analysis/summarize_mm_rollouts.py",
   "note": "Training rollout metrics; not Geo3K test-set evaluation.",
   "overall": {
     "samples": 26368,

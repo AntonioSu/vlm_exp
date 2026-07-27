@@ -144,10 +144,10 @@
           <tr><td>Reward dispatcher / 训练脚本（M1–M3 + 烟测脚本）</td><td><span class="badge"><span class="sdot" style="background:var(--e3)"></span>已完成</span></td><td><span class="mono">run_m1_geo3k_2b.sh</span> / <span class="mono">run_m2_mix50_2b.sh</span> / <span class="mono">run_m3_mix20_2b.sh</span> / <span class="mono">run_smoke_mm.sh</span></td></tr>
           <tr><td>多模态链路烟测</td><td><span class="badge"><span class="sdot" style="background:var(--e3)"></span>已通过</span></td><td>2026-07-21 完成 2 step；多模态生成、图文混训、mixed reward 与双验证集指标均已验证</td></tr>
           <tr><td>M1 → M2 → M3 正式训练</td><td><span class="badge"><span class="sdot" style="background:var(--e2)"></span>M1 · ~103/150</span></td><td>2026-07-24 17:50 刷新：rollout 已到 <strong>step 103</strong>（acc=0.6992，mean_score=0.6293）；checkpoint <span class="mono">global_step_100</span>（<span class="mono">latest=100</span>）；M2 已有早期 rollout（step 1–4）；正式评测 pipeline 仍在等 M1 step150</td></tr>
-          <tr><td>Geo3K 601 题离线评测脚本</td><td><span class="badge"><span class="sdot" style="background:var(--e3)"></span>已完成</span></td><td><span class="mono">scripts/eval_geo3k.py</span> 已通过端到端验证；M0 Geo3K 601 题正式基线评测已完成</td></tr>
+          <tr><td>Geo3K 601 题离线评测脚本</td><td><span class="badge"><span class="sdot" style="background:var(--e3)"></span>已完成</span></td><td><span class="mono">scripts/eval/eval_geo3k.py</span> 已通过端到端验证；M0 Geo3K 601 题正式基线评测已完成</td></tr>
           <tr><td>M0 正式基线评测</td><td><span class="badge"><span class="sdot" style="background:var(--e3)"></span>已完成</span></td><td>文本：MMLU=78.34%，AIME24=35.42%，AIME25=32.50%，MATH-500=86.35%；Geo3K：sample_accuracy=57.32%、pass@8=83.69%。已写入 done 标记，并进入看板「评测结果」页签</td></tr>
           <tr><td>M1 light 离线评测</td><td><span class="badge"><span class="sdot" style="background:var(--e3)"></span>@70 / @100 完成</span></td><td>light 口径 Geo3K 601×n1×512：@70 acc=<strong>13.64%</strong> → @100 acc=<strong>14.81%</strong>。文本 light 暂仅 @70（MATH-500=23.6% / AIME25=6.67% / MMLU≈0.97%）。见「评测结果」页签</td></tr>
-          <tr><td>M1–M3 自动评测接力 / 归档</td><td><span class="badge"><span class="sdot" style="background:var(--e2)"></span>进行中</span></td><td><span class="mono">run_mm_evaluation_pipeline.sh</span> 等待各组 step150 正式评测；看板可用 <span class="mono">scripts/gen_mm_eval_dashboard_data.py</span> 刷新；归档脚本 <span class="mono">archive_mm_results.sh</span> 已就绪</td></tr>
+          <tr><td>M1–M3 自动评测接力 / 归档</td><td><span class="badge"><span class="sdot" style="background:var(--e2)"></span>进行中</span></td><td><span class="mono">run_mm_evaluation_pipeline.sh</span> 等待各组 step150 正式评测；看板可用 <span class="mono">scripts/analysis/gen_mm_eval_dashboard_data.py</span> 刷新；归档脚本 <span class="mono">scripts/archive/archive_mm_results.sh</span> 已就绪</td></tr>
         </tbody>
       </table>
       <p class="caption">进度快照 2026-07-24 17:50：M1 ~69%（103/150，ckpt@100）。M0 为正式可比基线；M1 light 不可与 M0 直接比绝对值。</p>
@@ -160,7 +160,7 @@
       <div class="callout">
         <div class="title">离线评测（Geo3K test + evalscope 文本保持）</div>
         M0 使用正式口径；M1 目前为 light 探查（Geo3K n=1 / max_tokens=512）：@70 → @100。适合看趋势，不能和 M0 做严格横比。M2/M3 待 formal 评测。刷新数据：
-        <span class="mono">python3 scripts/gen_mm_eval_dashboard_data.py</span>
+        <span class="mono">python3 scripts/analysis/gen_mm_eval_dashboard_data.py</span>
       </div>
       <div class="stats-row" id="mm-eval-stats" style="margin-top:14px"></div>
       <p class="caption" id="mm-eval-caption">数据源加载中。</p>
@@ -277,7 +277,7 @@
         <div class="title">训练过程（对齐 4B E1：学习 / 耗时 / 稳定性 / 效率）</div>
         Rollout 曲线来自 dump；耗时·稳定性·效率来自 <span class="mono">train_*.log</span>（同 4B E1 字段）。
         刷新：
-        <span class="mono">python3 scripts/gen_mm_train_dashboard_data.py</span>
+        <span class="mono">python3 scripts/analysis/gen_mm_train_dashboard_data.py</span>
         ·
         <span class="mono">summarize_mm_rollouts.py</span> → <span class="mono">gen_mm_rollout_dashboard_data.py</span>
       </div>
