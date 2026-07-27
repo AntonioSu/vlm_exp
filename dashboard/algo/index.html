@@ -6,6 +6,7 @@
 <title>算法介绍 — PPO / GRPO / DAPO / Dr.GRPO / RLOO / REINFORCE++</title>
 <link rel="stylesheet" href="../common/base.css">
 <link rel="stylesheet" href="algo.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
 </head>
 <body class="algo-body">
 
@@ -116,6 +117,14 @@
     <div class="module-intro">
       <p>强化学习里最常用的 actor-critic 算法。策略（actor）与价值（critic）一起训：critic 估状态价值，再用 GAE 得到 advantage；actor 用 importance ratio 做裁剪更新，防止一步走太远。本轮因需另训 critic、显存与时间翻倍，<strong>未纳入对比</strong>。</p>
       <p class="how"><strong>核心：</strong>learned V(s) + clip(π/π_old) · <span class="mono">adv_estimator=gae</span></p>
+      <div class="formula-block">
+        <p class="formula-label">策略目标（Clipped Surrogate）</p>
+        <div class="formula">$$\mathcal{L}^{\text{CLIP}}(\theta) = \mathbb{E}_t\!\left[\min\!\Big(r_t(\theta)\,\hat{A}_t,\;\text{clip}\big(r_t(\theta),\,1{-}\epsilon,\,1{+}\epsilon\big)\,\hat{A}_t\Big)\right]$$</div>
+        <p class="formula-label">重要性比率</p>
+        <div class="formula">$$r_t(\theta) = \frac{\pi_\theta(a_t \mid s_t)}{\pi_{\theta_{\text{old}}}(a_t \mid s_t)}$$</div>
+        <p class="formula-label">GAE Advantage 估计</p>
+        <div class="formula">$$\hat{A}_t = \sum_{l=0}^{\infty}(\gamma\lambda)^l\,\delta_{t+l},\quad \delta_t = r_t + \gamma\,V(s_{t+1}) - V(s_t)$$</div>
+      </div>
     </div>
     <div class="module-pros">
       <div class="pros-col">
@@ -137,6 +146,14 @@
     <div class="module-intro">
       <p>DeepSeek-R1 等后训练常用的 critic-free 方法。对同一题采样 G 条回答，用组内 reward 均值（再除以组内 std）当 advantage，只更新策略、不训 value。本轮对照实验的共同基线。</p>
       <p class="how"><strong>核心：</strong>组内相对打分 · 常配 low_var_kl · <span class="mono">adv_estimator=grpo</span></p>
+      <div class="formula-block">
+        <p class="formula-label">Advantage（组内归一化）</p>
+        <div class="formula">$$\hat{A}_i = \frac{r_i - \text{mean}(r_1,\dots,r_G)}{\text{std}(r_1,\dots,r_G)}$$</div>
+        <p class="formula-label">策略目标</p>
+        <div class="formula">$$\mathcal{L}(\theta) = \mathbb{E}_{q}\!\left[\frac{1}{G}\sum_{i=1}^{G}\frac{1}{|o_i|}\sum_{t=1}^{|o_i|}\min\!\Big(\rho_{i,t}\,\hat{A}_i,\;\text{clip}(\rho_{i,t},\,1{-}\epsilon,\,1{+}\epsilon)\,\hat{A}_i\Big)\right] - \beta\,\mathcal{D}_{\text{KL}}\!\left[\pi_\theta \| \pi_{\text{ref}}\right]$$</div>
+        <p class="formula-label">其中</p>
+        <div class="formula">$$\rho_{i,t} = \frac{\pi_\theta(o_{i,t} \mid q,\, o_{i,&lt;t})}{\pi_{\theta_{\text{old}}}(o_{i,t} \mid q,\, o_{i,&lt;t})}$$</div>
+      </div>
     </div>
     <div class="module-pros">
       <div class="pros-col">
@@ -158,6 +175,14 @@
     <div class="module-intro">
       <p>在 GRPO 骨架上补齐工程机制：非对称 clip（Clip-Higher）保住探索；Dynamic Sampling 丢掉全对/全错的无用组；Overlong 软惩罚超长回答；并关掉 KL，让策略 freer。</p>
       <p class="how"><strong>核心：</strong>GRPO + 四件套 · reward manager = <span class="mono">dapo</span></p>
+      <div class="formula-block">
+        <p class="formula-label">非对称裁剪（Clip-Higher）</p>
+        <div class="formula">$$\mathcal{L}(\theta) = \mathbb{E}\!\left[\min\!\Big(\rho_{i,t}\,\hat{A}_i,\;\text{clip}\big(\rho_{i,t},\,1{-}\epsilon_{\text{low}},\,1{+}\epsilon_{\text{high}}\big)\,\hat{A}_i\Big)\right],\quad \epsilon_{\text{high}} > \epsilon_{\text{low}}$$</div>
+        <p class="formula-label">Dynamic Sampling（过滤无效组）</p>
+        <div class="formula">$$\text{仅保留满足 } r_{\max}^{(g)} \neq r_{\min}^{(g)} \text{ 的组 } g$$</div>
+        <p class="formula-label">Overlong Reward Shaping</p>
+        <div class="formula">$$r_i' = \begin{cases} r_i & \text{if } |o_i| \le L_{\max} \\ r_i - \lambda\,\dfrac{|o_i| - L_{\max}}{L_{\max}} & \text{if } |o_i| > L_{\max} \end{cases}$$</div>
+      </div>
     </div>
     <div class="module-pros">
       <div class="pros-col">
@@ -179,6 +204,13 @@
     <div class="module-intro">
       <p>针对 GRPO 两个隐性问题的最小修正：不再除以组内 std（减轻「简单题梯度被放大」的难度偏置）；loss 用固定分母聚合（减轻长度偏置）。通常同时关 KL。</p>
       <p class="how"><strong>核心：</strong><span class="mono">norm_adv_by_std=False</span> + <span class="mono">seq-mean-token-sum-norm</span></p>
+      <div class="formula-block">
+        <p class="formula-label">Advantage（不除以 std，修正难度偏置）</p>
+        <div class="formula">$$\hat{A}_i = r_i - \text{mean}(r_1,\dots,r_G)$$</div>
+        <p class="formula-label">Loss 聚合（固定分母 C，修正长度偏置）</p>
+        <div class="formula">$$\mathcal{L}(\theta) = \frac{1}{|\mathcal{B}|}\sum_{j \in \mathcal{B}} \frac{1}{C}\sum_{t=1}^{|o_j|}\min\!\Big(\rho_{j,t}\,\hat{A}_j,\;\text{clip}(\rho_{j,t},\,1{-}\epsilon,\,1{+}\epsilon)\,\hat{A}_j\Big)$$</div>
+        <p class="formula-note">其中 $C$ 为 batch 内所有序列的平均长度（固定常数），而非每条序列自身长度 $|o_j|$。</p>
+      </div>
     </div>
     <div class="module-pros">
       <div class="pros-col">
@@ -200,6 +232,13 @@
     <div class="module-intro">
       <p>同样对同题采 G 条，但每条的 baseline 是「去掉自己后」其余 G−1 条的均值（leave-one-out）。相对含自身的组均值<strong>偏差更小</strong>，但估基线<strong>方差更大</strong>。若关注难度偏置或多步 off-policy 稳定性，RLOO（或带 shrinkage 的变体）往往比除以组内 std 的 GRPO 更干净。仍属 critic-free，常配 KL。</p>
       <p class="how"><strong>核心：</strong>LOO · 减偏差、增方差 · <span class="mono">adv_estimator=rloo</span></p>
+      <div class="formula-block">
+        <p class="formula-label">Leave-One-Out Baseline</p>
+        <div class="formula">$$\hat{A}_i = r_i - \frac{1}{G-1}\sum_{j \neq i} r_j$$</div>
+        <p class="formula-label">策略目标</p>
+        <div class="formula">$$\mathcal{L}(\theta) = \mathbb{E}_{q}\!\left[\frac{1}{G}\sum_{i=1}^{G}\frac{1}{|o_i|}\sum_{t=1}^{|o_i|}\min\!\Big(\rho_{i,t}\,\hat{A}_i,\;\text{clip}(\rho_{i,t},\,1{-}\epsilon,\,1{+}\epsilon)\,\hat{A}_i\Big)\right] - \beta\,\mathcal{D}_{\text{KL}}\!\left[\pi_\theta \| \pi_{\text{ref}}\right]$$</div>
+        <p class="formula-note">与 GRPO 的区别仅在 $\hat{A}_i$ 的计算：GRPO 用组均值 $\bar{r}$（含自身），RLOO 用排除自身后的 $G{-}1$ 条均值。</p>
+      </div>
     </div>
     <div class="module-pros">
       <div class="pros-col">
@@ -221,6 +260,13 @@
     <div class="module-intro">
       <p>不做「同题组内相对」：对折扣 return 在整个 batch 上做均值方差白化，再当 advantage。实现最接近经典 REINFORCE，不依赖 G&gt;1 的组结构；KL 常用 mse 形式。</p>
       <p class="how"><strong>核心：</strong>全 batch 白化 · <span class="mono">adv_estimator=reinforce_plus_plus</span></p>
+      <div class="formula-block">
+        <p class="formula-label">Advantage（全 Batch 白化）</p>
+        <div class="formula">$$\hat{A}_i = \frac{R_i - \text{mean}(\{R_j\}_{j \in \mathcal{B}})}{\text{std}(\{R_j\}_{j \in \mathcal{B}})}$$</div>
+        <p class="formula-label">策略目标</p>
+        <div class="formula">$$\mathcal{L}(\theta) = \mathbb{E}\!\left[\frac{1}{|o_i|}\sum_{t=1}^{|o_i|}\min\!\Big(\rho_{i,t}\,\hat{A}_i,\;\text{clip}(\rho_{i,t},\,1{-}\epsilon,\,1{+}\epsilon)\,\hat{A}_i\Big)\right] - \beta\,\mathcal{D}_{\text{MSE}}\!\left[\pi_\theta,\, \pi_{\text{ref}}\right]$$</div>
+        <p class="formula-note">不需要同题多条采样（$G{=}1$ 即可），白化在整个 mini-batch $\mathcal{B}$ 上计算；KL 用 MSE 近似。</p>
+      </div>
     </div>
     <div class="module-pros">
       <div class="pros-col">
@@ -309,6 +355,19 @@
   </div><!-- /.algo-layout -->
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  renderMathInElement(document.body, {
+    delimiters: [
+      {left: "$$", right: "$$", display: true},
+      {left: "$", right: "$", display: false}
+    ],
+    throwOnError: false
+  });
+});
+</script>
 <script>
 (function () {
   const links = Array.from(document.querySelectorAll(".algo-toc a[href^='#']"));
