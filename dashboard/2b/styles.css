@@ -139,6 +139,15 @@
     border-radius: 50%;
     margin-right: 6px;
   }
+  .legend span.dot.dash {
+    background: transparent !important;
+    border-radius: 0;
+    width: 14px;
+    height: 0;
+    border-top: 2px dashed;
+    vertical-align: middle;
+    margin-bottom: 2px;
+  }
   .legend span.legend-item {
     cursor: pointer;
     user-select: none;
@@ -155,6 +164,10 @@
   }
   .legend span.legend-item.legend-off .dot {
     background: #9ca3af !important;
+  }
+  .legend span.legend-item.legend-off .dot.dash {
+    background: transparent !important;
+    border-top-color: #9ca3af !important;
   }
   canvas { display: block; width: 100%; }
   .tooltip {

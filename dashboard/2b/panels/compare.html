@@ -1,55 +1,124 @@
-  <p class="tertiary">Sources: logs/exp2card/e1_grpo_2b … e5_reinforce_pp_2b（parse_2b_logs.py）。五组均 150/150 步；对比曲线全长对齐。pass rate = (reward_mean+1)/2。</p>
-  <section>
-    <div class="callout">
-      <div class="title">五组训练均已跑满；offline 主看 mmlu_temp / aime25（三 checkpoint）</div>
-      训练验证 aime24（30 题）噪声大，仅作参考。<strong>Dr.GRPO(E3)</strong> 末段 pass 最高、长度涨幅最大；<strong>DAPO(E2)</strong> 长度最短、墙钟最快；<strong>RLOO(E4)</strong> offline aime25@150 最高；<strong>REINFORCE++(E5)</strong> offline mmlu@150 最高。
-    </div>
-  </section>
-  <section>
-    <h2>Pass rate 学习曲线对比（%，5-step 移动平均）</h2>
-    <div class="chart-card">
-      <div class="legend" id="legend-pass"></div>
-      <div class="chart-wrap"><canvas id="chart-pass" height="280"></canvas><div class="tooltip" id="tip-pass"></div></div>
-    </div>
-  </section>
-  <section class="grid2">
-    <div>
-      <h2>平均响应长度对比（tokens）</h2>
-      <div class="chart-card">
-        <div class="legend" id="legend-len"></div>
-        <div class="chart-wrap"><canvas id="chart-len" height="240"></canvas><div class="tooltip" id="tip-len"></div></div>
-      </div>
-    </div>
-    <div>
-      <h2>策略熵对比（entropy）</h2>
-      <div class="chart-card">
-        <div class="legend" id="legend-ent"></div>
-        <div class="chart-wrap"><canvas id="chart-ent" height="240"></canvas><div class="tooltip" id="tip-ent"></div></div>
-      </div>
-    </div>
-  </section>
-  <section class="grid2">
-    <div>
-      <h2>梯度范数对比（grad_norm）</h2>
-      <div class="chart-card">
-        <div class="legend" id="legend-grad"></div>
-        <div class="chart-wrap"><canvas id="chart-grad" height="220"></canvas><div class="tooltip" id="tip-grad"></div></div>
-      </div>
-    </div>
-    <div>
-      <h2>150 步总训练耗时（小时）</h2>
-      <div class="chart-card">
-        <div class="chart-wrap"><canvas id="chart-dur" height="220"></canvas><div class="tooltip" id="tip-dur"></div></div>
-      </div>
-    </div>
-  </section>
-  <section style="margin-top:16px">
-    <h2>训练验证 AIME24 acc@1（%）</h2>
-    <div class="chart-card">
-      <div class="legend" id="legend-aime"></div>
-      <div class="chart-wrap"><canvas id="chart-aime" height="260"></canvas><div class="tooltip" id="tip-aime"></div></div>
-    </div>
-    <p class="caption">X: val checkpoint step · Y: aime24 acc@1（%）。30 题单 seed，噪声大；offline aime25 见评测页。</p>
-  </section>
-  </div>
+  <p class="tertiary">Sources: logs/exp2card/e1_grpo_2b … e5_reinforce_pp_2b 与 e*_2b_s3（parse_2b_logs.py）。Easy-Boxed 五组均 150/150 步；S3 E1–E2 已满 150，E3 进行中。pass rate = (reward_mean+1)/2。</p>
+  <div class="detail-layout">
+    <nav class="detail-toc" aria-label="目录" id="compare-toc">
+      <p class="toc-heading">目录</p>
+      <ol class="toc-list">
+        <li><a href="#cmp-sec-overview"><span class="toc-num">0</span><span class="toc-title">概览</span></a></li>
+        <li><a href="#cmp-sec-eb-pass"><span class="toc-num">1</span><span class="toc-title">EB · Pass</span></a></li>
+        <li><a href="#cmp-sec-eb-len"><span class="toc-num">2</span><span class="toc-title">EB · 长度 / 熵</span></a></li>
+        <li><a href="#cmp-sec-eb-grad"><span class="toc-num">3</span><span class="toc-title">EB · Grad / 耗时</span></a></li>
+        <li><a href="#cmp-sec-eb-aime"><span class="toc-num">4</span><span class="toc-title">EB · AIME24</span></a></li>
+        <li><a href="#cmp-sec-s3-pass"><span class="toc-num">5</span><span class="toc-title">S3 · Pass</span></a></li>
+        <li><a href="#cmp-sec-s3-len"><span class="toc-num">6</span><span class="toc-title">S3 · 长度 / 熵</span></a></li>
+        <li><a href="#cmp-sec-s3-grad"><span class="toc-num">7</span><span class="toc-title">S3 · Grad / 耗时</span></a></li>
+        <li><a href="#cmp-sec-s3-aime"><span class="toc-num">8</span><span class="toc-title">S3 · AIME24</span></a></li>
+      </ol>
+    </nav>
+    <div class="detail-main">
+      <section class="detail-sec" id="cmp-sec-overview">
+        <h2 class="sec-title">概览</h2>
+        <div class="callout">
+          <div class="title">Easy-Boxed 五组已跑满；S3 E1–E2 完成，E3 进行中 · offline 主看 mmlu_temp / aime25</div>
+          训练验证 aime24（30 题）噪声大，仅作参考。<strong>Dr.GRPO(E3)</strong> 末段 pass 最高、长度涨幅最大；<strong>DAPO(E2)</strong> 长度最短、墙钟最快；<strong>RLOO(E4)</strong> offline aime25@150 最高；<strong>REINFORCE++(E5)</strong> offline mmlu@150 最高。下方分两块：Easy-Boxed 对比与 S3 对比（各自独立图）。
+        </div>
+      </section>
 
+      <h2 class="sec-title" style="margin-top:8px">Easy-Boxed（E1–E5）</h2>
+      <section class="detail-sec" id="cmp-sec-eb-pass">
+        <h2>Pass rate 学习曲线对比（%，5-step 移动平均）</h2>
+        <div class="chart-card">
+          <div class="legend" id="legend-pass"></div>
+          <div class="chart-wrap"><canvas id="chart-pass" height="280"></canvas><div class="tooltip" id="tip-pass"></div></div>
+        </div>
+      </section>
+      <section class="detail-sec grid2" id="cmp-sec-eb-len">
+        <div>
+          <h2>平均响应长度对比（tokens）</h2>
+          <div class="chart-card">
+            <div class="legend" id="legend-len"></div>
+            <div class="chart-wrap"><canvas id="chart-len" height="240"></canvas><div class="tooltip" id="tip-len"></div></div>
+          </div>
+        </div>
+        <div>
+          <h2>策略熵对比（entropy）</h2>
+          <div class="chart-card">
+            <div class="legend" id="legend-ent"></div>
+            <div class="chart-wrap"><canvas id="chart-ent" height="240"></canvas><div class="tooltip" id="tip-ent"></div></div>
+          </div>
+        </div>
+      </section>
+      <section class="detail-sec grid2" id="cmp-sec-eb-grad">
+        <div>
+          <h2>梯度范数对比（grad_norm）</h2>
+          <div class="chart-card">
+            <div class="legend" id="legend-grad"></div>
+            <div class="chart-wrap"><canvas id="chart-grad" height="220"></canvas><div class="tooltip" id="tip-grad"></div></div>
+          </div>
+        </div>
+        <div>
+          <h2>150 步总训练耗时（小时）</h2>
+          <div class="chart-card">
+            <div class="chart-wrap"><canvas id="chart-dur" height="220"></canvas><div class="tooltip" id="tip-dur"></div></div>
+          </div>
+        </div>
+      </section>
+      <section class="detail-sec" id="cmp-sec-eb-aime" style="margin-top:16px">
+        <h2>训练验证 AIME24 acc@1（%）</h2>
+        <div class="chart-card">
+          <div class="legend" id="legend-aime"></div>
+          <div class="chart-wrap"><canvas id="chart-aime" height="260"></canvas><div class="tooltip" id="tip-aime"></div></div>
+        </div>
+        <p class="caption">X: val checkpoint step · Y: aime24 acc@1（%）。30 题单 seed，噪声大；offline aime25 见评测页。</p>
+      </section>
+
+      <h2 class="sec-title" style="margin-top:28px">S3（E1–E3）</h2>
+      <p class="tertiary">S3 数据源：logs/exp2card/e1_grpo_2b_s3 … e3_drgrpo_2b_s3。E1/E2 150 步；E3 进行中（曲线至当前步后断开）。</p>
+      <section class="detail-sec" id="cmp-sec-s3-pass">
+        <h2>S3 Pass rate（%，5-step 移动平均）</h2>
+        <div class="chart-card">
+          <div class="legend" id="legend-s3-pass"></div>
+          <div class="chart-wrap"><canvas id="chart-s3-pass" height="280"></canvas><div class="tooltip" id="tip-s3-pass"></div></div>
+        </div>
+      </section>
+      <section class="detail-sec grid2" id="cmp-sec-s3-len">
+        <div>
+          <h2>S3 平均响应长度（tokens）</h2>
+          <div class="chart-card">
+            <div class="legend" id="legend-s3-len"></div>
+            <div class="chart-wrap"><canvas id="chart-s3-len" height="240"></canvas><div class="tooltip" id="tip-s3-len"></div></div>
+          </div>
+        </div>
+        <div>
+          <h2>S3 策略熵（entropy）</h2>
+          <div class="chart-card">
+            <div class="legend" id="legend-s3-ent"></div>
+            <div class="chart-wrap"><canvas id="chart-s3-ent" height="240"></canvas><div class="tooltip" id="tip-s3-ent"></div></div>
+          </div>
+        </div>
+      </section>
+      <section class="detail-sec grid2" id="cmp-sec-s3-grad">
+        <div>
+          <h2>S3 梯度范数（grad_norm）</h2>
+          <div class="chart-card">
+            <div class="legend" id="legend-s3-grad"></div>
+            <div class="chart-wrap"><canvas id="chart-s3-grad" height="220"></canvas><div class="tooltip" id="tip-s3-grad"></div></div>
+          </div>
+        </div>
+        <div>
+          <h2>S3 训练耗时（小时）</h2>
+          <div class="chart-card">
+            <div class="chart-wrap"><canvas id="chart-s3-dur" height="220"></canvas><div class="tooltip" id="tip-s3-dur"></div></div>
+          </div>
+          <p class="caption">E3 为进行中累计墙钟，非满 150 步。</p>
+        </div>
+      </section>
+      <section class="detail-sec" id="cmp-sec-s3-aime" style="margin-top:16px">
+        <h2>S3 训练验证 AIME24 acc@1（%）</h2>
+        <div class="chart-card">
+          <div class="legend" id="legend-s3-aime"></div>
+          <div class="chart-wrap"><canvas id="chart-s3-aime" height="260"></canvas><div class="tooltip" id="tip-s3-aime"></div></div>
+        </div>
+        <p class="caption">X: val checkpoint step · Y: aime24 acc@1（%）。E3 仅到已有 checkpoint。</p>
+      </section>
+    </div>
+  </div>

@@ -4,9 +4,12 @@
 // every toggle.
 function renderLegend(el, series, draw) {
   const hidden = new Set();
-  el.innerHTML = series.map(s =>
-    `<span class="legend-item"><span class="dot" style="background:${s.color}"></span>${s.name}</span>`
-  ).join("");
+  el.innerHTML = series.map(s => {
+    const swatch = s.dash
+      ? `<span class="dot dash" style="border-color:${s.color}"></span>`
+      : `<span class="dot" style="background:${s.color}"></span>`;
+    return `<span class="legend-item">${swatch}${s.name}</span>`;
+  }).join("");
   el.querySelectorAll(".legend-item").forEach((span, i) => {
     span.addEventListener("click", () => {
       const name = series[i].name;
@@ -94,10 +97,11 @@ function drawLineChart(canvasId, tipId, { categories, series, yMin, yMax, valueS
     if (c) ctx.fillText(c, xAt(i), padT + plotH + 6);
   });
 
-  // series lines
+  // series lines (optional s.dash = [6, 4] for dashed overlay, e.g. S3)
   series.forEach(s => {
     ctx.strokeStyle = s.color;
     ctx.lineWidth = 2;
+    ctx.setLineDash(s.dash || []);
     ctx.beginPath();
     let penDown = false;
     s.data.forEach((v, i) => {
@@ -106,12 +110,13 @@ function drawLineChart(canvasId, tipId, { categories, series, yMin, yMax, valueS
       if (!penDown) { ctx.moveTo(x, y); penDown = true; } else ctx.lineTo(x, y);
     });
     ctx.stroke();
+    ctx.setLineDash([]);
     // markers so isolated points (surrounded by gaps) stay visible
     s.data.forEach((v, i) => {
       if (v == null) return;
       ctx.beginPath();
       ctx.fillStyle = s.color;
-      ctx.arc(xAt(i), yAt(v), 2.4, 0, Math.PI * 2);
+      ctx.arc(xAt(i), yAt(v), s.dash ? 2.0 : 2.4, 0, Math.PI * 2);
       ctx.fill();
     });
   });
@@ -202,6 +207,7 @@ function drawBarChart(canvasId, tipId, { categories, data, colors, valueSuffix =
 
 
 function render() {
+  // ---- Easy-Boxed E1–E5 ----
   renderLegend(document.getElementById("legend-pass"), [
     { name: "E1 GRPO", data: E1_PASS_MA, color: COLORS.e1 },
     { name: "E2 DAPO", data: E2_PASS_MA, color: COLORS.e2 },
@@ -267,6 +273,74 @@ function render() {
       { name: "E4 RLOO", data: AIME_E4, color: COLORS.e4 },
       { name: "E5 REINFORCE++", data: AIME_E5, color: COLORS.e5 },
     ], (visible) => drawLineChart("chart-aime", "tip-aime", {
+      categories: AIME_CATS,
+      series: visible,
+      valueSuffix: "%", yMin: 0, yMax: 50, height: 260,
+    }));
+  }
+
+  // ---- S3 E1–E3（独立图，不与 Easy-Boxed 叠加）----
+  const s3PassLegend = document.getElementById("legend-s3-pass");
+  if (!s3PassLegend || typeof S3_E1_PASS_MA === "undefined") return;
+
+  const s3Pass = [
+    { name: "S3 E1 GRPO", data: S3_E1_PASS_MA, color: COLORS.e1 },
+    { name: "S3 E2 DAPO", data: S3_E2_PASS_MA, color: COLORS.e2 },
+    { name: "S3 E3 Dr.GRPO", data: S3_E3_PASS_MA, color: COLORS.e3 },
+  ];
+  renderLegend(s3PassLegend, s3Pass, (visible) => drawLineChart("chart-s3-pass", "tip-s3-pass", {
+    categories: STEP_CATS,
+    series: visible,
+    yMin: 0, yMax: 80, valueSuffix: "%", height: 280,
+  }));
+
+  renderLegend(document.getElementById("legend-s3-len"), [
+    { name: "S3 E1 GRPO", data: S3_E1_LEN, color: COLORS.e1 },
+    { name: "S3 E2 DAPO", data: S3_E2_LEN, color: COLORS.e2 },
+    { name: "S3 E3 Dr.GRPO", data: S3_E3_LEN, color: COLORS.e3 },
+  ], (visible) => drawLineChart("chart-s3-len", "tip-s3-len", {
+    categories: STEP_CATS,
+    series: visible,
+    valueSuffix: " tok", height: 240,
+    referenceLines: [{ value: 16384, label: "16K cap", tone: "danger" }],
+  }));
+
+  renderLegend(document.getElementById("legend-s3-ent"), [
+    { name: "S3 E1 GRPO", data: S3_E1_ENTROPY, color: COLORS.e1 },
+    { name: "S3 E2 DAPO", data: S3_E2_ENTROPY, color: COLORS.e2 },
+    { name: "S3 E3 Dr.GRPO", data: S3_E3_ENTROPY, color: COLORS.e3 },
+  ], (visible) => drawLineChart("chart-s3-ent", "tip-s3-ent", {
+    categories: STEP_CATS,
+    series: visible,
+    height: 240,
+  }));
+
+  renderLegend(document.getElementById("legend-s3-grad"), [
+    { name: "S3 E1 GRPO", data: S3_E1_GRAD, color: COLORS.e1 },
+    { name: "S3 E2 DAPO", data: S3_E2_GRAD, color: COLORS.e2 },
+    { name: "S3 E3 Dr.GRPO", data: S3_E3_GRAD, color: COLORS.e3 },
+  ], (visible) => drawLineChart("chart-s3-grad", "tip-s3-grad", {
+    categories: STEP_CATS,
+    series: visible,
+    height: 220,
+  }));
+
+  if (typeof S3_DURATION_CATS !== "undefined") {
+    drawBarChart("chart-s3-dur", "tip-s3-dur", {
+      categories: S3_DURATION_CATS,
+      data: S3_DURATION_H,
+      colors: S3_DURATION_COLORS,
+      valueSuffix: "h", height: 220,
+    });
+  }
+
+  const s3AimeLegend = document.getElementById("legend-s3-aime");
+  if (s3AimeLegend && typeof AIME_S3_E1 !== "undefined") {
+    renderLegend(s3AimeLegend, [
+      { name: "S3 E1 GRPO", data: AIME_S3_E1, color: COLORS.e1 },
+      { name: "S3 E2 DAPO", data: AIME_S3_E2, color: COLORS.e2 },
+      { name: "S3 E3 Dr.GRPO", data: AIME_S3_E3, color: COLORS.e3 },
+    ], (visible) => drawLineChart("chart-s3-aime", "tip-s3-aime", {
       categories: AIME_CATS,
       series: visible,
       valueSuffix: "%", yMin: 0, yMax: 50, height: 260,
