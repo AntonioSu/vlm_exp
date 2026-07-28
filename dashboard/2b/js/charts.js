@@ -724,8 +724,8 @@ function renderExpPanel(key) {
       const aimeLegendEl = document.getElementById(`legend-${key}-eval-aime`);
       if (aimeLegendEl) {
         const aimeItems = [
-          { name: "aime24", data: ev.aime24, color: COLORS.danger },
-          { name: "aime25", data: ev.aime25, color: ev.color },
+          { name: s3ev ? "aime24 (Easy-Boxed)" : "aime24", data: ev.aime24, color: COLORS.danger },
+          { name: s3ev ? "aime25 (Easy-Boxed)" : "aime25", data: ev.aime25, color: ev.color },
         ];
         if (s3ev) {
           aimeItems.push({ name: "aime24 (S3)", data: s3ev.aime24, color: COLORS.danger, dash: [6, 4] });
@@ -737,35 +737,94 @@ function renderExpPanel(key) {
           valueSuffix: "%", yMin: yAime[0], yMax: yAime[1], height: 200,
         }));
       }
+      const mathEl = document.getElementById(`chart-${key}-eval-math500`);
+      if (mathEl && ev.math500) {
+        const mathItems = [{ name: "Easy-Boxed", data: ev.math500, color: ev.color }];
+        const mathLegendEl = document.getElementById(`legend-${key}-eval-math500`);
+        if (mathLegendEl) {
+          renderLegend(mathLegendEl, mathItems, (visible) => drawLineChart(`chart-${key}-eval-math500`, `tip-${key}-eval-math500`, {
+            categories: steps, series: visible,
+            valueSuffix: "%", yMin: 75, yMax: 90, height: 200,
+          }));
+        } else {
+          drawLineChart(`chart-${key}-eval-math500`, `tip-${key}-eval-math500`, {
+            categories: steps, series: mathItems,
+            valueSuffix: "%", yMin: 75, yMax: 90, height: 200,
+          });
+        }
+      }
     }
   }
 }
 
+function evalAtStep150(arr) {
+  // EVAL_STEPS last index = step 150
+  const i = (typeof EVAL_STEPS !== "undefined" ? EVAL_STEPS.length : 15) - 1;
+  return arr && arr[i] != null ? arr[i] : null;
+}
+
 function renderEvalPanel() {
-  renderLegend(document.getElementById("legend-eval-mmlu"), EVAL_ORDER.map(k => ({ name: EVAL[k].label, data: EVAL[k].mmlu, color: EVAL[k].color })),
+  const steps = (typeof EVAL_FULL_STEPS !== "undefined") ? EVAL_FULL_STEPS : EVAL_STEPS;
+  const src = (typeof EVAL_FULL !== "undefined") ? EVAL_FULL : EVAL;
+
+  renderLegend(document.getElementById("legend-eval-mmlu"), EVAL_ORDER.map(k => ({ name: src[k].label, data: src[k].mmlu, color: src[k].color })),
     (visible) => drawLineChart("chart-eval-mmlu", "tip-eval-mmlu", {
-      categories: EVAL_STEPS,
+      categories: steps,
       series: visible,
-      valueSuffix: "%", yMin: 75, yMax: 85, height: 240,
+      valueSuffix: "%", yMin: 70, yMax: 85, height: 240,
     }));
 
-  renderLegend(document.getElementById("legend-eval-aime25"), EVAL_ORDER.map(k => ({ name: EVAL[k].label, data: EVAL[k].aime25, color: EVAL[k].color })),
+  if (document.getElementById("legend-eval-math500")) {
+    renderLegend(document.getElementById("legend-eval-math500"), EVAL_ORDER.map(k => ({ name: src[k].label, data: src[k].math500, color: src[k].color })),
+      (visible) => drawLineChart("chart-eval-math500", "tip-eval-math500", {
+        categories: steps,
+        series: visible,
+        valueSuffix: "%", yMin: 75, yMax: 90, height: 240,
+      }));
+  }
+
+  if (document.getElementById("legend-eval-aime24")) {
+    renderLegend(document.getElementById("legend-eval-aime24"), EVAL_ORDER.map(k => ({ name: src[k].label, data: src[k].aime24, color: src[k].color })),
+      (visible) => drawLineChart("chart-eval-aime24", "tip-eval-aime24", {
+        categories: steps,
+        series: visible,
+        valueSuffix: "%", yMin: 15, yMax: 45, height: 240,
+      }));
+  }
+
+  renderLegend(document.getElementById("legend-eval-aime25"), EVAL_ORDER.map(k => ({ name: src[k].label, data: src[k].aime25, color: src[k].color })),
     (visible) => drawLineChart("chart-eval-aime25", "tip-eval-aime25", {
-      categories: EVAL_STEPS,
+      categories: steps,
       series: visible,
-      valueSuffix: "%", yMin: 20, yMax: 45, height: 240,
+      valueSuffix: "%", yMin: 15, yMax: 45, height: 240,
     }));
 
   drawBarChart("chart-eval-mmlu150", "tip-eval-mmlu150", {
-    categories: EVAL_ORDER.map(k => EVAL[k].label),
-    data: EVAL_ORDER.map(k => EVAL[k].mmlu[2]),
-    colors: EVAL_ORDER.map(k => EVAL[k].color),
+    categories: EVAL_ORDER.map(k => src[k].label),
+    data: EVAL_ORDER.map(k => evalAtStep150(src[k].mmlu)),
+    colors: EVAL_ORDER.map(k => src[k].color),
     valueSuffix: "%", height: 200,
   });
+  if (document.getElementById("chart-eval-math500-150")) {
+    drawBarChart("chart-eval-math500-150", "tip-eval-math500-150", {
+      categories: EVAL_ORDER.map(k => src[k].label),
+      data: EVAL_ORDER.map(k => evalAtStep150(src[k].math500)),
+      colors: EVAL_ORDER.map(k => src[k].color),
+      valueSuffix: "%", height: 200,
+    });
+  }
+  if (document.getElementById("chart-eval-aime24-150")) {
+    drawBarChart("chart-eval-aime24-150", "tip-eval-aime24-150", {
+      categories: EVAL_ORDER.map(k => src[k].label),
+      data: EVAL_ORDER.map(k => evalAtStep150(src[k].aime24)),
+      colors: EVAL_ORDER.map(k => src[k].color),
+      valueSuffix: "%", height: 200,
+    });
+  }
   drawBarChart("chart-eval-aime25-150", "tip-eval-aime25-150", {
-    categories: EVAL_ORDER.map(k => EVAL[k].label),
-    data: EVAL_ORDER.map(k => EVAL[k].aime25[2]),
-    colors: EVAL_ORDER.map(k => EVAL[k].color),
+    categories: EVAL_ORDER.map(k => src[k].label),
+    data: EVAL_ORDER.map(k => evalAtStep150(src[k].aime25)),
+    colors: EVAL_ORDER.map(k => src[k].color),
     valueSuffix: "%", height: 200,
   });
 }
