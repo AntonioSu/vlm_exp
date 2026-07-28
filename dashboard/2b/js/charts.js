@@ -288,7 +288,7 @@ function render() {
     }));
   }
 
-  // ---- S3 E1–E3（独立图，不与 Easy-Boxed 叠加）----
+  // ---- S3 E1–E4（独立图，不与 Easy-Boxed 叠加）----
   const s3PassLegend = document.getElementById("legend-s3-pass");
   if (!s3PassLegend || typeof S3_E1_PASS_MA === "undefined") return;
 
@@ -297,6 +297,9 @@ function render() {
     { name: "S3 E2 DAPO", data: S3_E2_PASS_MA, color: COLORS.e2 },
     { name: "S3 E3 Dr.GRPO", data: S3_E3_PASS_MA, color: COLORS.e3 },
   ];
+  if (typeof S3_E4_PASS_MA !== "undefined") {
+    s3Pass.push({ name: "S3 E4 RLOO", data: S3_E4_PASS_MA, color: COLORS.e4 });
+  }
   renderLegend(s3PassLegend, s3Pass, (visible) => drawLineChart("chart-s3-pass", "tip-s3-pass", {
     categories: STEP_CATS,
     series: visible,
@@ -312,32 +315,38 @@ function render() {
     });
   }
 
-  renderLegend(document.getElementById("legend-s3-len"), [
+  const s3Len = [
     { name: "S3 E1 GRPO", data: S3_E1_LEN, color: COLORS.e1 },
     { name: "S3 E2 DAPO", data: S3_E2_LEN, color: COLORS.e2 },
     { name: "S3 E3 Dr.GRPO", data: S3_E3_LEN, color: COLORS.e3 },
-  ], (visible) => drawLineChart("chart-s3-len", "tip-s3-len", {
+  ];
+  if (typeof S3_E4_LEN !== "undefined") s3Len.push({ name: "S3 E4 RLOO", data: S3_E4_LEN, color: COLORS.e4 });
+  renderLegend(document.getElementById("legend-s3-len"), s3Len, (visible) => drawLineChart("chart-s3-len", "tip-s3-len", {
     categories: STEP_CATS,
     series: visible,
     valueSuffix: " tok", height: 240,
     referenceLines: [{ value: 16384, label: "16K cap", tone: "danger" }],
   }));
 
-  renderLegend(document.getElementById("legend-s3-ent"), [
+  const s3Ent = [
     { name: "S3 E1 GRPO", data: S3_E1_ENTROPY, color: COLORS.e1 },
     { name: "S3 E2 DAPO", data: S3_E2_ENTROPY, color: COLORS.e2 },
     { name: "S3 E3 Dr.GRPO", data: S3_E3_ENTROPY, color: COLORS.e3 },
-  ], (visible) => drawLineChart("chart-s3-ent", "tip-s3-ent", {
+  ];
+  if (typeof S3_E4_ENTROPY !== "undefined") s3Ent.push({ name: "S3 E4 RLOO", data: S3_E4_ENTROPY, color: COLORS.e4 });
+  renderLegend(document.getElementById("legend-s3-ent"), s3Ent, (visible) => drawLineChart("chart-s3-ent", "tip-s3-ent", {
     categories: STEP_CATS,
     series: visible,
     height: 240,
   }));
 
-  renderLegend(document.getElementById("legend-s3-grad"), [
+  const s3Grad = [
     { name: "S3 E1 GRPO", data: S3_E1_GRAD, color: COLORS.e1 },
     { name: "S3 E2 DAPO", data: S3_E2_GRAD, color: COLORS.e2 },
     { name: "S3 E3 Dr.GRPO", data: S3_E3_GRAD, color: COLORS.e3 },
-  ], (visible) => drawLineChart("chart-s3-grad", "tip-s3-grad", {
+  ];
+  if (typeof S3_E4_GRAD !== "undefined") s3Grad.push({ name: "S3 E4 RLOO", data: S3_E4_GRAD, color: COLORS.e4 });
+  renderLegend(document.getElementById("legend-s3-grad"), s3Grad, (visible) => drawLineChart("chart-s3-grad", "tip-s3-grad", {
     categories: STEP_CATS,
     series: visible,
     height: 220,
@@ -354,11 +363,13 @@ function render() {
 
   const s3AimeLegend = document.getElementById("legend-s3-aime");
   if (s3AimeLegend && typeof AIME_S3_E1 !== "undefined") {
-    renderLegend(s3AimeLegend, [
+    const s3Aime = [
       { name: "S3 E1 GRPO", data: AIME_S3_E1, color: COLORS.e1 },
       { name: "S3 E2 DAPO", data: AIME_S3_E2, color: COLORS.e2 },
       { name: "S3 E3 Dr.GRPO", data: AIME_S3_E3, color: COLORS.e3 },
-    ], (visible) => drawLineChart("chart-s3-aime", "tip-s3-aime", {
+    ];
+    if (typeof AIME_S3_E4 !== "undefined") s3Aime.push({ name: "S3 E4 RLOO", data: AIME_S3_E4, color: COLORS.e4 });
+    renderLegend(s3AimeLegend, s3Aime, (visible) => drawLineChart("chart-s3-aime", "tip-s3-aime", {
       categories: AIME_CATS,
       series: visible,
       valueSuffix: "%", yMin: 0, yMax: 50, height: 260,

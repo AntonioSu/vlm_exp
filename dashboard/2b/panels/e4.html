@@ -1,4 +1,4 @@
-    <p class="tertiary">Source: logs/exp2card/e4_rloo_2b/train_*.log（150/150 步）。</p>
+    <p class="tertiary">Easy-Boxed（e4_rloo_2b）与 S3（e4_rloo_2b_s3，进行中 ~31/150）对比。图例可点击切换显示/隐藏。</p>
     <div class="detail-layout">
       <nav class="detail-toc" aria-label="目录" id="e4-toc">
         <p class="toc-heading">目录</p>
@@ -39,7 +39,7 @@
           <section class="grid2" style="margin-top:16px">
             <div>
               <h2>平均响应长度（tokens）</h2>
-              <div class="chart-card"><div class="chart-wrap"><canvas id="chart-e4-len" height="200"></canvas><div class="tooltip" id="tip-e4-len"></div></div></div>
+              <div class="chart-card"><div class="legend" id="legend-e4-len"></div><div class="chart-wrap"><canvas id="chart-e4-len" height="200"></canvas><div class="tooltip" id="tip-e4-len"></div></div></div>
               <p class="caption">虚线 = 16K cap。</p>
             </div>
             <div>
@@ -51,7 +51,7 @@
           <section class="grid2" style="margin-top:16px">
             <div>
               <h2>平均输入长度（tokens）</h2>
-              <div class="chart-card"><div class="chart-wrap"><canvas id="chart-e4-promptlen" height="200"></canvas><div class="tooltip" id="tip-e4-promptlen"></div></div></div>
+              <div class="chart-card"><div class="legend" id="legend-e4-promptlen"></div><div class="chart-wrap"><canvas id="chart-e4-promptlen" height="200"></canvas><div class="tooltip" id="tip-e4-promptlen"></div></div></div>
             </div>
             <div></div>
           </section>
