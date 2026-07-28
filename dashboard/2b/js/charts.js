@@ -777,8 +777,23 @@ function evalAtStep150(arr) {
 function renderEvalPanel() {
   const steps = (typeof EVAL_FULL_STEPS !== "undefined") ? EVAL_FULL_STEPS : EVAL_STEPS;
   const src = (typeof EVAL_FULL !== "undefined") ? EVAL_FULL : EVAL;
+  const s3src = (typeof EVAL_FULL_S3 !== "undefined") ? EVAL_FULL_S3 : {};
 
-  renderLegend(document.getElementById("legend-eval-mmlu"), EVAL_ORDER.map(k => ({ name: src[k].label, data: src[k].mmlu, color: src[k].color })),
+  // Easy-Boxed（Stage-1）为主线；若该实验有对应 S3 阶段 offline 报告
+  // （目前仅 E1@150），追加一条同色虚线并给两条都打上 (Easy-Boxed)/(S3) 标签，
+  // 让图例能明确区分数据来源阶段。
+  function seriesWithS3(metric) {
+    const items = [];
+    EVAL_ORDER.forEach((k) => {
+      const s3ev = s3src[k];
+      const hasS3 = s3ev && s3ev[metric] && s3ev[metric].some((v) => v != null);
+      items.push({ name: hasS3 ? `${src[k].label} (Easy-Boxed)` : src[k].label, data: src[k][metric], color: src[k].color });
+      if (hasS3) items.push({ name: `${src[k].label} (S3)`, data: s3ev[metric], color: src[k].color, dash: [6, 4] });
+    });
+    return items;
+  }
+
+  renderLegend(document.getElementById("legend-eval-mmlu"), seriesWithS3("mmlu"),
     (visible) => drawLineChart("chart-eval-mmlu", "tip-eval-mmlu", {
       categories: steps,
       series: visible,
@@ -786,7 +801,7 @@ function renderEvalPanel() {
     }));
 
   if (document.getElementById("legend-eval-math500")) {
-    renderLegend(document.getElementById("legend-eval-math500"), EVAL_ORDER.map(k => ({ name: src[k].label, data: src[k].math500, color: src[k].color })),
+    renderLegend(document.getElementById("legend-eval-math500"), seriesWithS3("math500"),
       (visible) => drawLineChart("chart-eval-math500", "tip-eval-math500", {
         categories: steps,
         series: visible,
@@ -795,7 +810,7 @@ function renderEvalPanel() {
   }
 
   if (document.getElementById("legend-eval-aime24")) {
-    renderLegend(document.getElementById("legend-eval-aime24"), EVAL_ORDER.map(k => ({ name: src[k].label, data: src[k].aime24, color: src[k].color })),
+    renderLegend(document.getElementById("legend-eval-aime24"), seriesWithS3("aime24"),
       (visible) => drawLineChart("chart-eval-aime24", "tip-eval-aime24", {
         categories: steps,
         series: visible,
@@ -803,7 +818,7 @@ function renderEvalPanel() {
       }));
   }
 
-  renderLegend(document.getElementById("legend-eval-aime25"), EVAL_ORDER.map(k => ({ name: src[k].label, data: src[k].aime25, color: src[k].color })),
+  renderLegend(document.getElementById("legend-eval-aime25"), seriesWithS3("aime25"),
     (visible) => drawLineChart("chart-eval-aime25", "tip-eval-aime25", {
       categories: steps,
       series: visible,
