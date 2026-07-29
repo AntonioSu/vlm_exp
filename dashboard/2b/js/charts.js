@@ -209,11 +209,11 @@ function drawBarChart(canvasId, tipId, { categories, data, colors, valueSuffix =
 function render() {
   // ---- Easy-Boxed E1–E5 ----
   renderLegend(document.getElementById("legend-pass"), [
-    { name: "E1 GRPO", data: E1_PASS_MA, color: COLORS.e1 },
-    { name: "E2 DAPO", data: E2_PASS_MA, color: COLORS.e2 },
-    { name: "E3 Dr.GRPO", data: E3_PASS_MA, color: COLORS.e3 },
-    { name: "E4 RLOO", data: E4_PASS_MA, color: COLORS.e4 },
-    { name: "E5 REINFORCE++", data: E5_PASS_MA, color: COLORS.e5 },
+    { name: "E1 GRPO", data: EASY_BOXED_E1_PASS_MA, color: COLORS.e1 },
+    { name: "E2 DAPO", data: EASY_BOXED_E2_PASS_MA, color: COLORS.e2 },
+    { name: "E3 Dr.GRPO", data: EASY_BOXED_E3_PASS_MA, color: COLORS.e3 },
+    { name: "E4 RLOO", data: EASY_BOXED_E4_PASS_MA, color: COLORS.e4 },
+    { name: "E5 REINFORCE++", data: EASY_BOXED_E5_PASS_MA, color: COLORS.e5 },
   ], (visible) => drawLineChart("chart-pass", "tip-pass", {
     categories: STEP_CATS,
     series: visible,
@@ -221,20 +221,20 @@ function render() {
   }));
 
   const raccLegend = document.getElementById("legend-racc");
-  if (raccLegend && typeof E2_ROLLOUT_ACC_MA !== "undefined") {
+  if (raccLegend && typeof EASY_BOXED_E2_ROLLOUT_ACC_MA !== "undefined") {
     drawLineChart("chart-racc", "tip-racc", {
       categories: STEP_CATS,
-      series: [{ name: "E2 DAPO", data: E2_ROLLOUT_ACC_MA, color: COLORS.e2 }],
+      series: [{ name: "E2 DAPO", data: EASY_BOXED_E2_ROLLOUT_ACC_MA, color: COLORS.e2 }],
       yMin: 0, yMax: 80, valueSuffix: "%", height: 280,
     });
   }
 
   renderLegend(document.getElementById("legend-len"), [
-    { name: "E1 GRPO", data: E1_LEN, color: COLORS.e1 },
-    { name: "E2 DAPO", data: E2_LEN, color: COLORS.e2 },
-    { name: "E3 Dr.GRPO", data: E3_LEN, color: COLORS.e3 },
-    { name: "E4 RLOO", data: E4_LEN, color: COLORS.e4 },
-    { name: "E5 REINFORCE++", data: E5_LEN, color: COLORS.e5 },
+    { name: "E1 GRPO", data: EASY_BOXED_E1_LEN, color: COLORS.e1 },
+    { name: "E2 DAPO", data: EASY_BOXED_E2_LEN, color: COLORS.e2 },
+    { name: "E3 Dr.GRPO", data: EASY_BOXED_E3_LEN, color: COLORS.e3 },
+    { name: "E4 RLOO", data: EASY_BOXED_E4_LEN, color: COLORS.e4 },
+    { name: "E5 REINFORCE++", data: EASY_BOXED_E5_LEN, color: COLORS.e5 },
   ], (visible) => drawLineChart("chart-len", "tip-len", {
     categories: STEP_CATS,
     series: visible,
@@ -243,11 +243,11 @@ function render() {
   }));
 
   renderLegend(document.getElementById("legend-ent"), [
-    { name: "E1 GRPO", data: E1_ENTROPY, color: COLORS.e1 },
-    { name: "E2 DAPO", data: E2_ENTROPY, color: COLORS.e2 },
-    { name: "E3 Dr.GRPO", data: E3_ENTROPY, color: COLORS.e3 },
-    { name: "E4 RLOO", data: E4_ENTROPY, color: COLORS.e4 },
-    { name: "E5 REINFORCE++", data: E5_ENTROPY, color: COLORS.e5 },
+    { name: "E1 GRPO", data: EASY_BOXED_E1_ENTROPY, color: COLORS.e1 },
+    { name: "E2 DAPO", data: EASY_BOXED_E2_ENTROPY, color: COLORS.e2 },
+    { name: "E3 Dr.GRPO", data: EASY_BOXED_E3_ENTROPY, color: COLORS.e3 },
+    { name: "E4 RLOO", data: EASY_BOXED_E4_ENTROPY, color: COLORS.e4 },
+    { name: "E5 REINFORCE++", data: EASY_BOXED_E5_ENTROPY, color: COLORS.e5 },
   ], (visible) => drawLineChart("chart-ent", "tip-ent", {
     categories: STEP_CATS,
     series: visible,
@@ -255,11 +255,11 @@ function render() {
   }));
 
   renderLegend(document.getElementById("legend-grad"), [
-    { name: "E1 GRPO", data: E1_GRAD, color: COLORS.e1 },
-    { name: "E2 DAPO", data: E2_GRAD, color: COLORS.e2 },
-    { name: "E3 Dr.GRPO", data: E3_GRAD, color: COLORS.e3 },
-    { name: "E4 RLOO", data: E4_GRAD, color: COLORS.e4 },
-    { name: "E5 REINFORCE++", data: E5_GRAD, color: COLORS.e5 },
+    { name: "E1 GRPO", data: EASY_BOXED_E1_GRAD, color: COLORS.e1 },
+    { name: "E2 DAPO", data: EASY_BOXED_E2_GRAD, color: COLORS.e2 },
+    { name: "E3 Dr.GRPO", data: EASY_BOXED_E3_GRAD, color: COLORS.e3 },
+    { name: "E4 RLOO", data: EASY_BOXED_E4_GRAD, color: COLORS.e4 },
+    { name: "E5 REINFORCE++", data: EASY_BOXED_E5_GRAD, color: COLORS.e5 },
   ], (visible) => drawLineChart("chart-grad", "tip-grad", {
     categories: STEP_CATS,
     series: visible,
@@ -267,20 +267,20 @@ function render() {
   }));
 
   drawBarChart("chart-dur", "tip-dur", {
-    categories: DURATION_CATS,
-    data: DURATION_H,
+    categories: EASY_BOXED_DURATION_CATS,
+    data: EASY_BOXED_DURATION_H,
     colors: [COLORS.e1, COLORS.e2, COLORS.e3, COLORS.e4, COLORS.e5],
     valueSuffix: "h", height: 220,
   });
 
   const aimeLegend = document.getElementById("legend-aime");
-  if (aimeLegend && typeof AIME_E1 !== "undefined") {
+  if (aimeLegend && typeof AIME_EASY_BOXED_E1 !== "undefined") {
     renderLegend(aimeLegend, [
-      { name: "E1 GRPO", data: AIME_E1, color: COLORS.e1 },
-      { name: "E2 DAPO", data: AIME_E2, color: COLORS.e2 },
-      { name: "E3 Dr.GRPO", data: AIME_E3, color: COLORS.e3 },
-      { name: "E4 RLOO", data: AIME_E4, color: COLORS.e4 },
-      { name: "E5 REINFORCE++", data: AIME_E5, color: COLORS.e5 },
+      { name: "E1 GRPO", data: AIME_EASY_BOXED_E1, color: COLORS.e1 },
+      { name: "E2 DAPO", data: AIME_EASY_BOXED_E2, color: COLORS.e2 },
+      { name: "E3 Dr.GRPO", data: AIME_EASY_BOXED_E3, color: COLORS.e3 },
+      { name: "E4 RLOO", data: AIME_EASY_BOXED_E4, color: COLORS.e4 },
+      { name: "E5 REINFORCE++", data: AIME_EASY_BOXED_E5, color: COLORS.e5 },
     ], (visible) => drawLineChart("chart-aime", "tip-aime", {
       categories: AIME_CATS,
       series: visible,
@@ -288,7 +288,7 @@ function render() {
     }));
   }
 
-  // ---- S3 E1–E4（独立图，不与 Easy-Boxed 叠加）----
+  // ---- S3 E1–E5（独立图，不与 Easy-Boxed 叠加）----
   const s3PassLegend = document.getElementById("legend-s3-pass");
   if (!s3PassLegend || typeof S3_E1_PASS_MA === "undefined") return;
 
@@ -297,9 +297,8 @@ function render() {
     { name: "S3 E2 DAPO", data: S3_E2_PASS_MA, color: COLORS.e2 },
     { name: "S3 E3 Dr.GRPO", data: S3_E3_PASS_MA, color: COLORS.e3 },
   ];
-  if (typeof S3_E4_PASS_MA !== "undefined") {
-    s3Pass.push({ name: "S3 E4 RLOO", data: S3_E4_PASS_MA, color: COLORS.e4 });
-  }
+  if (typeof S3_E4_PASS_MA !== "undefined") s3Pass.push({ name: "S3 E4 RLOO", data: S3_E4_PASS_MA, color: COLORS.e4 });
+  if (typeof S3_E5_PASS_MA !== "undefined") s3Pass.push({ name: "S3 E5 REINFORCE++", data: S3_E5_PASS_MA, color: COLORS.e5 });
   renderLegend(s3PassLegend, s3Pass, (visible) => drawLineChart("chart-s3-pass", "tip-s3-pass", {
     categories: STEP_CATS,
     series: visible,
@@ -321,6 +320,7 @@ function render() {
     { name: "S3 E3 Dr.GRPO", data: S3_E3_LEN, color: COLORS.e3 },
   ];
   if (typeof S3_E4_LEN !== "undefined") s3Len.push({ name: "S3 E4 RLOO", data: S3_E4_LEN, color: COLORS.e4 });
+  if (typeof S3_E5_LEN !== "undefined") s3Len.push({ name: "S3 E5 REINFORCE++", data: S3_E5_LEN, color: COLORS.e5 });
   renderLegend(document.getElementById("legend-s3-len"), s3Len, (visible) => drawLineChart("chart-s3-len", "tip-s3-len", {
     categories: STEP_CATS,
     series: visible,
@@ -334,6 +334,7 @@ function render() {
     { name: "S3 E3 Dr.GRPO", data: S3_E3_ENTROPY, color: COLORS.e3 },
   ];
   if (typeof S3_E4_ENTROPY !== "undefined") s3Ent.push({ name: "S3 E4 RLOO", data: S3_E4_ENTROPY, color: COLORS.e4 });
+  if (typeof S3_E5_ENTROPY !== "undefined") s3Ent.push({ name: "S3 E5 REINFORCE++", data: S3_E5_ENTROPY, color: COLORS.e5 });
   renderLegend(document.getElementById("legend-s3-ent"), s3Ent, (visible) => drawLineChart("chart-s3-ent", "tip-s3-ent", {
     categories: STEP_CATS,
     series: visible,
@@ -346,6 +347,7 @@ function render() {
     { name: "S3 E3 Dr.GRPO", data: S3_E3_GRAD, color: COLORS.e3 },
   ];
   if (typeof S3_E4_GRAD !== "undefined") s3Grad.push({ name: "S3 E4 RLOO", data: S3_E4_GRAD, color: COLORS.e4 });
+  if (typeof S3_E5_GRAD !== "undefined") s3Grad.push({ name: "S3 E5 REINFORCE++", data: S3_E5_GRAD, color: COLORS.e5 });
   renderLegend(document.getElementById("legend-s3-grad"), s3Grad, (visible) => drawLineChart("chart-s3-grad", "tip-s3-grad", {
     categories: STEP_CATS,
     series: visible,
@@ -369,6 +371,7 @@ function render() {
       { name: "S3 E3 Dr.GRPO", data: AIME_S3_E3, color: COLORS.e3 },
     ];
     if (typeof AIME_S3_E4 !== "undefined") s3Aime.push({ name: "S3 E4 RLOO", data: AIME_S3_E4, color: COLORS.e4 });
+    if (typeof AIME_S3_E5 !== "undefined") s3Aime.push({ name: "S3 E5 REINFORCE++", data: AIME_S3_E5, color: COLORS.e5 });
     renderLegend(s3AimeLegend, s3Aime, (visible) => drawLineChart("chart-s3-aime", "tip-s3-aime", {
       categories: AIME_CATS,
       series: visible,
@@ -707,14 +710,14 @@ function renderExpPanel(key) {
     }
   }
 
-  // ---- Evalscope 评测结果（2B: EVAL 三 checkpoint；若有 EVAL_FULL 则用 dense）----
+  // ---- Evalscope 评测结果（2B: EVAL_EASY_BOXED 三 checkpoint；若有 EVAL_EASY_BOXED_FULL 则用 dense）----
   const evalEl = document.getElementById(`chart-${key}-eval-mmlu`);
   if (evalEl) {
     let steps = null, ev = null, yMmlu = [75, 85], yAime = [20, 45];
-    if (typeof EVAL_FULL !== "undefined" && EVAL_FULL[key]) {
-      steps = EVAL_FULL_STEPS; ev = EVAL_FULL[key];
-    } else if (typeof EVAL !== "undefined" && EVAL[key]) {
-      steps = EVAL_STEPS; ev = EVAL[key];
+    if (typeof EVAL_EASY_BOXED_FULL !== "undefined" && EVAL_EASY_BOXED_FULL[key]) {
+      steps = EVAL_EASY_BOXED_FULL_STEPS; ev = EVAL_EASY_BOXED_FULL[key];
+    } else if (typeof EVAL_EASY_BOXED !== "undefined" && EVAL_EASY_BOXED[key]) {
+      steps = EVAL_EASY_BOXED_STEPS; ev = EVAL_EASY_BOXED[key];
     }
     const s3ev = (typeof EVAL_FULL_S3 !== "undefined" && EVAL_FULL_S3[key]) ? EVAL_FULL_S3[key] : null;
     if (ev && steps) {
@@ -751,6 +754,7 @@ function renderExpPanel(key) {
       const mathEl = document.getElementById(`chart-${key}-eval-math500`);
       if (mathEl && ev.math500) {
         const mathItems = [{ name: "Easy-Boxed", data: ev.math500, color: ev.color }];
+        if (s3ev && s3ev.math500) mathItems.push({ name: "S3", data: s3ev.math500, color: COLORS.s3, dash: [6, 4] });
         const mathLegendEl = document.getElementById(`legend-${key}-eval-math500`);
         if (mathLegendEl) {
           renderLegend(mathLegendEl, mathItems, (visible) => drawLineChart(`chart-${key}-eval-math500`, `tip-${key}-eval-math500`, {
@@ -769,14 +773,14 @@ function renderExpPanel(key) {
 }
 
 function evalAtStep150(arr) {
-  // EVAL_STEPS last index = step 150
-  const i = (typeof EVAL_STEPS !== "undefined" ? EVAL_STEPS.length : 15) - 1;
+  // EVAL_EASY_BOXED_STEPS last index = step 150
+  const i = (typeof EVAL_EASY_BOXED_STEPS !== "undefined" ? EVAL_EASY_BOXED_STEPS.length : 15) - 1;
   return arr && arr[i] != null ? arr[i] : null;
 }
 
 function renderEvalPanel() {
-  const steps = (typeof EVAL_FULL_STEPS !== "undefined") ? EVAL_FULL_STEPS : EVAL_STEPS;
-  const src = (typeof EVAL_FULL !== "undefined") ? EVAL_FULL : EVAL;
+  const steps = (typeof EVAL_EASY_BOXED_FULL_STEPS !== "undefined") ? EVAL_EASY_BOXED_FULL_STEPS : EVAL_EASY_BOXED_STEPS;
+  const src = (typeof EVAL_EASY_BOXED_FULL !== "undefined") ? EVAL_EASY_BOXED_FULL : EVAL_EASY_BOXED;
   const s3src = (typeof EVAL_FULL_S3 !== "undefined") ? EVAL_FULL_S3 : {};
 
   // Easy-Boxed（Stage-1）为主线；若该实验有对应 S3 阶段 offline 报告
@@ -784,7 +788,7 @@ function renderEvalPanel() {
   // 让图例能明确区分数据来源阶段。
   function seriesWithS3(metric) {
     const items = [];
-    EVAL_ORDER.forEach((k) => {
+    EVAL_EASY_BOXED_ORDER.forEach((k) => {
       const s3ev = s3src[k];
       const hasS3 = s3ev && s3ev[metric] && s3ev[metric].some((v) => v != null);
       items.push({ name: hasS3 ? `${src[k].label} (Easy-Boxed)` : src[k].label, data: src[k][metric], color: src[k].color });
@@ -826,31 +830,31 @@ function renderEvalPanel() {
     }));
 
   drawBarChart("chart-eval-mmlu150", "tip-eval-mmlu150", {
-    categories: EVAL_ORDER.map(k => src[k].label),
-    data: EVAL_ORDER.map(k => evalAtStep150(src[k].mmlu)),
-    colors: EVAL_ORDER.map(k => src[k].color),
+    categories: EVAL_EASY_BOXED_ORDER.map(k => src[k].label),
+    data: EVAL_EASY_BOXED_ORDER.map(k => evalAtStep150(src[k].mmlu)),
+    colors: EVAL_EASY_BOXED_ORDER.map(k => src[k].color),
     valueSuffix: "%", height: 200,
   });
   if (document.getElementById("chart-eval-math500-150")) {
     drawBarChart("chart-eval-math500-150", "tip-eval-math500-150", {
-      categories: EVAL_ORDER.map(k => src[k].label),
-      data: EVAL_ORDER.map(k => evalAtStep150(src[k].math500)),
-      colors: EVAL_ORDER.map(k => src[k].color),
+      categories: EVAL_EASY_BOXED_ORDER.map(k => src[k].label),
+      data: EVAL_EASY_BOXED_ORDER.map(k => evalAtStep150(src[k].math500)),
+      colors: EVAL_EASY_BOXED_ORDER.map(k => src[k].color),
       valueSuffix: "%", height: 200,
     });
   }
   if (document.getElementById("chart-eval-aime24-150")) {
     drawBarChart("chart-eval-aime24-150", "tip-eval-aime24-150", {
-      categories: EVAL_ORDER.map(k => src[k].label),
-      data: EVAL_ORDER.map(k => evalAtStep150(src[k].aime24)),
-      colors: EVAL_ORDER.map(k => src[k].color),
+      categories: EVAL_EASY_BOXED_ORDER.map(k => src[k].label),
+      data: EVAL_EASY_BOXED_ORDER.map(k => evalAtStep150(src[k].aime24)),
+      colors: EVAL_EASY_BOXED_ORDER.map(k => src[k].color),
       valueSuffix: "%", height: 200,
     });
   }
   drawBarChart("chart-eval-aime25-150", "tip-eval-aime25-150", {
-    categories: EVAL_ORDER.map(k => src[k].label),
-    data: EVAL_ORDER.map(k => evalAtStep150(src[k].aime25)),
-    colors: EVAL_ORDER.map(k => src[k].color),
+    categories: EVAL_EASY_BOXED_ORDER.map(k => src[k].label),
+    data: EVAL_EASY_BOXED_ORDER.map(k => evalAtStep150(src[k].aime25)),
+    colors: EVAL_EASY_BOXED_ORDER.map(k => src[k].color),
     valueSuffix: "%", height: 200,
   });
 }
