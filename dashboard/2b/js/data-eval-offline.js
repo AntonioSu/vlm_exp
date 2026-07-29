@@ -1,10 +1,19 @@
-// ---- Evaluation results (evalscope offline, auto-synced 2026-07-29) ----
-// Source: /data/lijunyi/evalscope/outputs/exp2card/<exp>_2b_<step>/*/reports/<model>/*.json
+// =============================================================================
+// data-eval-offline.js — Offline evalscope scores (Stage-1 + Stage-3); auto-synced 2026-07-29
+// NOT training-log metrics (those live in data-easy-boxed-e*.js / data-s3-e*.js).
+//
+//   EVAL_EASY_BOXED*  → Stage-1 offline (e*_2b_<step>)
+//   EVAL_FULL_S3      → Stage-3 offline (e*_2b_s3_<step>)
+//   EVAL_STAGE_S3_150 → Stage-3 ad-hoc E1@150 detail card
+//
+// Refresh: python3 scripts/monitoring/2b/sync_2b_eval_dashboard.py
+// null = no offline report yet (charts disconnect).
+// =============================================================================
 // 评测配置: eval_exp4b.sh + verl_qwen35 vLLM 0.24；
 // aime24/aime25/math_500 temperature=0.6 top_p=0.95 max_tokens=16384 n=8（AIME 30题×n8=240 采样）；
 // mmlu_temp n=2；enable_thinking=False；batch_size=64。
-// null = 该 step 尚无对应 offline report（曲线断开）。刷新：python3 scripts/monitoring/2b/sync_2b_eval_dashboard.py
 
+// ---- Stage-1 offline (Source: .../exp2card/<exp>_2b_<step>/... ) ----
 const EVAL_EASY_BOXED_STEPS = ["10", "20", "30", "40", "50", "60", "70", "80", "90", "100", "110", "120", "130", "140", "150"];
 
 const EVAL_EASY_BOXED = {
@@ -17,7 +26,7 @@ const EVAL_EASY_BOXED = {
 
 const EVAL_EASY_BOXED_ORDER = ["e1", "e2", "e3", "e4", "e5"];
 
-// ---- 全 step 明细（10–150）；已完成的填入，缺失为 null ----
+// ---- Stage-1 offline dense (steps 10–150; missing = null) ----
 const EVAL_EASY_BOXED_FULL_STEPS = ["10", "20", "30", "40", "50", "60", "70", "80", "90", "100", "110", "120", "130", "140", "150"];
 
 const EVAL_EASY_BOXED_FULL = {
@@ -58,12 +67,12 @@ const EVAL_EASY_BOXED_FULL = {
   },
 };
 
-// 全 step 曲线：E1–E5（缺 step 为 null，charts 会断开）
+// Stage-1 full-step curve order: E1–E5
 const EVAL_EASY_BOXED_FULL_ORDER = ["e1", "e2", "e3", "e4", "e5"];
 
-// S3 阶段 offline 评测（目前仅有报告的实验才会出现在这里；其余留空，
-// charts.js 会据此判断是否叠加 S3 曲线/图例）。
-// Source: /data/juicefs-white/5281-gpu-a100/lijunyi/evalscope/outputs/exp2card/<exp>_s3_<step>/*/reports/*/*.json
+// ---- Stage-3 offline (Source: .../exp2card/<exp>_2b_s3_<step>/... ) ----
+// Only exps with ≥1 report appear; charts.js overlays S3 series from this.
+// NOT the same as data-s3-e*.js (those = training logs).
 const EVAL_FULL_S3 = {
   e1: {
     mmlu:   [73.50, 74.39, 75.93, 75.93, 74.96, 76.83, 77.07, 76.09, 75.85, 75.69, 77.47, 78.12, null, null, 76.98],
@@ -72,15 +81,15 @@ const EVAL_FULL_S3 = {
     math500:[77.25, 78.50, 79.25, 78.75, 78.62, 80.93, 82.02, 82.08, 81.90, 81.00, 82.12, null, null, null, null],
   },
   e2: {
-    mmlu:   [75.12, 72.86, 72.69, 72.20, 73.99, 73.26, 75.77, 75.04, 74.40, 74.47, 75.29, 76.90, 74.80, null, null],
-    aime24: [17.08, 12.08, 16.67, 15.83, 12.50, 19.58, 18.75, 17.92, 14.17, 16.67, 20.00, 25.42, 23.75, null, null],
-    aime25: [17.50, 16.66, 18.75, 14.58, 12.08, 16.25, 20.84, 19.59, 17.92, 23.75, 21.25, 24.59, 25.83, null, null],
+    mmlu:   [75.12, 72.86, 72.69, 72.20, 73.99, 73.26, 75.77, 75.04, 74.40, 74.47, 75.29, 76.90, 74.80, 76.66, null],
+    aime24: [17.08, 12.08, 16.67, 15.83, 12.50, 19.58, 18.75, 17.92, 14.17, 16.67, 20.00, 25.42, 23.75, 25.83, null],
+    aime25: [17.50, 16.66, 18.75, 14.58, 12.08, 16.25, 20.84, 19.59, 17.92, 23.75, 21.25, 24.59, 25.83, 22.09, null],
     math500:[76.57, 74.73, 74.62, 74.60, 73.43, 76.35, 78.28, 77.73, 77.65, 79.45, 79.58, 81.12, 81.57, null, null],
   },
   e3: {
     mmlu:   [75.44, 74.72, 73.74, 77.22, 75.61, 75.52, 76.82, null, null, null, 76.58, null, null, null, null],
-    aime24: [20.00, 17.50, 19.58, 27.92, 30.42, 30.00, 28.33, null, null, null, null, null, null, null, null],
-    aime25: [18.33, 21.67, 15.83, 20.42, 23.75, 23.75, 24.16, null, null, null, null, null, null, null, null],
+    aime24: [20.00, 17.50, 19.58, 27.92, 30.42, 30.00, 28.33, null, null, null, 37.92, null, null, null, null],
+    aime25: [18.33, 21.67, 15.83, 20.42, 23.75, 23.75, 24.16, null, null, null, 26.66, null, null, null, null],
     math500:[78.02, 77.45, 77.07, 79.68, 82.03, 81.70, null, null, null, null, null, null, null, null, null],
   },
   e4: {
@@ -91,6 +100,7 @@ const EVAL_FULL_S3 = {
   },
 };
 
+// ---- Stage-3 ad-hoc detail card (E1 GRPO @ step 150 only) ----
 const EVAL_STAGE_S3_150 = {
   label: "E1 GRPO 2B S3 step150",
   model: "model/exp2card/e1_grpo_2b_s3/merged_150",
