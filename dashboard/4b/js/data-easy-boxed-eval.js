@@ -5,9 +5,9 @@
 // mmlu_temp n=2；enable_thinking=False；batch_size=64。
 // null = 该 step 尚无对应 offline report（曲线断开）。刷新：python3 scripts/sync_4b_eval_dashboard.py
 
-const EVAL_STEPS = ["50", "100", "150"];
+const EVAL_EASY_BOXED_STEPS = ["50", "100", "150"];
 
-const EVAL = {
+const EVAL_EASY_BOXED = {
   e1: { label: "E1 GRPO",       color: COLORS.e1, mmlu: [90.44, 91.81, 91.65], aime25: [50.00, 58.33, 57.92] },
   e2: { label: "E2 DAPO",       color: COLORS.e2, mmlu: [91.17, 92.38, 91.17], aime25: [52.50, 57.09, 59.59] },
   e3: { label: "E3 Dr.GRPO",    color: COLORS.e3, mmlu: [90.84, 91.49, 91.97], aime25: [55.00, 49.59, 55.00] },
@@ -15,12 +15,12 @@ const EVAL = {
   e5: { label: "E5 REINFORCE++", color: COLORS.e5, mmlu: [91.24, 91.49, 91.25], aime25: [52.50, 55.84, 57.50] },
 };
 
-const EVAL_ORDER = ["e1", "e2", "e3", "e4", "e5"];
+const EVAL_EASY_BOXED_ORDER = ["e1", "e2", "e3", "e4", "e5"];
 
 // ---- 全 step 明细（10–150）；已完成的填入，缺失为 null ----
-const EVAL_FULL_STEPS = ["10", "20", "30", "40", "50", "60", "70", "80", "90", "100", "110", "120", "130", "140", "150"];
+const EVAL_EASY_BOXED_FULL_STEPS = ["10", "20", "30", "40", "50", "60", "70", "80", "90", "100", "110", "120", "130", "140", "150"];
 
-const EVAL_FULL = {
+const EVAL_EASY_BOXED_FULL = {
   e1: {
     label: "E1 GRPO", color: COLORS.e1,
     mmlu:   [91.25, 91.00, 90.52, 90.85, 90.44, 90.76, 90.84, 91.81, 91.33, 91.81, 91.82, 91.00, 91.09, 92.14, 91.65],
@@ -54,7 +54,7 @@ const EVAL_FULL = {
 };
 
 // 全 step 曲线：E1–E5
-const EVAL_FULL_ORDER = ["e1", "e2", "e3", "e4", "e5"];
+const EVAL_EASY_BOXED_FULL_ORDER = ["e1", "e2", "e3", "e4", "e5"];
 
 // ---- Agent / tool-use benchmarks (evalscope, auto-synced 2026-07-25) ----
 // Source: /data/lijunyi/evalscope/outputs/agent2/<ts>/reports/<exp>_4b_<step>/{bfcl_v3,tau_bench}.json

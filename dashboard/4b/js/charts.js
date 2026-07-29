@@ -203,11 +203,11 @@ function drawBarChart(canvasId, tipId, { categories, data, colors, valueSuffix =
 
 function render() {
   renderLegend(document.getElementById("legend-pass"), [
-    { name: "E1 GRPO", data: E1_PASS_MA, color: COLORS.e1 },
-    { name: "E2 DAPO", data: E2_PASS_MA, color: COLORS.e2 },
-    { name: "E3 Dr.GRPO", data: E3_PASS_MA, color: COLORS.e3 },
-    { name: "E4 RLOO", data: E4_PASS_MA, color: COLORS.e4 },
-    { name: "E5 REINFORCE++", data: E5_PASS_MA, color: COLORS.e5 },
+    { name: "E1 GRPO", data: EASY_BOXED_E1_PASS_MA, color: COLORS.e1 },
+    { name: "E2 DAPO", data: EASY_BOXED_E2_PASS_MA, color: COLORS.e2 },
+    { name: "E3 Dr.GRPO", data: EASY_BOXED_E3_PASS_MA, color: COLORS.e3 },
+    { name: "E4 RLOO", data: EASY_BOXED_E4_PASS_MA, color: COLORS.e4 },
+    { name: "E5 REINFORCE++", data: EASY_BOXED_E5_PASS_MA, color: COLORS.e5 },
   ], (visible) => drawLineChart("chart-pass", "tip-pass", {
     categories: STEP_CATS,
     series: visible,
@@ -215,11 +215,11 @@ function render() {
   }));
 
   renderLegend(document.getElementById("legend-len"), [
-    { name: "E1 GRPO", data: E1_LEN, color: COLORS.e1 },
-    { name: "E2 DAPO", data: E2_LEN, color: COLORS.e2 },
-    { name: "E3 Dr.GRPO", data: E3_LEN, color: COLORS.e3 },
-    { name: "E4 RLOO", data: E4_LEN, color: COLORS.e4 },
-    { name: "E5 REINFORCE++", data: E5_LEN, color: COLORS.e5 },
+    { name: "E1 GRPO", data: EASY_BOXED_E1_LEN, color: COLORS.e1 },
+    { name: "E2 DAPO", data: EASY_BOXED_E2_LEN, color: COLORS.e2 },
+    { name: "E3 Dr.GRPO", data: EASY_BOXED_E3_LEN, color: COLORS.e3 },
+    { name: "E4 RLOO", data: EASY_BOXED_E4_LEN, color: COLORS.e4 },
+    { name: "E5 REINFORCE++", data: EASY_BOXED_E5_LEN, color: COLORS.e5 },
   ], (visible) => drawLineChart("chart-len", "tip-len", {
     categories: STEP_CATS,
     series: visible,
@@ -228,11 +228,11 @@ function render() {
   }));
 
   renderLegend(document.getElementById("legend-ent"), [
-    { name: "E1 GRPO", data: E1_ENTROPY, color: COLORS.e1 },
-    { name: "E2 DAPO", data: E2_ENTROPY, color: COLORS.e2 },
-    { name: "E3 Dr.GRPO", data: E3_ENTROPY, color: COLORS.e3 },
-    { name: "E4 RLOO", data: E4_ENTROPY, color: COLORS.e4 },
-    { name: "E5 REINFORCE++", data: E5_ENTROPY, color: COLORS.e5 },
+    { name: "E1 GRPO", data: EASY_BOXED_E1_ENTROPY, color: COLORS.e1 },
+    { name: "E2 DAPO", data: EASY_BOXED_E2_ENTROPY, color: COLORS.e2 },
+    { name: "E3 Dr.GRPO", data: EASY_BOXED_E3_ENTROPY, color: COLORS.e3 },
+    { name: "E4 RLOO", data: EASY_BOXED_E4_ENTROPY, color: COLORS.e4 },
+    { name: "E5 REINFORCE++", data: EASY_BOXED_E5_ENTROPY, color: COLORS.e5 },
   ], (visible) => drawLineChart("chart-ent", "tip-ent", {
     categories: STEP_CATS,
     series: visible,
@@ -240,11 +240,11 @@ function render() {
   }));
 
   renderLegend(document.getElementById("legend-grad"), [
-    { name: "E1 GRPO", data: E1_GRAD, color: COLORS.e1 },
-    { name: "E2 DAPO", data: E2_GRAD, color: COLORS.e2 },
-    { name: "E3 Dr.GRPO", data: E3_GRAD, color: COLORS.e3 },
-    { name: "E4 RLOO", data: E4_GRAD, color: COLORS.e4 },
-    { name: "E5 REINFORCE++", data: E5_GRAD, color: COLORS.e5 },
+    { name: "E1 GRPO", data: EASY_BOXED_E1_GRAD, color: COLORS.e1 },
+    { name: "E2 DAPO", data: EASY_BOXED_E2_GRAD, color: COLORS.e2 },
+    { name: "E3 Dr.GRPO", data: EASY_BOXED_E3_GRAD, color: COLORS.e3 },
+    { name: "E4 RLOO", data: EASY_BOXED_E4_GRAD, color: COLORS.e4 },
+    { name: "E5 REINFORCE++", data: EASY_BOXED_E5_GRAD, color: COLORS.e5 },
   ], (visible) => drawLineChart("chart-grad", "tip-grad", {
     categories: STEP_CATS,
     series: visible,
@@ -252,18 +252,18 @@ function render() {
   }));
 
   drawBarChart("chart-dur", "tip-dur", {
-    categories: DURATION_CATS,
-    data: DURATION_H,
+    categories: EASY_BOXED_DURATION_CATS,
+    data: EASY_BOXED_DURATION_H,
     colors: [COLORS.e1, COLORS.e2, COLORS.e3, COLORS.e4, COLORS.e5],
     valueSuffix: "h", height: 220,
   });
 
   renderLegend(document.getElementById("legend-aime"), [
-    { name: "E1 GRPO", data: AIME_E1, color: COLORS.e1 },
-    { name: "E2 DAPO", data: AIME_E2, color: COLORS.e2 },
-    { name: "E3 Dr.GRPO", data: AIME_E3, color: COLORS.e3 },
-    { name: "E4 RLOO", data: AIME_E4, color: COLORS.e4 },
-    { name: "E5 REINFORCE++", data: AIME_E5, color: COLORS.e5 },
+    { name: "E1 GRPO", data: AIME_EASY_BOXED_E1, color: COLORS.e1 },
+    { name: "E2 DAPO", data: AIME_EASY_BOXED_E2, color: COLORS.e2 },
+    { name: "E3 Dr.GRPO", data: AIME_EASY_BOXED_E3, color: COLORS.e3 },
+    { name: "E4 RLOO", data: AIME_EASY_BOXED_E4, color: COLORS.e4 },
+    { name: "E5 REINFORCE++", data: AIME_EASY_BOXED_E5, color: COLORS.e5 },
   ], (visible) => drawLineChart("chart-aime", "tip-aime", {
     categories: AIME_CATS,
     series: visible,
@@ -542,10 +542,10 @@ function renderExpPanel(key) {
   }
 
   // ---- Evalscope 评测结果（若该组已完成 offline 评测）----
-  if (typeof EVAL_FULL !== "undefined" && EVAL_FULL[key] && document.getElementById(`chart-${key}-eval-mmlu`)) {
-    const ev = EVAL_FULL[key];
+  if (typeof EVAL_EASY_BOXED_FULL !== "undefined" && EVAL_EASY_BOXED_FULL[key] && document.getElementById(`chart-${key}-eval-mmlu`)) {
+    const ev = EVAL_EASY_BOXED_FULL[key];
     drawLineChart(`chart-${key}-eval-mmlu`, `tip-${key}-eval-mmlu`, {
-      categories: EVAL_FULL_STEPS,
+      categories: EVAL_EASY_BOXED_FULL_STEPS,
       series: [{ name: "mmlu_temp", data: ev.mmlu, color: ev.color }],
       valueSuffix: "%", yMin: 89, yMax: 93, height: 200,
     });
@@ -555,7 +555,7 @@ function renderExpPanel(key) {
         { name: "aime24", data: ev.aime24, color: COLORS.danger },
         { name: "aime25", data: ev.aime25, color: ev.color },
       ], (visible) => drawLineChart(`chart-${key}-eval-aime`, `tip-${key}-eval-aime`, {
-        categories: EVAL_FULL_STEPS,
+        categories: EVAL_EASY_BOXED_FULL_STEPS,
         series: visible,
         valueSuffix: "%", yMin: 40, yMax: 85, height: 200,
       }));
@@ -565,36 +565,36 @@ function renderExpPanel(key) {
 
 function renderEvalPanel() {
   drawBarChart("chart-eval-mmlu150", "tip-eval-mmlu150", {
-    categories: EVAL_ORDER.map(k => EVAL[k].label),
-    data: EVAL_ORDER.map(k => EVAL[k].mmlu[2]),
-    colors: EVAL_ORDER.map(k => EVAL[k].color),
+    categories: EVAL_EASY_BOXED_ORDER.map(k => EVAL_EASY_BOXED[k].label),
+    data: EVAL_EASY_BOXED_ORDER.map(k => EVAL_EASY_BOXED[k].mmlu[2]),
+    colors: EVAL_EASY_BOXED_ORDER.map(k => EVAL_EASY_BOXED[k].color),
     valueSuffix: "%", height: 200,
   });
   drawBarChart("chart-eval-aime25-150", "tip-eval-aime25-150", {
-    categories: EVAL_ORDER.map(k => EVAL[k].label),
-    data: EVAL_ORDER.map(k => EVAL[k].aime25[2]),
-    colors: EVAL_ORDER.map(k => EVAL[k].color),
+    categories: EVAL_EASY_BOXED_ORDER.map(k => EVAL_EASY_BOXED[k].label),
+    data: EVAL_EASY_BOXED_ORDER.map(k => EVAL_EASY_BOXED[k].aime25[2]),
+    colors: EVAL_EASY_BOXED_ORDER.map(k => EVAL_EASY_BOXED[k].color),
     valueSuffix: "%", height: 200,
   });
 
   // ---- 补充：E1/E2/E4/E5 全 step 明细（含 aime24）----
-  if (typeof EVAL_FULL !== "undefined" && document.getElementById("chart-evalfull-mmlu")) {
-    const fullLegendItems = (dataKey) => EVAL_FULL_ORDER.map(k => ({ name: EVAL_FULL[k].label, data: EVAL_FULL[k][dataKey], color: EVAL_FULL[k].color }));
+  if (typeof EVAL_EASY_BOXED_FULL !== "undefined" && document.getElementById("chart-evalfull-mmlu")) {
+    const fullLegendItems = (dataKey) => EVAL_EASY_BOXED_FULL_ORDER.map(k => ({ name: EVAL_EASY_BOXED_FULL[k].label, data: EVAL_EASY_BOXED_FULL[k][dataKey], color: EVAL_EASY_BOXED_FULL[k].color }));
     renderLegend(document.getElementById("legend-evalfull-mmlu"), fullLegendItems("mmlu"),
       (visible) => drawLineChart("chart-evalfull-mmlu", "tip-evalfull-mmlu", {
-        categories: EVAL_FULL_STEPS,
+        categories: EVAL_EASY_BOXED_FULL_STEPS,
         series: visible,
         valueSuffix: "%", yMin: 89, yMax: 93, height: 240,
       }));
     renderLegend(document.getElementById("legend-evalfull-aime24"), fullLegendItems("aime24"),
       (visible) => drawLineChart("chart-evalfull-aime24", "tip-evalfull-aime24", {
-        categories: EVAL_FULL_STEPS,
+        categories: EVAL_EASY_BOXED_FULL_STEPS,
         series: visible,
         valueSuffix: "%", yMin: 55, yMax: 85, height: 240,
       }));
     renderLegend(document.getElementById("legend-evalfull-aime25"), fullLegendItems("aime25"),
       (visible) => drawLineChart("chart-evalfull-aime25", "tip-evalfull-aime25", {
-        categories: EVAL_FULL_STEPS,
+        categories: EVAL_EASY_BOXED_FULL_STEPS,
         series: visible,
         valueSuffix: "%", yMin: 40, yMax: 65, height: 240,
       }));
