@@ -1,4 +1,4 @@
-  <p class="tertiary">Sources: logs/exp2card/e1_grpo_2b … e5_reinforce_pp_2b 与 e*_2b_s3（parse_2b_logs.py）。Easy-Boxed 五组均 150/150 步；S3 E1–E4 已满 150，E5 进行中（~9/150）。pass rate = (reward_mean+1)/2。</p>
+  <p class="tertiary">Sources: logs/exp2card/e1_grpo_2b … e5_reinforce_pp_2b 与 e*_2b_s3（parse_2b_logs.py）。Easy-Boxed 五组均 150/150 步；S3 五组均已满 150（E5-S3 的原始 stdout 训练日志被后续重启覆盖丢失，曲线改由 TensorBoard event 重建，见 gen_2b_js.py）。pass rate = (reward_mean+1)/2。</p>
   <div class="detail-layout">
     <nav class="detail-toc" aria-label="目录" id="compare-toc">
       <p class="toc-heading">目录</p>
@@ -18,7 +18,7 @@
       <section class="detail-sec" id="cmp-sec-overview">
         <h2 class="sec-title">概览</h2>
         <div class="callout">
-          <div class="title">Easy-Boxed 五组已跑满；S3 E1–E4 完成，E5 ~9/150 · offline 主看 mmlu_temp / aime25</div>
+          <div class="title">Easy-Boxed 五组已跑满；S3 五组均已完成 150/150 · offline 主看 mmlu_temp / aime25</div>
           <strong>Dr.GRPO(E3)</strong> 末段 pass 最高、长度涨幅最大；<strong>DAPO(E2)</strong> 长度最短、墙钟最快；<strong>RLOO(E4)</strong> offline aime25@150 最高；<strong>REINFORCE++(E5)</strong> offline mmlu@150 最高。下方分两块：Easy-Boxed 对比与 S3 对比（各自独立图）。
         </div>
       </section>
@@ -72,7 +72,7 @@
       </section>
 
       <h2 class="sec-title" style="margin-top:28px">S3（E1–E5）</h2>
-      <p class="tertiary">S3 数据源：logs/exp2card/e1_grpo_2b_s3 … e5_reinforce_pp_2b_s3。E1–E4 150 步；E5 进行中（曲线至当前步后断开）。</p>
+      <p class="tertiary">S3 数据源：logs/exp2card/e1_grpo_2b_s3 … e5_reinforce_pp_2b_s3。五组均已满 150 步（E5 的 console 日志因续训重启被覆盖，曲线改由 tensorboard/exp2card/e5_reinforce_pp_2b_s3 的 event 文件重建）。</p>
       <section class="detail-sec" id="cmp-sec-s3-pass">
         <h2>S3 Pass rate（%，5-step 移动平均）</h2>
         <div class="chart-card">
@@ -117,7 +117,7 @@
           <div class="chart-card">
             <div class="chart-wrap"><canvas id="chart-s3-dur" height="220"></canvas><div class="tooltip" id="tip-s3-dur"></div></div>
           </div>
-          <p class="caption">E5 为进行中累计墙钟（非满 150 步）；E1–E4 为满 150 步墙钟。</p>
+          <p class="caption">E1–E5 均为满 150 步墙钟（E5-S3 时长由 TensorBoard 首末 event 时间戳换算）。</p>
         </div>
       </section>
     </div>

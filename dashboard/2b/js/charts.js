@@ -1,3 +1,9 @@
+// S3 overlay series: teal + dashed so it never collides with experiment pinks
+// (especially E5 #db2777) or danger red on Easy-Boxed vs S3 dual charts.
+function s3Series(name, data) {
+  return { name, data, color: COLORS.s3, dash: [6, 4] };
+}
+
 // Renders a clickable legend bound to a chart: clicking a series name toggles
 // it on/off and redraws with only the still-selected series (ECharts-style
 // legend select). A leading "隐藏全部/显示全部" button toggles every series
@@ -437,7 +443,7 @@ function renderExpPanel(key) {
     const items = [
       { name: "Easy-Boxed", data: passMA, color: e.color },
     ];
-    if (s) items.push({ name: "S3", data: movingAvg(s.pass, 5), color: COLORS.s3 });
+    if (s) items.push(s3Series("S3", movingAvg(s.pass, 5)));
     renderLegend(passLegend, items, (visible) => drawLineChart(`chart-${key}-pass`, `tip-${key}-pass`, {
       categories: e.cats,
       series: visible,
@@ -445,7 +451,7 @@ function renderExpPanel(key) {
     }));
   } else {
     const items = [{ name: "Easy-Boxed pass", data: e.pass, color: e.color }];
-    if (s) items.push({ name: "S3 pass", data: s.pass, color: COLORS.s3 });
+    if (s) items.push(s3Series("S3 pass", s.pass));
     drawLineChart(`chart-${key}-pass`, `tip-${key}-pass`, {
       categories: e.cats, series: items,
       yMin: 0, yMax: passYMax, valueSuffix: "%", height: 200,
@@ -455,7 +461,7 @@ function renderExpPanel(key) {
   if (e.rolloutAcc && e.rolloutAcc.length && document.getElementById(`chart-${key}-racc`)) {
     const raccMA = movingAvg(e.rolloutAcc, 5);
     const raccItems = [{ name: "Easy-Boxed", data: raccMA, color: e.color }];
-    if (s && s.rolloutAcc) raccItems.push({ name: "S3", data: movingAvg(s.rolloutAcc, 5), color: COLORS.s3 });
+    if (s && s.rolloutAcc) raccItems.push(s3Series("S3", movingAvg(s.rolloutAcc, 5)));
     const allRacc = e.rolloutAcc.filter(v => v != null);
     if (s && s.rolloutAcc) allRacc.push(...s.rolloutAcc.filter(v => v != null));
     const raccYMax = Math.min(100, Math.ceil((Math.max(...allRacc) + 10) / 10) * 10);
@@ -475,7 +481,7 @@ function renderExpPanel(key) {
 
   {
     const items = [{ name: "Easy-Boxed", data: e.len, color: e.color }];
-    if (s) items.push({ name: "S3", data: s.len, color: COLORS.s3 });
+    if (s) items.push(s3Series("S3", s.len));
     const lenLegend = document.getElementById(`legend-${key}-len`);
     if (lenLegend) {
       renderLegend(lenLegend, items, (visible) => drawLineChart(`chart-${key}-len`, `tip-${key}-len`, {
@@ -494,7 +500,7 @@ function renderExpPanel(key) {
 
   if (e.trunc && document.getElementById(`chart-${key}-trunc`)) {
     const items = [{ name: "Easy-Boxed clip@16K", data: e.trunc, color: e.color }];
-    if (s && s.trunc) items.push({ name: "S3 clip@16K", data: s.trunc, color: COLORS.s3 });
+    if (s && s.trunc) items.push(s3Series("S3 clip@16K", s.trunc));
     drawLineChart(`chart-${key}-trunc`, `tip-${key}-trunc`, {
       categories: e.cats, series: items,
       valueSuffix: "%", height: 200, yMin: 0,
@@ -503,7 +509,7 @@ function renderExpPanel(key) {
 
   if (e.promptLen && document.getElementById(`chart-${key}-promptlen`)) {
     const items = [{ name: "Easy-Boxed", data: e.promptLen, color: e.color }];
-    if (s && s.promptLen) items.push({ name: "S3", data: s.promptLen, color: COLORS.s3 });
+    if (s && s.promptLen) items.push(s3Series("S3", s.promptLen));
     const plLegend = document.getElementById(`legend-${key}-promptlen`);
     if (plLegend && items.length > 1) {
       renderLegend(plLegend, items, (visible) => drawLineChart(`chart-${key}-promptlen`, `tip-${key}-promptlen`, {
@@ -523,7 +529,7 @@ function renderExpPanel(key) {
     const items = [
       { name: "Easy-Boxed loss", data: e.loss, color: e.color },
     ];
-    if (s) items.push({ name: "S3 loss", data: s.loss, color: COLORS.s3 });
+    if (s) items.push(s3Series("S3 loss", s.loss));
     if (lossLegend) {
       renderLegend(lossLegend, items, (visible) => drawLineChart(`chart-${key}-loss`, `tip-${key}-loss`, {
         categories: e.cats, series: visible, height: 220,
@@ -537,7 +543,7 @@ function renderExpPanel(key) {
 
   {
     const items = [{ name: "Easy-Boxed entropy", data: e.ent, color: e.color }];
-    if (s) items.push({ name: "S3 entropy", data: s.ent, color: COLORS.s3 });
+    if (s) items.push(s3Series("S3 entropy", s.ent));
     drawLineChart(`chart-${key}-ent`, `tip-${key}-ent`, {
       categories: e.cats, series: items, height: 200,
     });
@@ -545,7 +551,7 @@ function renderExpPanel(key) {
 
   if (e.klLoss && e.klLoss.some((x) => x != null) && document.getElementById(`chart-${key}-klloss`)) {
     const items = [{ name: "Easy-Boxed kl_loss ×100", data: e.klLoss, color: e.color }];
-    if (s && s.klLoss && s.klLoss.some(x => x != null)) items.push({ name: "S3 kl_loss ×100", data: s.klLoss, color: COLORS.s3 });
+    if (s && s.klLoss && s.klLoss.some(x => x != null)) items.push(s3Series("S3 kl_loss ×100", s.klLoss));
     drawLineChart(`chart-${key}-klloss`, `tip-${key}-klloss`, {
       categories: e.cats, series: items, height: 200, yMin: 0,
     });
@@ -553,14 +559,14 @@ function renderExpPanel(key) {
 
   {
     const items = [{ name: "Easy-Boxed grad_norm", data: e.grad, color: e.color }];
-    if (s) items.push({ name: "S3 grad_norm", data: s.grad, color: COLORS.s3 });
+    if (s) items.push(s3Series("S3 grad_norm", s.grad));
     drawLineChart(`chart-${key}-grad`, `tip-${key}-grad`, {
       categories: e.cats, series: items, height: 200,
     });
   }
   {
     const items = [{ name: "Easy-Boxed ppo_kl ×1e5", data: e.ppokl, color: e.color }];
-    if (s) items.push({ name: "S3 ppo_kl ×1e5", data: s.ppokl, color: COLORS.s3 });
+    if (s) items.push(s3Series("S3 ppo_kl ×1e5", s.ppokl));
     drawLineChart(`chart-${key}-ppokl`, `tip-${key}-ppokl`, {
       categories: e.cats, series: items, height: 200,
       referenceLines: [{ value: 0, label: "0", tone: "neutral" }],
@@ -568,9 +574,10 @@ function renderExpPanel(key) {
   }
   {
     const clipItems = [{ name: "Easy-Boxed clipfrac", data: e.clip, color: e.color }];
-    if (e.clipLower) clipItems.push({ name: "Easy-Boxed clipfrac_lower", data: e.clipLower, color: COLORS.danger });
-    if (s) clipItems.push({ name: "S3 clipfrac", data: s.clip, color: COLORS.s3 });
-    if (s && s.clipLower) clipItems.push({ name: "S3 clipfrac_lower", data: s.clipLower, color: "#f472b6" });
+    // amber (not danger red) — avoids collision with E5 pink clipfrac
+    if (e.clipLower) clipItems.push({ name: "Easy-Boxed clipfrac_lower", data: e.clipLower, color: COLORS.e2 });
+    if (s) clipItems.push(s3Series("S3 clipfrac", s.clip));
+    if (s && s.clipLower) clipItems.push({ name: "S3 clipfrac_lower", data: s.clipLower, color: "#2dd4bf", dash: [6, 4] });
     drawLineChart(`chart-${key}-clip`, `tip-${key}-clip`, {
       categories: e.cats, series: clipItems,
       valueSuffix: "%", height: 200, yMin: 0,
@@ -578,7 +585,7 @@ function renderExpPanel(key) {
   }
   {
     const items = [{ name: "Easy-Boxed (1−corr)×1e4", data: e.pearsonDev, color: e.color }];
-    if (s) items.push({ name: "S3 (1−corr)×1e4", data: s.pearsonDev, color: COLORS.s3 });
+    if (s) items.push(s3Series("S3 (1−corr)×1e4", s.pearsonDev));
     drawLineChart(`chart-${key}-corr`, `tip-${key}-corr`, {
       categories: e.cats, series: items, height: 200, yMin: 0,
     });
@@ -586,14 +593,14 @@ function renderExpPanel(key) {
 
   if (e.rolloutKl && document.getElementById(`chart-${key}-rollkl`)) {
     const items = [{ name: "Easy-Boxed rollout_kl ×1e4", data: e.rolloutKl, color: e.color }];
-    if (s && s.rolloutKl) items.push({ name: "S3 rollout_kl ×1e4", data: s.rolloutKl, color: COLORS.s3 });
+    if (s && s.rolloutKl) items.push(s3Series("S3 rollout_kl ×1e4", s.rolloutKl));
     drawLineChart(`chart-${key}-rollkl`, `tip-${key}-rollkl`, {
       categories: e.cats, series: items, height: 200, yMin: 0,
     });
   }
   if (e.stepMin && document.getElementById(`chart-${key}-stepmin`)) {
     const items = [{ name: "Easy-Boxed", data: e.stepMin, color: e.color }];
-    if (s && s.stepMin) items.push({ name: "S3", data: s.stepMin, color: COLORS.s3 });
+    if (s && s.stepMin) items.push(s3Series("S3", s.stepMin));
     drawLineChart(`chart-${key}-stepmin`, `tip-${key}-stepmin`, {
       categories: e.cats, series: items,
       valueSuffix: " min", height: 200, yMin: 0,
@@ -601,7 +608,7 @@ function renderExpPanel(key) {
   }
   if (e.mfu && document.getElementById(`chart-${key}-mfu`)) {
     const items = [{ name: "Easy-Boxed MFU", data: e.mfu, color: e.color }];
-    if (s && s.mfu) items.push({ name: "S3 MFU", data: s.mfu, color: COLORS.s3 });
+    if (s && s.mfu) items.push(s3Series("S3 MFU", s.mfu));
     drawLineChart(`chart-${key}-mfu`, `tip-${key}-mfu`, {
       categories: e.cats, series: items,
       valueSuffix: "%", height: 200,
@@ -609,7 +616,7 @@ function renderExpPanel(key) {
   }
   if (e.throughput && document.getElementById(`chart-${key}-thru`)) {
     const items = [{ name: "Easy-Boxed throughput", data: e.throughput, color: e.color }];
-    if (s && s.throughput) items.push({ name: "S3 throughput", data: s.throughput, color: COLORS.s3 });
+    if (s && s.throughput) items.push(s3Series("S3 throughput", s.throughput));
     drawLineChart(`chart-${key}-thru`, `tip-${key}-thru`, {
       categories: e.cats, series: items,
       valueSuffix: " tok/s", height: 200,
@@ -674,8 +681,9 @@ function renderExpPanel(key) {
     const majorLegend = document.getElementById(`legend-${key}-timing`);
     if (majorLegend) {
       const hasVals = (xs) => Array.isArray(xs) && xs.some((x) => x != null);
+      // gen uses slate (not danger red) so E5's pink update_actor stays distinct
       const majorItems = [
-        { name: "gen (rollout)", data: t.gen, color: COLORS.danger },
+        { name: "gen (rollout)", data: t.gen, color: "#334155" },
         { name: "update_actor", data: t.update_actor, color: e.color },
         { name: "ref", data: t.ref, color: COLORS.e3 },
         { name: "old_log_prob", data: t.old_log_prob, color: COLORS.e2 },
@@ -688,7 +696,7 @@ function renderExpPanel(key) {
     }
     if (document.getElementById(`chart-${key}-timing-step`)) {
       const items = [{ name: "Easy-Boxed step", data: t.step, color: e.color }];
-      if (s && s.timing) items.push({ name: "S3 step", data: s.timing.step, color: COLORS.s3 });
+      if (s && s.timing) items.push(s3Series("S3 step", s.timing.step));
       drawLineChart(`chart-${key}-timing-step`, `tip-${key}-timing-step`, {
         categories: e.cats, series: items,
         valueSuffix: " s", height: 240, yMin: 0,
@@ -709,7 +717,7 @@ function renderExpPanel(key) {
     if (document.getElementById(`chart-${key}-timing-mean`)) {
       const meanCats = ["gen", "update_actor", "ref", "old_log_prob", "update_weights", "adv"];
       const meanVals = meanCats.map((k) => tm[k] ?? 0);
-      const meanColors = [COLORS.danger, e.color, COLORS.e3, COLORS.e2, COLORS.e4, COLORS.e5];
+      const meanColors = ["#334155", e.color, COLORS.e3, COLORS.e2, COLORS.e4, COLORS.e5];
       drawBarChart(`chart-${key}-timing-mean`, `tip-${key}-timing-mean`, {
         categories: meanCats,
         data: meanVals,
@@ -731,7 +739,7 @@ function renderExpPanel(key) {
     const s3ev = (typeof EVAL_FULL_S3 !== "undefined" && EVAL_FULL_S3[key]) ? EVAL_FULL_S3[key] : null;
     if (ev && steps) {
       const mmluItems = [{ name: "Easy-Boxed", data: ev.mmlu, color: ev.color }];
-      if (s3ev) mmluItems.push({ name: "S3", data: s3ev.mmlu, color: COLORS.s3, dash: [6, 4] });
+      if (s3ev) mmluItems.push(s3Series("S3", s3ev.mmlu));
       const mmluLegendEl = document.getElementById(`legend-${key}-eval-mmlu`);
       const drawMmlu = (visible) => {
         const [yMin, yMax] = yRangeFromSeries(visible);
@@ -747,13 +755,14 @@ function renderExpPanel(key) {
       }
       const aimeLegendEl = document.getElementById(`legend-${key}-eval-aime`);
       if (aimeLegendEl) {
+        // aime24 uses blue (not danger red) so it never collides with E5 pink aime25
         const aimeItems = [
-          { name: s3ev ? "aime24 (Easy-Boxed)" : "aime24", data: ev.aime24, color: COLORS.danger },
+          { name: s3ev ? "aime24 (Easy-Boxed)" : "aime24", data: ev.aime24, color: COLORS.e1 },
           { name: s3ev ? "aime25 (Easy-Boxed)" : "aime25", data: ev.aime25, color: ev.color },
         ];
         if (s3ev) {
-          aimeItems.push({ name: "aime24 (S3)", data: s3ev.aime24, color: COLORS.danger, dash: [6, 4] });
-          aimeItems.push({ name: "aime25 (S3)", data: s3ev.aime25, color: COLORS.s3, dash: [6, 4] });
+          aimeItems.push({ name: "aime24 (S3)", data: s3ev.aime24, color: COLORS.e2, dash: [6, 4] });
+          aimeItems.push(s3Series("aime25 (S3)", s3ev.aime25));
         }
         renderLegend(aimeLegendEl, aimeItems, (visible) => {
           const [yMin, yMax] = yRangeFromSeries(visible);
@@ -767,7 +776,7 @@ function renderExpPanel(key) {
       const mathEl = document.getElementById(`chart-${key}-eval-math500`);
       if (mathEl && ev.math500) {
         const mathItems = [{ name: "Easy-Boxed", data: ev.math500, color: ev.color }];
-        if (s3ev && s3ev.math500) mathItems.push({ name: "S3", data: s3ev.math500, color: COLORS.s3, dash: [6, 4] });
+        if (s3ev && s3ev.math500) mathItems.push(s3Series("S3", s3ev.math500));
         const mathLegendEl = document.getElementById(`legend-${key}-eval-math500`);
         const drawMath = (visible) => {
           const [yMin, yMax] = yRangeFromSeries(visible);
@@ -821,16 +830,14 @@ function renderEvalPanel() {
   const src = (typeof EVAL_EASY_BOXED_FULL !== "undefined") ? EVAL_EASY_BOXED_FULL : EVAL_EASY_BOXED;
   const s3src = (typeof EVAL_FULL_S3 !== "undefined") ? EVAL_FULL_S3 : {};
 
-  // Easy-Boxed（Stage-1）为主线；若该实验有对应 S3 阶段 offline 报告
-  // （目前仅 E1@150），追加一条同色虚线并给两条都打上 (Easy-Boxed)/(S3) 标签，
-  // 让图例能明确区分数据来源阶段。
+  // Easy-Boxed（Stage-1）实线用实验色；S3 统一 teal 虚线，避免与 E5 粉红实线撞色。
   function seriesWithS3(metric) {
     const items = [];
     EVAL_EASY_BOXED_ORDER.forEach((k) => {
       const s3ev = s3src[k];
       const hasS3 = s3ev && s3ev[metric] && s3ev[metric].some((v) => v != null);
       items.push({ name: hasS3 ? `${src[k].label} (Easy-Boxed)` : src[k].label, data: src[k][metric], color: src[k].color });
-      if (hasS3) items.push({ name: `${src[k].label} (S3)`, data: s3ev[metric], color: src[k].color, dash: [6, 4] });
+      if (hasS3) items.push(s3Series(`${src[k].label} (S3)`, s3ev[metric]));
     });
     return items;
   }

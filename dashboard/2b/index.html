@@ -25,7 +25,7 @@
 
 <div class="page">
   <h1>2B 训练监控 — Qwen3.5-2B（E1–E5 + S3）</h1>
-  <p class="subtitle">2×A100-80GB · non-thinking · 16K response · Easy-Boxed E1–E5 均已跑满 150/150 步；S3 E1–E4 已完成 150 步，E5 ~135/150（进行中）。数据由 <code>scripts/monitoring/2b/parse_2b_logs.py</code> 从训练日志生成。算法定义见 <a href="../algo/index.html">算法介绍</a> · 评测协议见 <a href="../benchmark/index.html">Benchmark 介绍</a>。</p>
+  <p class="subtitle">2×A100-80GB · non-thinking · 16K response · Easy-Boxed E1–E5 均已跑满 150/150 步；S3 E1–E5 均已完成 150 步。数据主要由 <code>scripts/monitoring/2b/parse_2b_logs.py</code> 从训练日志生成（E5-S3 的 stdout 日志因续训重启被覆盖丢失，改由 TensorBoard event 经 <code>scripts/monitoring/2b/gen_2b_js.py</code> 重建，数值与其余实验同口径校验一致）。算法定义见 <a href="../algo/index.html">算法介绍</a> · 评测协议见 <a href="../benchmark/index.html">Benchmark 介绍</a>。</p>
 
   <div class="subtabs">
     <button class="subtab-btn active" data-subtab="compare">对比总览（E1–E5 + S3）</button>
@@ -40,8 +40,8 @@
   <div id="panel-container"></div>
 </div>
 
-<script src="js/data-compare.js?v=20260730035312"></script>
-<script src="js/data-eval-offline.js?v=20260730024731"></script>
+<script src="js/data-compare.js?v=20260730164700"></script>
+<script src="js/data-eval-offline.js?v=20260730175911"></script>
 <script src="js/data-easy-boxed-e1.js?v=20260730035312"></script>
 <script src="js/data-easy-boxed-e2.js?v=20260730035312"></script>
 <script src="js/data-easy-boxed-e3.js?v=20260730035312"></script>
@@ -52,7 +52,7 @@
 <script src="js/data-s3-e3.js?v=20260730035312"></script>
 <script src="js/data-s3-e4.js?v=20260730035312"></script>
 <script src="js/data-s3-e5.js?v=20260730035312"></script>
-<script src="js/charts.js?v=20260730120200"></script>
-<script src="js/tab-loader.js?v=20260730120200"></script>
+<script src="js/charts.js?v=20260730175911"></script>
+<script src="js/tab-loader.js?v=20260730164700"></script>
 </body>
 </html>
