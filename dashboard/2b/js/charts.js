@@ -313,21 +313,6 @@ function render() {
     valueSuffix: "h", height: 220,
   });
 
-  const aimeLegend = document.getElementById("legend-aime");
-  if (aimeLegend && typeof AIME_EASY_BOXED_E1 !== "undefined") {
-    renderLegend(aimeLegend, [
-      { name: "E1 GRPO", data: AIME_EASY_BOXED_E1, color: COLORS.e1 },
-      { name: "E2 DAPO", data: AIME_EASY_BOXED_E2, color: COLORS.e2 },
-      { name: "E3 Dr.GRPO", data: AIME_EASY_BOXED_E3, color: COLORS.e3 },
-      { name: "E4 RLOO", data: AIME_EASY_BOXED_E4, color: COLORS.e4 },
-      { name: "E5 REINFORCE++", data: AIME_EASY_BOXED_E5, color: COLORS.e5 },
-    ], (visible) => drawLineChart("chart-aime", "tip-aime", {
-      categories: AIME_CATS,
-      series: visible,
-      valueSuffix: "%", yMin: 0, yMax: 50, height: 260,
-    }));
-  }
-
   // ---- S3 E1–E5（独立图，不与 Easy-Boxed 叠加）----
   const s3PassLegend = document.getElementById("legend-s3-pass");
   if (!s3PassLegend || typeof S3_E1_PASS_MA === "undefined") return;
@@ -401,22 +386,6 @@ function render() {
       colors: S3_DURATION_COLORS,
       valueSuffix: "h", height: 220,
     });
-  }
-
-  const s3AimeLegend = document.getElementById("legend-s3-aime");
-  if (s3AimeLegend && typeof AIME_S3_E1 !== "undefined") {
-    const s3Aime = [
-      { name: "S3 E1 GRPO", data: AIME_S3_E1, color: COLORS.e1 },
-      { name: "S3 E2 DAPO", data: AIME_S3_E2, color: COLORS.e2 },
-      { name: "S3 E3 Dr.GRPO", data: AIME_S3_E3, color: COLORS.e3 },
-    ];
-    if (typeof AIME_S3_E4 !== "undefined") s3Aime.push({ name: "S3 E4 RLOO", data: AIME_S3_E4, color: COLORS.e4 });
-    if (typeof AIME_S3_E5 !== "undefined") s3Aime.push({ name: "S3 E5 REINFORCE++", data: AIME_S3_E5, color: COLORS.e5 });
-    renderLegend(s3AimeLegend, s3Aime, (visible) => drawLineChart("chart-s3-aime", "tip-s3-aime", {
-      categories: AIME_CATS,
-      series: visible,
-      valueSuffix: "%", yMin: 0, yMax: 50, height: 260,
-    }));
   }
 }
 
