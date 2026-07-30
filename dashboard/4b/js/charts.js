@@ -561,6 +561,28 @@ function renderExpPanel(key) {
       }));
     }
   }
+
+  // ---- Agent / 工具调用（本实验 Easy-Boxed：BFCL-v3 + tau-bench）----
+  if (typeof AGENT !== "undefined" && AGENT[key] && document.getElementById(`chart-${key}-agent-bfcl`)) {
+    const ag = AGENT[key];
+    const agSteps = (typeof AGENT_STEPS !== "undefined") ? AGENT_STEPS : EVAL_EASY_BOXED_FULL_STEPS;
+    const drawAgent = (metric, suffix, yMin, yMax) => {
+      const canvasId = `chart-${key}-agent-${suffix}`;
+      const tipId = `tip-${key}-agent-${suffix}`;
+      const legendEl = document.getElementById(`legend-${key}-agent-${suffix}`);
+      if (!document.getElementById(canvasId) || !ag[metric]) return;
+      const items = [{ name: ag.label || key.toUpperCase(), data: ag[metric], color: ag.color || COLORS[key] }];
+      const draw = (visible) => drawLineChart(canvasId, tipId, {
+        categories: agSteps, series: visible,
+        valueSuffix: "%", yMin, yMax, height: 200,
+      });
+      if (legendEl) renderLegend(legendEl, items, draw);
+      else draw(items);
+    };
+    drawAgent("bfcl", "bfcl", 30, 52);
+    drawAgent("bfcl_mt", "mt", 0, 14);
+    drawAgent("tau", "tau", 40, 80);
+  }
 }
 
 function renderEvalPanel() {
