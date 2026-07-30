@@ -554,22 +554,32 @@ function renderExpPanel(key) {
   if (typeof AGENT !== "undefined" && AGENT[key] && document.getElementById(`chart-${key}-agent-bfcl`)) {
     const ag = AGENT[key];
     const agSteps = (typeof AGENT_STEPS !== "undefined") ? AGENT_STEPS : EVAL_EASY_BOXED_FULL_STEPS;
-    const drawAgent = (metric, suffix, yMin, yMax) => {
+    const yPad = (series, loPad, hiPad, floor, ceil) => {
+      const vals = series.flatMap((s) => (s.data || []).filter((v) => v != null));
+      if (!vals.length) return [floor, ceil];
+      const lo = Math.max(floor, Math.floor(Math.min(...vals) - loPad));
+      const hi = Math.min(ceil, Math.ceil(Math.max(...vals) + hiPad));
+      return [lo, Math.max(lo + 2, hi)];
+    };
+    const drawAgent = (metric, suffix, loPad, hiPad, floor, ceil) => {
       const canvasId = `chart-${key}-agent-${suffix}`;
       const tipId = `tip-${key}-agent-${suffix}`;
       const legendEl = document.getElementById(`legend-${key}-agent-${suffix}`);
       if (!document.getElementById(canvasId) || !ag[metric]) return;
       const items = [{ name: ag.label || key.toUpperCase(), data: ag[metric], color: ag.color || COLORS[key] }];
-      const draw = (visible) => drawLineChart(canvasId, tipId, {
-        categories: agSteps, series: visible,
-        valueSuffix: "%", yMin, yMax, height: 200,
-      });
+      const draw = (visible) => {
+        const [yMin, yMax] = yPad(visible, loPad, hiPad, floor, ceil);
+        drawLineChart(canvasId, tipId, {
+          categories: agSteps, series: visible,
+          valueSuffix: "%", yMin, yMax, height: 200,
+        });
+      };
       if (legendEl) renderLegend(legendEl, items, draw);
       else draw(items);
     };
-    drawAgent("bfcl", "bfcl", 30, 52);
-    drawAgent("bfcl_mt", "mt", 0, 14);
-    drawAgent("tau", "tau", 40, 80);
+    drawAgent("bfcl", "bfcl", 1, 2, 0, 60);
+    drawAgent("bfcl_mt", "mt", 0.5, 1, 0, 20);
+    drawAgent("tau", "tau", 5, 5, 0, 100);
   }
 }
 
@@ -613,21 +623,37 @@ function renderEvalPanel() {
   // ---- Agent / 工具调用能力（BFCL-v3 + tau-bench）：每个 index 一条曲线 ----
   if (typeof AGENT !== "undefined" && document.getElementById("chart-agent-bfcl")) {
     const items = (dataKey) => AGENT_ORDER.map(k => ({ name: AGENT[k].label, data: AGENT[k][dataKey], color: AGENT[k].color }));
+    const yPad = (series, loPad, hiPad, floor, ceil) => {
+      const vals = series.flatMap((s) => (s.data || []).filter((v) => v != null));
+      if (!vals.length) return [floor, ceil];
+      const lo = Math.max(floor, Math.floor(Math.min(...vals) - loPad));
+      const hi = Math.min(ceil, Math.ceil(Math.max(...vals) + hiPad));
+      return [lo, Math.max(lo + 2, hi)];
+    };
     renderLegend(document.getElementById("legend-agent-bfcl"), items("bfcl"),
-      (visible) => drawLineChart("chart-agent-bfcl", "tip-agent-bfcl", {
-        categories: AGENT_STEPS, series: visible,
-        valueSuffix: "%", yMin: 30, yMax: 52, height: 240,
-      }));
+      (visible) => {
+        const [yMin, yMax] = yPad(visible, 1, 2, 0, 60);
+        drawLineChart("chart-agent-bfcl", "tip-agent-bfcl", {
+          categories: AGENT_STEPS, series: visible,
+          valueSuffix: "%", yMin, yMax, height: 240,
+        });
+      });
     renderLegend(document.getElementById("legend-agent-mt"), items("bfcl_mt"),
-      (visible) => drawLineChart("chart-agent-mt", "tip-agent-mt", {
-        categories: AGENT_STEPS, series: visible,
-        valueSuffix: "%", yMin: 0, yMax: 14, height: 240,
-      }));
+      (visible) => {
+        const [yMin, yMax] = yPad(visible, 0.5, 1, 0, 20);
+        drawLineChart("chart-agent-mt", "tip-agent-mt", {
+          categories: AGENT_STEPS, series: visible,
+          valueSuffix: "%", yMin, yMax, height: 240,
+        });
+      });
     renderLegend(document.getElementById("legend-agent-tau"), items("tau"),
-      (visible) => drawLineChart("chart-agent-tau", "tip-agent-tau", {
-        categories: AGENT_STEPS, series: visible,
-        valueSuffix: "%", yMin: 40, yMax: 80, height: 240,
-      }));
+      (visible) => {
+        const [yMin, yMax] = yPad(visible, 5, 5, 0, 100);
+        drawLineChart("chart-agent-tau", "tip-agent-tau", {
+          categories: AGENT_STEPS, series: visible,
+          valueSuffix: "%", yMin, yMax, height: 240,
+        });
+      });
   }
 }
 

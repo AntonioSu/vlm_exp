@@ -56,12 +56,12 @@ const EVAL_EASY_BOXED_FULL = {
 // 全 step 曲线：E1–E5
 const EVAL_EASY_BOXED_FULL_ORDER = ["e1", "e2", "e3", "e4", "e5"];
 
-// ---- Agent / tool-use benchmarks (evalscope, auto-synced 2026-07-25) ----
-// Source: /data/lijunyi/evalscope/outputs/agent2/<ts>/reports/<exp>_4b_<step>/{bfcl_v3,tau_bench}.json
-// Coverage: bfcl=74 · tau=74 · steps with any report: 10/20/30/40/50/60/70/80/90/100/110/120/130/140/150
-// BFCL-v3: 10 subset ×30；bfcl=OVERALL；bfcl_mt=MULTI_TURN。
+// ---- Agent / tool-use benchmarks (evalscope, auto-synced 2026-07-30) ----
+// Source: /data/juicefs-white/5281-gpu-a100/lijunyi/evalscope/outputs/agent2/<ts>/reports/<exp>_4b_<step>/{bfcl_v3,tau_bench}.json
+// Coverage: bfcl=75 · tau=75 · steps with any report: 10/20/30/40/50/60/70/80/90/100/110/120/130/140/150
+// BFCL-v3: 10 subset ×30；bfcl=OVERALL（新版无聚合项时用 macro_score）；bfcl_mt=MULTI_TURN。
 // tau-bench: retail+airline×20，user-sim=gpt-5p5-apipro。null = 尚未评测。
-// Refresh: python3 scripts/sync_4b_agent_dashboard.py
+// Refresh: python3 scripts/monitoring/4b/sync_4b_agent_dashboard.py
 
 const AGENT_STEPS = ["10", "20", "30", "40", "50", "60", "70", "80", "90", "100", "110", "120", "130", "140", "150"];
 
@@ -74,9 +74,9 @@ const AGENT = {
   },
   e2: {
     label: "E2 DAPO",       color: COLORS.e2,
-    bfcl:   [45.7, 45.9, 45.2, 44.3, 47.5, 43.9, 41.8, null, 45.8, 46.4, 42.8, 45.6, 43.3, 41.2, 42.1],
-    bfcl_mt:[8.3, 8.9, 7.2, 6.7, 10.0, 8.9, 7.2, null, 10.0, 10.6, 5.6, 6.7, 8.9, 6.7, 8.3],
-    tau:    [55.0, 55.0, 42.5, 55.0, 55.0, 65.0, 52.5, null, 60.0, 60.0, 55.0, 60.0, 65.0, 52.5, 70.0],
+    bfcl:   [45.7, 45.9, 45.2, 44.3, 47.5, 43.9, 41.8, 22.2, 45.8, 46.4, 42.8, 45.6, 43.3, 41.2, 42.1],
+    bfcl_mt:[8.3, 8.9, 7.2, 6.7, 10.0, 8.9, 7.2, 4.2, 10.0, 10.6, 5.6, 6.7, 8.9, 6.7, 8.3],
+    tau:    [55.0, 55.0, 42.5, 55.0, 55.0, 65.0, 52.5, 62.5, 60.0, 60.0, 55.0, 60.0, 65.0, 52.5, 70.0],
   },
   e3: {
     label: "E3 Dr.GRPO",    color: COLORS.e3,

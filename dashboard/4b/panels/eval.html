@@ -77,7 +77,7 @@
           <p class="tertiary">Source: <code>/data/lijunyi/evalscope/outputs/agent2</code>（<code>run_agent2_queue_4b.sh</code>，vLLM <code>qwen3_xml</code>）。BFCL-v3：10 subset × 30、prompt 模式；tau-bench：retail+airline 共 40、user-sim=<code>gpt-5p5-apipro</code>。已评测 step（tau 非空）：10/20/30/40/50/60/70/80/90/100/110/120/130/140/150。协议说明见 <a href="../benchmark/index.html">Benchmark 介绍</a>。</p>
           <div class="callout" style="margin-top:10px">
             <div class="title">数学 RL 对 agent 能力几乎无增益</div>
-            <strong>BFCL 总体持平</strong>：各算法各 step 都落在 41–48%，训练步几乎不改变函数调用能力。<strong>多轮 agentic（MULTI_TURN）普遍趴在 4–11%</strong>——这是数学 RL 模型最弱的一环，换算法也救不回来。<strong>tau-bench 区分度最高</strong>：非空 step 均值 E1 62.5% · E2 57.3% · E3 60.2% · E4 58.7% · E5 59.3%；但每点仅 40 条、噪声约 ±8pt，step 间抖动需谨慎解读。
+            <strong>BFCL 总体持平</strong>：多数 step 落在 39–48%；例外是 E2@step80 掉到 22.2%（随后 step90 回升至 45.8%）。<strong>多轮 agentic（MULTI_TURN）普遍趴在 4–11%</strong>——这是数学 RL 模型最弱的一环，换算法也救不回来。<strong>tau-bench 区分度最高</strong>：非空 step 均值 E1 62.5% · E2 57.3% · E3 60.2% · E4 58.7% · E5 59.3%；但每点仅 40 条、噪声约 ±8pt，step 间抖动需谨慎解读。
           </div>
           <div style="margin-top:16px">
             <h2>BFCL-v3 OVERALL 随 checkpoint 变化（E1–E5）</h2>
