@@ -257,18 +257,6 @@ function render() {
     colors: [COLORS.e1, COLORS.e2, COLORS.e3, COLORS.e4, COLORS.e5],
     valueSuffix: "h", height: 220,
   });
-
-  renderLegend(document.getElementById("legend-aime"), [
-    { name: "E1 GRPO", data: AIME_EASY_BOXED_E1, color: COLORS.e1 },
-    { name: "E2 DAPO", data: AIME_EASY_BOXED_E2, color: COLORS.e2 },
-    { name: "E3 Dr.GRPO", data: AIME_EASY_BOXED_E3, color: COLORS.e3 },
-    { name: "E4 RLOO", data: AIME_EASY_BOXED_E4, color: COLORS.e4 },
-    { name: "E5 REINFORCE++", data: AIME_EASY_BOXED_E5, color: COLORS.e5 },
-  ], (visible) => drawLineChart("chart-aime", "tip-aime", {
-    categories: AIME_CATS,
-    series: visible,
-    valueSuffix: "%", yMin: 0, yMax: 100, height: 260,
-  }));
 }
 
 function movingAvg(xs, w) {

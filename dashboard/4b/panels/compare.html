@@ -1,71 +1,69 @@
   <p class="tertiary">Sources: logs/exp2card/e1_grpo_4b, e2_dapo_4b, e3_drgrpo_4b, e4_rloo_4b, e5_reinforce_pp_4b 各自的 train_*.log，逐 step 直接解析（脚本：scripts/parse_4b_logs.py），五组均为 150/150 步全量数据，无截断。pass rate = (reward_mean+1)/2 over 32×8 samples/step。</p>
+  <div class="detail-layout">
+    <nav class="detail-toc" aria-label="目录" id="compare-toc">
+      <p class="toc-heading">目录</p>
+      <ol class="toc-list">
+        <li><a href="#cmp-sec-overview"><span class="toc-num">0</span><span class="toc-title">概览</span></a></li>
+        <li><a href="#cmp-sec-pass"><span class="toc-num">1</span><span class="toc-title">Pass</span></a></li>
+        <li><a href="#cmp-sec-len"><span class="toc-num">2</span><span class="toc-title">长度 / 熵</span></a></li>
+        <li><a href="#cmp-sec-grad"><span class="toc-num">3</span><span class="toc-title">Grad / 耗时</span></a></li>
+      </ol>
+    </nav>
+    <div class="detail-main">
+      <section class="detail-sec" id="cmp-sec-overview">
+        <h2 class="sec-title">概览</h2>
+        <div class="callout">
+          <div class="title">4B 上五组末段 pass rate 都在 88–91% 高位收敛 · offline 主看 mmlu_temp / aime25</div>
+          五组首 5 步 pass rate 均值都在 79–81% 起步（4B 底座数学能力本身就强，起点远高于 2B 的 35–43%），末 10 步均值收敛到 88.7–91.1% 的窄区间，训练侧差异比 2B 更不明显。<strong>E2 在 step43/59 出现 grad_norm 尖峰（0.96/1.13）</strong>且 entropy 全程走高；E5 墙钟 33.7h，entropy 末段 ~0.09，grad_norm 基线偏高（~0.4–0.7）。offline aime24/aime25 见「评测结果」页。
+        </div>
+      </section>
 
-  <section>
-    <div class="callout">
-      <div class="title">4B 上五组末段 pass rate 都在 88–91% 高位收敛；训练验证 aime24 上 E4 step125 最高</div>
-      五组首 5 步 pass rate 均值都在 79–81% 起步（4B 底座数学能力本身就强，起点远高于 2B 的 35–43%），末 10 步均值收敛到 88.7–91.1% 的窄区间，训练侧差异比 2B 更不明显。<strong>下方 AIME24 图是训练中验证（贪婪@1）</strong>，不是评测结果页的 evalscope offline（n=8）：训练验证上 <strong>E4 step125 摸到 0.833</strong>，E3/E5 step125 同达 0.800；E2/E3/E4/E5 step150 并列 0.767；<strong>E1 是唯一 step150 回落到 0.633 的一组</strong>。<strong>E2 在 step43/59 出现 grad_norm 尖峰（0.96/1.13）</strong>且 entropy 全程走高；E5 墙钟 33.7h，entropy 末段 ~0.09，grad_norm 基线偏高（~0.4–0.7）。
-    </div>
-  </section>
+      <section class="detail-sec" id="cmp-sec-pass">
+        <h2>Pass rate 学习曲线对比（%，5-step 移动平均，全 150 步）</h2>
+        <div class="chart-card">
+          <div class="legend" id="legend-pass"></div>
+          <div class="chart-wrap"><canvas id="chart-pass" height="280"></canvas><div class="tooltip" id="tip-pass"></div></div>
+        </div>
+        <p class="caption">X: training step · Y: batch pass rate（5-step 移动平均，降噪）。五组起步几乎重合，末段收敛到 88–91% 窄带，比 2B 赛道的算法间差异明显更小。</p>
+      </section>
 
-  <section>
-    <h2>Pass rate 学习曲线对比（%，5-step 移动平均，全 150 步）</h2>
-    <div class="chart-card">
-      <div class="legend" id="legend-pass"></div>
-      <div class="chart-wrap"><canvas id="chart-pass" height="280"></canvas><div class="tooltip" id="tip-pass"></div></div>
-    </div>
-    <p class="caption">X: training step · Y: batch pass rate（5-step 移动平均，降噪）。五组起步几乎重合，末段收敛到 88–91% 窄带，比 2B 赛道的算法间差异明显更小。</p>
-  </section>
+      <section class="detail-sec grid2" id="cmp-sec-len">
+        <div>
+          <h2>平均响应长度对比（tokens，全 150 步）</h2>
+          <div class="chart-card">
+            <div class="legend" id="legend-len"></div>
+            <div class="chart-wrap"><canvas id="chart-len" height="240"></canvas><div class="tooltip" id="tip-len"></div></div>
+          </div>
+          <p class="caption">X: step · Y: mean generated tokens/response. E1(GRPO) 涨幅最大（5.1k→9.7k），E3/E5 涨幅偏小（末段约 7k）；E5 起步长度较短后缓慢爬升。（虚线 = 16K 生成上限）</p>
+        </div>
+        <div>
+          <h2>策略熵对比（entropy，全 150 步）</h2>
+          <div class="chart-card">
+            <div class="legend" id="legend-ent"></div>
+            <div class="chart-wrap"><canvas id="chart-ent" height="240"></canvas><div class="tooltip" id="tip-ent"></div></div>
+          </div>
+          <p class="caption">X: step · Y: mean token entropy. E3 全场最低最紧（0.081→0.048）；E5 末段也压到 ~0.09；E2(DAPO) 全程走高（0.256→0.417），是五组中唯一没有收敛的；E1/E4 都有 KL loss 拉住，走势接近且温和下降。</p>
+        </div>
+      </section>
 
-  <section class="grid2">
-    <div>
-      <h2>平均响应长度对比（tokens，全 150 步）</h2>
-      <div class="chart-card">
-        <div class="legend" id="legend-len"></div>
-        <div class="chart-wrap"><canvas id="chart-len" height="240"></canvas><div class="tooltip" id="tip-len"></div></div>
-      </div>
-      <p class="caption">X: step · Y: mean generated tokens/response. E1(GRPO) 涨幅最大（5.1k→9.7k），E3/E5 涨幅偏小（末段约 7k）；E5 起步长度较短后缓慢爬升。（虚线 = 16K 生成上限）</p>
-    </div>
-    <div>
-      <h2>策略熵对比（entropy，全 150 步）</h2>
-      <div class="chart-card">
-        <div class="legend" id="legend-ent"></div>
-        <div class="chart-wrap"><canvas id="chart-ent" height="240"></canvas><div class="tooltip" id="tip-ent"></div></div>
-      </div>
-      <p class="caption">X: step · Y: mean token entropy. E3 全场最低最紧（0.081→0.048）；E5 末段也压到 ~0.09；E2(DAPO) 全程走高（0.256→0.417），是五组中唯一没有收敛的；E1/E4 都有 KL loss 拉住，走势接近且温和下降。</p>
-    </div>
-  </section>
+      <section class="detail-sec grid2" id="cmp-sec-grad">
+        <div>
+          <h2>梯度范数对比（grad_norm，全 150 步）</h2>
+          <div class="chart-card">
+            <div class="legend" id="legend-grad"></div>
+            <div class="chart-wrap"><canvas id="chart-grad" height="220"></canvas><div class="tooltip" id="tip-grad"></div></div>
+          </div>
+          <p class="caption">X: step · Y: 全局梯度范数。E3 基线最低最稳（0.03–0.23）；E5 基线偏高（~0.4–0.7）；E2 在 step43/59 附近有两次瞬时尖峰（0.96/1.13），其余步与 E1/E4 同处 0.1–0.3 区间。</p>
+        </div>
+        <div>
+          <h2>150 步总训练耗时（小时）</h2>
+          <div class="chart-card">
+            <div class="chart-wrap"><canvas id="chart-dur" height="220"></canvas><div class="tooltip" id="tip-dur"></div></div>
+          </div>
+          <p class="caption">X: 实验 · Y: 150 步全程墙钟耗时。E3 最快（31.7h），E2 次之（32.6h），E5 33.7h，E4 35.8h，E1 最慢（37.2h）；五组差距比 2B 赛道更接近，4 卡 + 关闭 offload 后算法本身对墙钟的影响被摊薄。</p>
+        </div>
+      </section>
 
-  <section class="grid2">
-    <div>
-      <h2>梯度范数对比（grad_norm，全 150 步）</h2>
-      <div class="chart-card">
-        <div class="legend" id="legend-grad"></div>
-        <div class="chart-wrap"><canvas id="chart-grad" height="220"></canvas><div class="tooltip" id="tip-grad"></div></div>
-      </div>
-      <p class="caption">X: step · Y: 全局梯度范数。E3 基线最低最稳（0.03–0.23）；E5 基线偏高（~0.4–0.7）；E2 在 step43/59 附近有两次瞬时尖峰（0.96/1.13），其余步与 E1/E4 同处 0.1–0.3 区间。</p>
+      <p class="tertiary">本页由 scripts/parse_4b_logs.py + scripts/gen_4b_js.py 从 logs/exp2card/e*_4b/train_*.log 直接解析生成（纯 HTML/CSS/JS，零外部依赖，可离线打开）。用 <code>bash serve.sh</code> 起一个本地静态服务器后在浏览器访问，或直接双击/拖拽本文件到浏览器打开。</p>
     </div>
-    <div>
-      <h2>150 步总训练耗时（小时）</h2>
-      <div class="chart-card">
-        <div class="chart-wrap"><canvas id="chart-dur" height="220"></canvas><div class="tooltip" id="tip-dur"></div></div>
-      </div>
-      <p class="caption">X: 实验 · Y: 150 步全程墙钟耗时。E3 最快（31.7h），E2 次之（32.6h），E5 33.7h，E4 35.8h，E1 最慢（37.2h）；五组差距比 2B 赛道更接近，4 卡 + 关闭 offload 后算法本身对墙钟的影响被摊薄。</p>
-    </div>
-  </section>
-
-  <section>
-    <h2>训练中验证 · AIME24 acc@1（%，step 25/50/75/100/125/150）</h2>
-    <div class="callout" style="margin-top:0;margin-bottom:8px">
-      <div class="title">⚠ 这是训练日志里的验证曲线，不是「评测结果」页的 evalscope offline</div>
-      来源：verl <code>trainer.test_freq=25</code>，30 题 · <strong>贪婪解码 mean@1</strong>。与评测结果页的 aime24（temp=0.6 · <strong>n=8 · 240 采样</strong>）协议不同，数值不可直接对比；offline 曲线见「评测结果」页（E1/E2/E4 已齐，E3/E5 少数点仍在补）。
-    </div>
-    <div class="chart-card">
-      <div class="legend" id="legend-aime"></div>
-      <div class="chart-wrap"><canvas id="chart-aime" height="260"></canvas><div class="tooltip" id="tip-aime"></div></div>
-    </div>
-    <p class="caption">X: training step（val at test_freq=25） · Y: 训练中 aime24 acc/mean@1（贪婪）。五组在 56.7–83.3% 区间震荡；E5 从 step25 的 60% 稳步升到 step125 的 80%；E1 是唯一 step150 明显回落的一组。</p>
-  </section>
-
-  <section>
-    <p class="tertiary">本页由 scripts/parse_4b_logs.py + scripts/gen_4b_js.py 从 logs/exp2card/e*_4b/train_*.log 直接解析生成（纯 HTML/CSS/JS，零外部依赖，可离线打开）。用 <code>bash serve.sh</code> 起一个本地静态服务器后在浏览器访问，或直接双击/拖拽本文件到浏览器打开。</p>
-  </section>
+  </div>
