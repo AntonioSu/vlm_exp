@@ -1,48 +1,106 @@
-<p class="tertiary">Source: <code>/data/lijunyi/evalscope</code>（evalscope 框架，本地 vLLM 0.24 serving 出的 checkpoint 权重，非训练时 verl 内置验证）。评测配置：math 类（aime24/aime25/math_500）<code>temperature=0.6, top_p=0.95, max_tokens=16384, n=8</code>（8 采样取均值 acc）；mmlu_temp <code>n=2</code>。权重来自 FSDP → HuggingFace 合并（<code>trans_weight.sh</code>），路径 <code>model/exp2card/&lt;exp&gt;/merged_&lt;step&gt;</code>。训练数据：Stage-1 <code>polaris_easy_boxed</code>；曲线为 step 10→150（缺报告为断点）。刷新：<code>python3 scripts/monitoring/2b/sync_2b_eval_dashboard.py</code>。</p>
-<div class="callout" style="margin-top:10px">
-  <div class="title">Easy-Boxed Stage-1 offline：覆盖仍不齐（E5 仅 7/15）；柱状图取 step150，缺报告则为空</div>
-</div>
+    <div class="detail-layout">
+      <nav class="detail-toc" aria-label="目录" id="eval-toc">
+        <p class="toc-heading">目录</p>
+        <ol class="toc-list">
+          <li><a href="#eval-sec-overview"><span class="toc-num">0</span><span class="toc-title">概览</span></a></li>
+          <li><a href="#eval-sec-trends"><span class="toc-num">1</span><span class="toc-title">趋势曲线</span></a></li>
+          <li><a href="#eval-sec-step150"><span class="toc-num">2</span><span class="toc-title">step150 汇总</span></a></li>
+          <li><a href="#eval-sec-agent"><span class="toc-num">3</span><span class="toc-title">Agent / 工具调用</span></a></li>
+        </ol>
+      </nav>
 
-<section class="grid2" style="margin-top:16px">
-  <div>
-    <h2>MMLU-Temp（趋势，step 10→150）</h2>
-    <div class="chart-card"><div class="legend" id="legend-eval-mmlu"></div><div class="chart-wrap"><canvas id="chart-eval-mmlu" height="240"></canvas><div class="tooltip" id="tip-eval-mmlu"></div></div></div>
-  </div>
-  <div>
-    <h2>MATH-500（趋势，step 10→150）</h2>
-    <div class="chart-card"><div class="legend" id="legend-eval-math500"></div><div class="chart-wrap"><canvas id="chart-eval-math500" height="240"></canvas><div class="tooltip" id="tip-eval-math500"></div></div></div>
-  </div>
-</section>
+      <div class="detail-main">
 
-<section class="grid2" style="margin-top:16px">
-  <div>
-    <h2>AIME-24（趋势，step 10→150）</h2>
-    <div class="chart-card"><div class="legend" id="legend-eval-aime24"></div><div class="chart-wrap"><canvas id="chart-eval-aime24" height="240"></canvas><div class="tooltip" id="tip-eval-aime24"></div></div></div>
-  </div>
-  <div>
-    <h2>AIME-25（趋势，step 10→150）</h2>
-    <div class="chart-card"><div class="legend" id="legend-eval-aime25"></div><div class="chart-wrap"><canvas id="chart-eval-aime25" height="240"></canvas><div class="tooltip" id="tip-eval-aime25"></div></div></div>
-  </div>
-</section>
+        <section class="detail-sec" id="eval-sec-overview">
+          <h2 class="sec-title">概览</h2>
+          <p class="sec-sub">评测配置 · Easy-Boxed + S3 offline</p>
+          <p class="tertiary">Source: <code>/data/lijunyi/evalscope</code>（evalscope 框架，本地 vLLM 0.24 serving 出的 checkpoint 权重，非训练时 verl 内置验证）。评测配置：math 类（aime24/aime25/math_500）<code>temperature=0.6, top_p=0.95, max_tokens=16384, n=8</code>（8 采样取均值 acc）；mmlu_temp <code>n=2</code>。权重来自 FSDP → HuggingFace 合并（<code>trans_weight.sh</code>），路径 <code>model/exp2card/&lt;exp&gt;/merged_&lt;step&gt;</code>。训练数据：Stage-1 <code>polaris_easy_boxed</code>；曲线为 step 10→150（缺报告为断点）。刷新：<code>python3 scripts/monitoring/2b/sync_2b_eval_dashboard.py</code>。</p>
+          <div class="callout" style="margin-top:10px">
+            <div class="title">Easy-Boxed Stage-1 offline：E1–E5 均已 15/15；S3 offline：E1–E4 15/15，E5 仅 4/15（step 10–40）。柱状图取 step150，缺报告则为空</div>
+          </div>
+        </section>
 
-<section class="grid2" style="margin-top:16px">
-  <div>
-    <h2>MMLU-Temp @ step 150（柱状）</h2>
-    <div class="chart-card"><div class="chart-wrap"><canvas id="chart-eval-mmlu150" height="200"></canvas><div class="tooltip" id="tip-eval-mmlu150"></div></div></div>
-  </div>
-  <div>
-    <h2>MATH-500 @ step 150（柱状）</h2>
-    <div class="chart-card"><div class="chart-wrap"><canvas id="chart-eval-math500-150" height="200"></canvas><div class="tooltip" id="tip-eval-math500-150"></div></div></div>
-  </div>
-</section>
+        <section class="detail-sec" id="eval-sec-trends">
+          <h2 class="sec-title">趋势曲线</h2>
+          <p class="sec-sub">step 10→150 · Easy-Boxed 实线 / S3 虚线</p>
+          <section class="grid2" style="margin-top:12px">
+            <div>
+              <h2>MMLU-Temp（趋势，step 10→150）</h2>
+              <div class="chart-card"><div class="legend" id="legend-eval-mmlu"></div><div class="chart-wrap"><canvas id="chart-eval-mmlu" height="240"></canvas><div class="tooltip" id="tip-eval-mmlu"></div></div></div>
+            </div>
+            <div>
+              <h2>MATH-500（趋势，step 10→150）</h2>
+              <div class="chart-card"><div class="legend" id="legend-eval-math500"></div><div class="chart-wrap"><canvas id="chart-eval-math500" height="240"></canvas><div class="tooltip" id="tip-eval-math500"></div></div></div>
+            </div>
+          </section>
+          <section class="grid2" style="margin-top:16px">
+            <div>
+              <h2>AIME-24（趋势，step 10→150）</h2>
+              <div class="chart-card"><div class="legend" id="legend-eval-aime24"></div><div class="chart-wrap"><canvas id="chart-eval-aime24" height="240"></canvas><div class="tooltip" id="tip-eval-aime24"></div></div></div>
+            </div>
+            <div>
+              <h2>AIME-25（趋势，step 10→150）</h2>
+              <div class="chart-card"><div class="legend" id="legend-eval-aime25"></div><div class="chart-wrap"><canvas id="chart-eval-aime25" height="240"></canvas><div class="tooltip" id="tip-eval-aime25"></div></div></div>
+            </div>
+          </section>
+        </section>
 
-<section class="grid2" style="margin-top:16px">
-  <div>
-    <h2>AIME-24 @ step 150（柱状）</h2>
-    <div class="chart-card"><div class="chart-wrap"><canvas id="chart-eval-aime24-150" height="200"></canvas><div class="tooltip" id="tip-eval-aime24-150"></div></div></div>
-  </div>
-  <div>
-    <h2>AIME-25 @ step 150（柱状）</h2>
-    <div class="chart-card"><div class="chart-wrap"><canvas id="chart-eval-aime25-150" height="200"></canvas><div class="tooltip" id="tip-eval-aime25-150"></div></div></div>
-  </div>
-</section>
+        <section class="detail-sec" id="eval-sec-step150">
+          <h2 class="sec-title">step150 汇总</h2>
+          <p class="sec-sub">Easy-Boxed Stage-1 @ step 150 柱状对比</p>
+          <section class="grid2" style="margin-top:12px">
+            <div>
+              <h2>MMLU-Temp @ step 150（柱状）</h2>
+              <div class="chart-card"><div class="chart-wrap"><canvas id="chart-eval-mmlu150" height="200"></canvas><div class="tooltip" id="tip-eval-mmlu150"></div></div></div>
+            </div>
+            <div>
+              <h2>MATH-500 @ step 150（柱状）</h2>
+              <div class="chart-card"><div class="chart-wrap"><canvas id="chart-eval-math500-150" height="200"></canvas><div class="tooltip" id="tip-eval-math500-150"></div></div></div>
+            </div>
+          </section>
+          <section class="grid2" style="margin-top:16px">
+            <div>
+              <h2>AIME-24 @ step 150（柱状）</h2>
+              <div class="chart-card"><div class="chart-wrap"><canvas id="chart-eval-aime24-150" height="200"></canvas><div class="tooltip" id="tip-eval-aime24-150"></div></div></div>
+            </div>
+            <div>
+              <h2>AIME-25 @ step 150（柱状）</h2>
+              <div class="chart-card"><div class="chart-wrap"><canvas id="chart-eval-aime25-150" height="200"></canvas><div class="tooltip" id="tip-eval-aime25-150"></div></div></div>
+            </div>
+          </section>
+        </section>
+
+        <section class="detail-sec" id="eval-sec-agent">
+          <h2 class="sec-title">Agent / 工具调用能力</h2>
+          <p class="sec-sub">S3 · BFCL-v3 + tau-bench</p>
+          <p class="tertiary">Source: <code>evalscope/outputs/agent2</code>（<code>run_agent2_s3_queue_2b.sh</code>，vLLM <code>qwen3_xml</code>）。BFCL-v3：10 subset × 30、prompt 模式；tau-bench：retail+airline 共 40、user-sim=<code>gpt-5p5-apipro</code>。Agent2 S3：BFCL 64/64，tau-bench 36/64（tau 非空 step：10/20/30/40/50/60/70/80/90/100/110/120/130/140/150）。刷新：<code>python3 scripts/monitoring/2b/sync_2b_agent_dashboard.py</code>。协议说明见 <a href="../benchmark/index.html">Benchmark 介绍</a>。</p>
+          <div style="margin-top:16px">
+            <h2>BFCL-v3 OVERALL（S3 E1–E5）</h2>
+            <div class="chart-card">
+              <div class="legend" id="legend-agent-bfcl"></div>
+              <div class="chart-wrap"><canvas id="chart-agent-bfcl" height="240"></canvas><div class="tooltip" id="tip-agent-bfcl"></div></div>
+            </div>
+            <p class="caption">X: checkpoint step（10–150） · Y: BFCL-v3 OVERALL acc（%）。</p>
+          </div>
+          <section class="grid2" style="margin-top:16px">
+            <div>
+              <h2>BFCL-v3 MULTI_TURN</h2>
+              <div class="chart-card">
+                <div class="legend" id="legend-agent-mt"></div>
+                <div class="chart-wrap"><canvas id="chart-agent-mt" height="240"></canvas><div class="tooltip" id="tip-agent-mt"></div></div>
+              </div>
+              <p class="caption">X: step · Y: MULTI_TURN acc（%，4 subset × 30）。</p>
+            </div>
+            <div>
+              <h2>tau-bench（S3 E1–E5）</h2>
+              <div class="chart-card">
+                <div class="legend" id="legend-agent-tau"></div>
+                <div class="chart-wrap"><canvas id="chart-agent-tau" height="240"></canvas><div class="tooltip" id="tip-agent-tau"></div></div>
+              </div>
+              <p class="caption">X: step · Y: tau-bench mean_acc（%，40 条）。缺报告为断点。</p>
+            </div>
+          </section>
+        </section>
+
+      </div><!-- /.detail-main -->
+    </div><!-- /.detail-layout -->

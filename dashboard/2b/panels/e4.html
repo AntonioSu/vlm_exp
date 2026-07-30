@@ -9,6 +9,7 @@
           <li><a href="#e4-sec-efficiency"><span class="toc-num">3</span><span class="toc-title">效率</span></a></li>
           <li><a href="#e4-sec-timing"><span class="toc-num">4</span><span class="toc-title">耗时拆解</span></a></li>
           <li><a href="#e4-sec-eval"><span class="toc-num">5</span><span class="toc-title">评测</span></a></li>
+          <li><a href="#e4-sec-agent"><span class="toc-num">6</span><span class="toc-title">Agent / 工具调用</span></a></li>
         </ol>
       </nav>
       <div class="detail-main">
@@ -176,6 +177,38 @@
           <section style="margin-top:12px">
             <h2>math_500（%）</h2>
             <div class="chart-card"><div class="legend" id="legend-e4-eval-math500"></div><div class="chart-wrap"><canvas id="chart-e4-eval-math500" height="200"></canvas><div class="tooltip" id="tip-e4-eval-math500"></div></div></div>
+          </section>
+        </section>
+
+        <section class="detail-sec" id="e4-sec-agent">
+          <h2 class="sec-title">Agent / 工具调用能力</h2>
+          <p class="sec-sub">S3 · BFCL-v3 + tau-bench</p>
+          <p class="tertiary">Source: <code>evalscope/outputs/agent2</code>（S3，<code>run_agent2_s3_queue_2b.sh</code>）。数据见 <code>js/data-eval-offline.js</code>（<code>AGENT_S3</code>）。刷新：<code>python3 scripts/monitoring/2b/sync_2b_agent_dashboard.py</code>。</p>
+          <div style="margin-top:12px">
+            <h2>BFCL-v3 OVERALL（%）</h2>
+            <div class="chart-card">
+              <div class="legend" id="legend-e4-agent-bfcl"></div>
+              <div class="chart-wrap"><canvas id="chart-e4-agent-bfcl" height="200"></canvas><div class="tooltip" id="tip-e4-agent-bfcl"></div></div>
+            </div>
+            <p class="caption">X: checkpoint step（10–150） · Y: BFCL-v3 OVERALL acc（%）。缺报告为断点。</p>
+          </div>
+          <section class="grid2" style="margin-top:12px">
+            <div>
+              <h2>BFCL-v3 MULTI_TURN（%）</h2>
+              <div class="chart-card">
+                <div class="legend" id="legend-e4-agent-mt"></div>
+                <div class="chart-wrap"><canvas id="chart-e4-agent-mt" height="200"></canvas><div class="tooltip" id="tip-e4-agent-mt"></div></div>
+              </div>
+              <p class="caption">X: step · Y: MULTI_TURN acc（%）。</p>
+            </div>
+            <div>
+              <h2>tau-bench（%）</h2>
+              <div class="chart-card">
+                <div class="legend" id="legend-e4-agent-tau"></div>
+                <div class="chart-wrap"><canvas id="chart-e4-agent-tau" height="200"></canvas><div class="tooltip" id="tip-e4-agent-tau"></div></div>
+              </div>
+              <p class="caption">X: step · Y: tau-bench mean_acc（%，40 条）。缺报告为断点。</p>
+            </div>
           </section>
         </section>
       </div>

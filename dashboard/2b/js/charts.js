@@ -1,24 +1,64 @@
 // Renders a clickable legend bound to a chart: clicking a series name toggles
 // it on/off and redraws with only the still-selected series (ECharts-style
-// legend select). `draw(visibleSeries)` is called once up front and again on
-// every toggle.
+// legend select). A leading "隐藏全部/显示全部" button toggles every series
+// at once. `draw(visibleSeries)` is called once up front and again on every
+// toggle.
 function renderLegend(el, series, draw) {
   const hidden = new Set();
-  el.innerHTML = series.map(s => {
+  const itemsHtml = series.map(s => {
     const swatch = s.dash
       ? `<span class="dot dash" style="border-color:${s.color}"></span>`
       : `<span class="dot" style="background:${s.color}"></span>`;
     return `<span class="legend-item">${swatch}${s.name}</span>`;
   }).join("");
-  el.querySelectorAll(".legend-item").forEach((span, i) => {
+  el.innerHTML = `<span class="legend-toggle-all"></span>${itemsHtml}`;
+
+  const toggleAllBtn = el.querySelector(".legend-toggle-all");
+  const itemSpans = el.querySelectorAll(".legend-item");
+
+  const syncToggleAllLabel = () => {
+    toggleAllBtn.textContent = hidden.size >= series.length ? "显示全部" : "隐藏全部";
+  };
+
+  itemSpans.forEach((span, i) => {
     span.addEventListener("click", () => {
       const name = series[i].name;
       if (hidden.has(name)) hidden.delete(name); else hidden.add(name);
       span.classList.toggle("legend-off", hidden.has(name));
+      syncToggleAllLabel();
       draw(series.filter(s => !hidden.has(s.name)));
     });
   });
+
+  toggleAllBtn.addEventListener("click", () => {
+    const shouldHideAll = hidden.size < series.length;
+    hidden.clear();
+    itemSpans.forEach((span, i) => {
+      if (shouldHideAll) hidden.add(series[i].name);
+      span.classList.toggle("legend-off", shouldHideAll);
+    });
+    syncToggleAllLabel();
+    draw(series.filter(s => !hidden.has(s.name)));
+  });
+
+  syncToggleAllLabel();
   draw(series.slice());
+}
+
+// Padded [yMin, yMax] from series so points never sit outside the plot.
+// Rounds outward to integers; optional floor/ceil clamp (e.g. floor: 0 for %).
+function yRangeFromSeries(series, { padRatio = 0.1, floor = 0, ceil = null } = {}) {
+  const vals = series.flatMap((s) => s.data).filter((v) => v != null);
+  if (!vals.length) return [floor ?? 0, ceil ?? 1];
+  let min = Math.min(...vals);
+  let max = Math.max(...vals);
+  const pad = (max - min) * padRatio || 1;
+  min = Math.floor(min - pad);
+  max = Math.ceil(max + pad);
+  if (floor != null) min = Math.max(min, floor);
+  if (ceil != null) max = Math.min(max, ceil);
+  if (max <= min) max = min + 1;
+  return [min, max];
 }
 
 function drawLineChart(canvasId, tipId, { categories, series, yMin, yMax, valueSuffix = "", height = 260, referenceLines = [] }) {
@@ -713,7 +753,7 @@ function renderExpPanel(key) {
   // ---- Evalscope 评测结果（2B: EVAL_EASY_BOXED 三 checkpoint；若有 EVAL_EASY_BOXED_FULL 则用 dense）----
   const evalEl = document.getElementById(`chart-${key}-eval-mmlu`);
   if (evalEl) {
-    let steps = null, ev = null, yMmlu = [75, 85], yAime = [20, 45];
+    let steps = null, ev = null;
     if (typeof EVAL_EASY_BOXED_FULL !== "undefined" && EVAL_EASY_BOXED_FULL[key]) {
       steps = EVAL_EASY_BOXED_FULL_STEPS; ev = EVAL_EASY_BOXED_FULL[key];
     } else if (typeof EVAL_EASY_BOXED !== "undefined" && EVAL_EASY_BOXED[key]) {
@@ -724,16 +764,17 @@ function renderExpPanel(key) {
       const mmluItems = [{ name: "Easy-Boxed", data: ev.mmlu, color: ev.color }];
       if (s3ev) mmluItems.push({ name: "S3", data: s3ev.mmlu, color: COLORS.s3, dash: [6, 4] });
       const mmluLegendEl = document.getElementById(`legend-${key}-eval-mmlu`);
-      if (mmluLegendEl) {
-        renderLegend(mmluLegendEl, mmluItems, (visible) => drawLineChart(`chart-${key}-eval-mmlu`, `tip-${key}-eval-mmlu`, {
-          categories: steps, series: visible,
-          valueSuffix: "%", yMin: yMmlu[0], yMax: yMmlu[1], height: 200,
-        }));
-      } else {
+      const drawMmlu = (visible) => {
+        const [yMin, yMax] = yRangeFromSeries(visible);
         drawLineChart(`chart-${key}-eval-mmlu`, `tip-${key}-eval-mmlu`, {
-          categories: steps, series: mmluItems,
-          valueSuffix: "%", yMin: yMmlu[0], yMax: yMmlu[1], height: 200,
+          categories: steps, series: visible,
+          valueSuffix: "%", yMin, yMax, height: 200,
         });
+      };
+      if (mmluLegendEl) {
+        renderLegend(mmluLegendEl, mmluItems, drawMmlu);
+      } else {
+        drawMmlu(mmluItems);
       }
       const aimeLegendEl = document.getElementById(`legend-${key}-eval-aime`);
       if (aimeLegendEl) {
@@ -745,30 +786,58 @@ function renderExpPanel(key) {
           aimeItems.push({ name: "aime24 (S3)", data: s3ev.aime24, color: COLORS.danger, dash: [6, 4] });
           aimeItems.push({ name: "aime25 (S3)", data: s3ev.aime25, color: COLORS.s3, dash: [6, 4] });
         }
-        renderLegend(aimeLegendEl, aimeItems, (visible) => drawLineChart(`chart-${key}-eval-aime`, `tip-${key}-eval-aime`, {
-          categories: steps,
-          series: visible,
-          valueSuffix: "%", yMin: yAime[0], yMax: yAime[1], height: 200,
-        }));
+        renderLegend(aimeLegendEl, aimeItems, (visible) => {
+          const [yMin, yMax] = yRangeFromSeries(visible);
+          drawLineChart(`chart-${key}-eval-aime`, `tip-${key}-eval-aime`, {
+            categories: steps,
+            series: visible,
+            valueSuffix: "%", yMin, yMax, height: 200,
+          });
+        });
       }
       const mathEl = document.getElementById(`chart-${key}-eval-math500`);
       if (mathEl && ev.math500) {
         const mathItems = [{ name: "Easy-Boxed", data: ev.math500, color: ev.color }];
         if (s3ev && s3ev.math500) mathItems.push({ name: "S3", data: s3ev.math500, color: COLORS.s3, dash: [6, 4] });
         const mathLegendEl = document.getElementById(`legend-${key}-eval-math500`);
-        if (mathLegendEl) {
-          renderLegend(mathLegendEl, mathItems, (visible) => drawLineChart(`chart-${key}-eval-math500`, `tip-${key}-eval-math500`, {
-            categories: steps, series: visible,
-            valueSuffix: "%", yMin: 75, yMax: 90, height: 200,
-          }));
-        } else {
+        const drawMath = (visible) => {
+          const [yMin, yMax] = yRangeFromSeries(visible);
           drawLineChart(`chart-${key}-eval-math500`, `tip-${key}-eval-math500`, {
-            categories: steps, series: mathItems,
-            valueSuffix: "%", yMin: 75, yMax: 90, height: 200,
+            categories: steps, series: visible,
+            valueSuffix: "%", yMin, yMax, height: 200,
           });
+        };
+        if (mathLegendEl) {
+          renderLegend(mathLegendEl, mathItems, drawMath);
+        } else {
+          drawMath(mathItems);
         }
       }
     }
+  }
+
+  // ---- Agent / 工具调用（本实验 S3：BFCL-v3 + tau-bench）----
+  const agentEl = document.getElementById(`chart-${key}-agent-bfcl`);
+  if (agentEl && typeof AGENT_S3 !== "undefined" && AGENT_S3[key]) {
+    const ag = AGENT_S3[key];
+    const agSteps = (typeof AGENT_S3_STEPS !== "undefined") ? AGENT_S3_STEPS : EVAL_EASY_BOXED_FULL_STEPS;
+    const drawAgent = (metric, suffix, floor, ceil) => {
+      const legendEl = document.getElementById(`legend-${key}-agent-${suffix}`);
+      if (!document.getElementById(`chart-${key}-agent-${suffix}`) || !ag[metric]) return;
+      const items = [{ name: ag.label || key.toUpperCase(), data: ag[metric], color: ag.color || COLORS[key] }];
+      const draw = (visible) => {
+        const [yMin, yMax] = yRangeFromSeries(visible, { floor, ceil });
+        drawLineChart(`chart-${key}-agent-${suffix}`, `tip-${key}-agent-${suffix}`, {
+          categories: agSteps, series: visible,
+          valueSuffix: "%", yMin, yMax, height: 200,
+        });
+      };
+      if (legendEl) renderLegend(legendEl, items, draw);
+      else draw(items);
+    };
+    drawAgent("bfcl", "bfcl", 0, 60);
+    drawAgent("bfcl_mt", "mt", 0, 20);
+    drawAgent("tau", "tau", 0, 100);
   }
 }
 
@@ -798,36 +867,48 @@ function renderEvalPanel() {
   }
 
   renderLegend(document.getElementById("legend-eval-mmlu"), seriesWithS3("mmlu"),
-    (visible) => drawLineChart("chart-eval-mmlu", "tip-eval-mmlu", {
-      categories: steps,
-      series: visible,
-      valueSuffix: "%", yMin: 70, yMax: 85, height: 240,
-    }));
+    (visible) => {
+      const [yMin, yMax] = yRangeFromSeries(visible);
+      drawLineChart("chart-eval-mmlu", "tip-eval-mmlu", {
+        categories: steps,
+        series: visible,
+        valueSuffix: "%", yMin, yMax, height: 240,
+      });
+    });
 
   if (document.getElementById("legend-eval-math500")) {
     renderLegend(document.getElementById("legend-eval-math500"), seriesWithS3("math500"),
-      (visible) => drawLineChart("chart-eval-math500", "tip-eval-math500", {
-        categories: steps,
-        series: visible,
-        valueSuffix: "%", yMin: 75, yMax: 90, height: 240,
-      }));
+      (visible) => {
+        const [yMin, yMax] = yRangeFromSeries(visible);
+        drawLineChart("chart-eval-math500", "tip-eval-math500", {
+          categories: steps,
+          series: visible,
+          valueSuffix: "%", yMin, yMax, height: 240,
+        });
+      });
   }
 
   if (document.getElementById("legend-eval-aime24")) {
     renderLegend(document.getElementById("legend-eval-aime24"), seriesWithS3("aime24"),
-      (visible) => drawLineChart("chart-eval-aime24", "tip-eval-aime24", {
-        categories: steps,
-        series: visible,
-        valueSuffix: "%", yMin: 15, yMax: 45, height: 240,
-      }));
+      (visible) => {
+        const [yMin, yMax] = yRangeFromSeries(visible);
+        drawLineChart("chart-eval-aime24", "tip-eval-aime24", {
+          categories: steps,
+          series: visible,
+          valueSuffix: "%", yMin, yMax, height: 240,
+        });
+      });
   }
 
   renderLegend(document.getElementById("legend-eval-aime25"), seriesWithS3("aime25"),
-    (visible) => drawLineChart("chart-eval-aime25", "tip-eval-aime25", {
-      categories: steps,
-      series: visible,
-      valueSuffix: "%", yMin: 15, yMax: 45, height: 240,
-    }));
+    (visible) => {
+      const [yMin, yMax] = yRangeFromSeries(visible);
+      drawLineChart("chart-eval-aime25", "tip-eval-aime25", {
+        categories: steps,
+        series: visible,
+        valueSuffix: "%", yMin, yMax, height: 240,
+      });
+    });
 
   drawBarChart("chart-eval-mmlu150", "tip-eval-mmlu150", {
     categories: EVAL_EASY_BOXED_ORDER.map(k => src[k].label),
@@ -857,6 +938,53 @@ function renderEvalPanel() {
     colors: EVAL_EASY_BOXED_ORDER.map(k => src[k].color),
     valueSuffix: "%", height: 200,
   });
+
+  // ---- Agent S3（BFCL-v3 + tau-bench）----
+  if (typeof AGENT_S3 !== "undefined" && document.getElementById("chart-agent-bfcl")) {
+    const order = (typeof AGENT_S3_ORDER !== "undefined") ? AGENT_S3_ORDER : Object.keys(AGENT_S3);
+    const steps = (typeof AGENT_S3_STEPS !== "undefined") ? AGENT_S3_STEPS : EVAL_EASY_BOXED_FULL_STEPS;
+    const items = (dataKey) => order
+      .filter((k) => AGENT_S3[k] && AGENT_S3[k][dataKey])
+      .map((k) => ({ name: AGENT_S3[k].label, data: AGENT_S3[k][dataKey], color: AGENT_S3[k].color }));
+    const yPad = (series, loPad, hiPad, floor, ceil) => {
+      const vals = series.flatMap((s) => (s.data || []).filter((v) => v != null));
+      if (!vals.length) return [floor, ceil];
+      const lo = Math.max(floor, Math.floor(Math.min(...vals) - loPad));
+      const hi = Math.min(ceil, Math.ceil(Math.max(...vals) + hiPad));
+      return [lo, Math.max(lo + 2, hi)];
+    };
+    const bfclItems = items("bfcl");
+    renderLegend(document.getElementById("legend-agent-bfcl"), bfclItems,
+      (visible) => {
+        const [yMin, yMax] = yPad(visible, 1, 2, 0, 60);
+        drawLineChart("chart-agent-bfcl", "tip-agent-bfcl", {
+          categories: steps, series: visible,
+          valueSuffix: "%", yMin, yMax, height: 240,
+        });
+      });
+    const mtItems = items("bfcl_mt");
+    if (document.getElementById("legend-agent-mt")) {
+      renderLegend(document.getElementById("legend-agent-mt"), mtItems,
+        (visible) => {
+          const [yMin, yMax] = yPad(visible, 0.5, 1, 0, 20);
+          drawLineChart("chart-agent-mt", "tip-agent-mt", {
+            categories: steps, series: visible,
+            valueSuffix: "%", yMin, yMax, height: 240,
+          });
+        });
+    }
+    const tauItems = items("tau");
+    if (document.getElementById("legend-agent-tau")) {
+      renderLegend(document.getElementById("legend-agent-tau"), tauItems,
+        (visible) => {
+          const [yMin, yMax] = yPad(visible, 5, 5, 0, 100);
+          drawLineChart("chart-agent-tau", "tip-agent-tau", {
+            categories: steps, series: visible,
+            valueSuffix: "%", yMin, yMax, height: 240,
+          });
+        });
+    }
+  }
 }
 
 
