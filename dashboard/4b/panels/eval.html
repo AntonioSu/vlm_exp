@@ -4,8 +4,9 @@
         <ol class="toc-list">
           <li><a href="#eval-sec-overview"><span class="toc-num">0</span><span class="toc-title">概览</span></a></li>
           <li><a href="#eval-sec-aime"><span class="toc-num">1</span><span class="toc-title">数学推理 AIME</span></a></li>
-          <li><a href="#eval-sec-mmlu"><span class="toc-num">2</span><span class="toc-title">通识 MMLU</span></a></li>
-          <li><a href="#eval-sec-agent"><span class="toc-num">3</span><span class="toc-title">Agent / 工具调用</span></a></li>
+          <li><a href="#eval-sec-math500"><span class="toc-num">2</span><span class="toc-title">MATH-500</span></a></li>
+          <li><a href="#eval-sec-mmlu"><span class="toc-num">3</span><span class="toc-title">通识 MMLU</span></a></li>
+          <li><a href="#eval-sec-agent"><span class="toc-num">4</span><span class="toc-title">Agent / 工具调用</span></a></li>
         </ol>
       </nav>
 
@@ -56,6 +57,19 @@
               <p class="caption">X: checkpoint step（10–150） · Y: aime25 mean_acc（%，240 题 × n=8）。</p>
             </div>
           </section>
+        </section>
+
+        <section class="detail-sec" id="eval-sec-math500">
+          <h2 class="sec-title">MATH-500</h2>
+          <p class="sec-sub">全 step 补测 · 缺失 checkpoint 显示为断点</p>
+          <div style="margin-top:12px">
+            <h2>MATH-500（E1–E5 全 step）</h2>
+            <div class="chart-card">
+              <div class="legend" id="legend-evalfull-math500"></div>
+              <div class="chart-wrap"><canvas id="chart-evalfull-math500" height="240"></canvas><div class="tooltip" id="tip-evalfull-math500"></div></div>
+            </div>
+            <p class="caption">X: checkpoint step（10–150） · Y: MATH-500 pass@1（%）。当前已有 step50/100/150，其余 step 在空闲 GPU 上补测。</p>
+          </div>
         </section>
 
         <section class="detail-sec" id="eval-sec-mmlu">

@@ -1,9 +1,9 @@
-// ---- Evaluation results (evalscope offline, auto-synced 2026-07-25) ----
+// ---- Evaluation results (evalscope offline, auto-synced 2026-07-30) ----
 // Source: /data/lijunyi/evalscope/outputs/exp2card/<exp>_4b_<step>/*/reports/<model>/*.json
 // 评测配置: eval_exp4b.sh + verl_qwen35 vLLM 0.24；
 // aime24/aime25 temperature=0.6 top_p=0.95 max_tokens=16384 n=8（30题×n8=240 采样）；
 // mmlu_temp n=2；enable_thinking=False；batch_size=64。
-// null = 该 step 尚无对应 offline report（曲线断开）。刷新：python3 scripts/sync_4b_eval_dashboard.py
+// null = 该 step 尚无对应 offline report（曲线断开）。刷新：python3 scripts/monitoring/4b/sync_4b_eval_dashboard.py
 
 const EVAL_EASY_BOXED_STEPS = ["50", "100", "150"];
 
@@ -26,30 +26,35 @@ const EVAL_EASY_BOXED_FULL = {
     mmlu:   [91.25, 91.00, 90.52, 90.85, 90.44, 90.76, 90.84, 91.81, 91.33, 91.81, 91.82, 91.00, 91.09, 92.14, 91.65],
     aime24: [72.08, 72.50, 68.75, 62.08, 70.00, 67.08, 70.42, 72.08, 71.25, 70.00, 68.33, 67.50, 66.25, 66.25, 70.42],
     aime25: [48.34, 44.59, 50.42, 46.66, 50.00, 51.25, 58.75, 55.42, 55.42, 58.33, 56.25, 53.75, 55.84, 54.58, 57.92],
+    math500:[null, null, null, null, 94.62, null, null, null, null, 94.80, null, null, null, null, 94.32],
   },
   e2: {
     label: "E2 DAPO", color: COLORS.e2,
     mmlu:   [91.17, 90.92, 91.24, 91.08, 91.17, 91.90, 91.89, 91.57, 91.97, 92.38, 91.57, 91.82, 91.49, 91.73, 91.17],
     aime24: [67.92, 73.75, 74.17, 76.67, 72.92, 69.58, 74.58, 80.42, 77.08, 74.17, 73.75, 72.50, 74.58, 72.92, 74.58],
     aime25: [50.00, 57.08, 52.50, 50.83, 52.50, 53.33, 59.59, 62.50, 59.17, 57.09, 53.75, 54.58, 55.83, 53.33, 59.59],
+    math500:[null, null, null, null, 94.42, null, null, null, null, 95.38, null, null, null, null, 95.55],
   },
   e3: {
     label: "E3 Dr.GRPO", color: COLORS.e3,
     mmlu:   [90.52, 91.00, 90.03, 90.19, 90.84, 91.41, 90.84, 92.22, 91.33, 91.49, 91.57, 92.47, 92.22, 92.30, 91.97],
     aime24: [67.08, 68.33, 70.83, 72.92, 73.75, 74.17, 73.33, 70.00, 70.42, 73.75, 72.50, 75.00, 74.58, 73.33, 71.67],
     aime25: [51.25, 49.17, 50.41, 49.59, 55.00, 55.42, 56.25, 56.25, 58.75, 49.59, 50.00, 57.08, 57.92, 57.08, 55.00],
+    math500:[null, null, null, null, 94.35, null, null, null, null, 94.50, null, null, null, null, 94.75],
   },
   e4: {
     label: "E4 RLOO", color: COLORS.e4,
     mmlu:   [90.68, 89.95, 91.16, 90.36, 90.76, 91.00, 91.17, 91.65, 90.76, 91.33, 90.52, 91.00, 91.65, 91.01, 91.89],
     aime24: [67.50, 70.83, 64.17, 72.08, 70.83, 72.08, 62.50, 62.92, 72.50, 72.08, 60.42, 69.17, 73.75, 76.67, 76.25],
     aime25: [51.25, 50.42, 47.92, 52.50, 49.17, 51.67, 44.17, 46.67, 54.59, 50.00, 42.91, 49.59, 51.25, 55.84, 52.92],
+    math500:[null, null, null, null, 93.92, null, null, null, null, 94.55, null, null, null, null, 94.75],
   },
   e5: {
     label: "E5 REINFORCE++", color: COLORS.e5,
     mmlu:   [90.27, 90.92, 90.92, 90.68, 91.24, 91.32, 90.36, 91.01, 91.09, 91.49, 90.76, 91.49, 91.01, 91.41, 91.25],
     aime24: [67.50, 69.17, 70.42, 71.25, 72.92, 73.75, 73.75, 74.58, 75.83, 77.92, 75.00, 75.42, 75.00, 78.75, 77.08],
     aime25: [46.25, 46.67, 47.08, 50.83, 52.50, 55.84, 52.50, 57.08, 54.59, 55.84, 57.50, 56.25, 58.34, 52.92, 57.50],
+    math500:[null, null, null, null, 95.15, null, null, null, null, 95.13, null, null, null, null, 94.40],
   },
 };
 

@@ -1,3 +1,8 @@
+// Teal dashed overlay for S3 stage (mirrors 2B dashboard).
+function s3Series(name, data) {
+  return { name, data, color: COLORS.s3, dash: [6, 4] };
+}
+
 // Renders a clickable legend bound to a chart: clicking a series name toggles
 // it on/off and redraws with only the still-selected series (ECharts-style
 // legend select). `draw(visibleSeries)` is called once up front and again on
@@ -94,10 +99,11 @@ function drawLineChart(canvasId, tipId, { categories, series, yMin, yMax, valueS
     if (c) ctx.fillText(c, xAt(i), padT + plotH + 6);
   });
 
-  // series lines
+  // series lines (optional s.dash = [6, 4] for dashed overlay, e.g. S3)
   series.forEach(s => {
     ctx.strokeStyle = s.color;
     ctx.lineWidth = 2;
+    ctx.setLineDash(s.dash || []);
     ctx.beginPath();
     let penDown = false;
     s.data.forEach((v, i) => {
@@ -106,12 +112,13 @@ function drawLineChart(canvasId, tipId, { categories, series, yMin, yMax, valueS
       if (!penDown) { ctx.moveTo(x, y); penDown = true; } else ctx.lineTo(x, y);
     });
     ctx.stroke();
+    ctx.setLineDash([]);
     // markers so isolated points (surrounded by gaps) stay visible
     s.data.forEach((v, i) => {
       if (v == null) return;
       ctx.beginPath();
       ctx.fillStyle = s.color;
-      ctx.arc(xAt(i), yAt(v), 2.4, 0, Math.PI * 2);
+      ctx.arc(xAt(i), yAt(v), s.dash ? 2.0 : 2.4, 0, Math.PI * 2);
       ctx.fill();
     });
   });
@@ -257,6 +264,85 @@ function render() {
     colors: [COLORS.e1, COLORS.e2, COLORS.e3, COLORS.e4, COLORS.e5],
     valueSuffix: "h", height: 220,
   });
+
+  // ---- S3（独立对比图；有数据的实验才入图）----
+  const s3PassLegend = document.getElementById("legend-s3-pass");
+  if (!s3PassLegend || typeof S3_E1_PASS_MA === "undefined") return;
+
+  const s3Pass = [];
+  if (typeof S3_E1_PASS_MA !== "undefined") s3Pass.push({ name: "S3 E1 GRPO", data: S3_E1_PASS_MA, color: COLORS.e1 });
+  if (typeof S3_E2_PASS_MA !== "undefined") s3Pass.push({ name: "S3 E2 DAPO", data: S3_E2_PASS_MA, color: COLORS.e2 });
+  if (typeof S3_E3_PASS_MA !== "undefined") s3Pass.push({ name: "S3 E3 Dr.GRPO", data: S3_E3_PASS_MA, color: COLORS.e3 });
+  if (typeof S3_E4_PASS_MA !== "undefined") s3Pass.push({ name: "S3 E4 RLOO", data: S3_E4_PASS_MA, color: COLORS.e4 });
+  if (typeof S3_E5_PASS_MA !== "undefined") s3Pass.push({ name: "S3 E5 REINFORCE++", data: S3_E5_PASS_MA, color: COLORS.e5 });
+  if (s3Pass.length) {
+    renderLegend(s3PassLegend, s3Pass, (visible) => drawLineChart("chart-s3-pass", "tip-s3-pass", {
+      categories: STEP_CATS,
+      series: visible,
+      yMin: 0, yMax: 80, valueSuffix: "%", height: 280,
+    }));
+  }
+
+  const s3RaccLegend = document.getElementById("legend-s3-racc");
+  if (s3RaccLegend && typeof S3_E2_ROLLOUT_ACC_MA !== "undefined") {
+    drawLineChart("chart-s3-racc", "tip-s3-racc", {
+      categories: STEP_CATS,
+      series: [{ name: "S3 E2 DAPO", data: S3_E2_ROLLOUT_ACC_MA, color: COLORS.e2 }],
+      yMin: 0, yMax: 80, valueSuffix: "%", height: 280,
+    });
+  }
+
+  const s3Len = [];
+  if (typeof S3_E1_LEN !== "undefined") s3Len.push({ name: "S3 E1 GRPO", data: S3_E1_LEN, color: COLORS.e1 });
+  if (typeof S3_E2_LEN !== "undefined") s3Len.push({ name: "S3 E2 DAPO", data: S3_E2_LEN, color: COLORS.e2 });
+  if (typeof S3_E3_LEN !== "undefined") s3Len.push({ name: "S3 E3 Dr.GRPO", data: S3_E3_LEN, color: COLORS.e3 });
+  if (typeof S3_E4_LEN !== "undefined") s3Len.push({ name: "S3 E4 RLOO", data: S3_E4_LEN, color: COLORS.e4 });
+  if (typeof S3_E5_LEN !== "undefined") s3Len.push({ name: "S3 E5 REINFORCE++", data: S3_E5_LEN, color: COLORS.e5 });
+  if (s3Len.length && document.getElementById("legend-s3-len")) {
+    renderLegend(document.getElementById("legend-s3-len"), s3Len, (visible) => drawLineChart("chart-s3-len", "tip-s3-len", {
+      categories: STEP_CATS,
+      series: visible,
+      valueSuffix: " tok", height: 240,
+      referenceLines: [{ value: 16384, label: "16K cap", tone: "danger" }],
+    }));
+  }
+
+  const s3Ent = [];
+  if (typeof S3_E1_ENTROPY !== "undefined") s3Ent.push({ name: "S3 E1 GRPO", data: S3_E1_ENTROPY, color: COLORS.e1 });
+  if (typeof S3_E2_ENTROPY !== "undefined") s3Ent.push({ name: "S3 E2 DAPO", data: S3_E2_ENTROPY, color: COLORS.e2 });
+  if (typeof S3_E3_ENTROPY !== "undefined") s3Ent.push({ name: "S3 E3 Dr.GRPO", data: S3_E3_ENTROPY, color: COLORS.e3 });
+  if (typeof S3_E4_ENTROPY !== "undefined") s3Ent.push({ name: "S3 E4 RLOO", data: S3_E4_ENTROPY, color: COLORS.e4 });
+  if (typeof S3_E5_ENTROPY !== "undefined") s3Ent.push({ name: "S3 E5 REINFORCE++", data: S3_E5_ENTROPY, color: COLORS.e5 });
+  if (s3Ent.length && document.getElementById("legend-s3-ent")) {
+    renderLegend(document.getElementById("legend-s3-ent"), s3Ent, (visible) => drawLineChart("chart-s3-ent", "tip-s3-ent", {
+      categories: STEP_CATS,
+      series: visible,
+      height: 240,
+    }));
+  }
+
+  const s3Grad = [];
+  if (typeof S3_E1_GRAD !== "undefined") s3Grad.push({ name: "S3 E1 GRPO", data: S3_E1_GRAD, color: COLORS.e1 });
+  if (typeof S3_E2_GRAD !== "undefined") s3Grad.push({ name: "S3 E2 DAPO", data: S3_E2_GRAD, color: COLORS.e2 });
+  if (typeof S3_E3_GRAD !== "undefined") s3Grad.push({ name: "S3 E3 Dr.GRPO", data: S3_E3_GRAD, color: COLORS.e3 });
+  if (typeof S3_E4_GRAD !== "undefined") s3Grad.push({ name: "S3 E4 RLOO", data: S3_E4_GRAD, color: COLORS.e4 });
+  if (typeof S3_E5_GRAD !== "undefined") s3Grad.push({ name: "S3 E5 REINFORCE++", data: S3_E5_GRAD, color: COLORS.e5 });
+  if (s3Grad.length && document.getElementById("legend-s3-grad")) {
+    renderLegend(document.getElementById("legend-s3-grad"), s3Grad, (visible) => drawLineChart("chart-s3-grad", "tip-s3-grad", {
+      categories: STEP_CATS,
+      series: visible,
+      height: 220,
+    }));
+  }
+
+  if (typeof S3_DURATION_CATS !== "undefined") {
+    drawBarChart("chart-s3-dur", "tip-s3-dur", {
+      categories: S3_DURATION_CATS,
+      data: S3_DURATION_H,
+      colors: S3_DURATION_COLORS,
+      valueSuffix: "h", height: 220,
+    });
+  }
 }
 
 function movingAvg(xs, w) {
@@ -293,46 +379,71 @@ function fillExpStats(key, e) {
 
 function renderExpPanel(key) {
   const e = EXP[key];
+  const s = EXP["s3_" + key] || null;
   fillExpStats(key, e);
 
   const passLegend = document.getElementById(`legend-${key}-pass`);
   const passMA = movingAvg(e.pass, 5);
+  const allPass = e.pass.filter(v => v != null);
+  if (s) allPass.push(...s.pass.filter(v => v != null));
+  const passMax = allPass.length ? Math.max(...allPass) : 100;
+  const passMin = allPass.length ? Math.min(...allPass) : 60;
+  const passYMax = Math.min(100, Math.ceil((passMax + 5) / 5) * 5);
+  const passYMin = s ? Math.max(0, Math.floor((passMin - 5) / 5) * 5) : 60;
   if (passLegend) {
-    renderLegend(passLegend, [
-      { name: "pass / step", data: e.pass, color: COLORS.neutral },
-      { name: "5-step MA", data: passMA, color: e.color },
-    ], (visible) => drawLineChart(`chart-${key}-pass`, `tip-${key}-pass`, {
+    const items = [
+      { name: "Easy-Boxed", data: passMA, color: e.color },
+    ];
+    if (s) items.push(s3Series("S3", movingAvg(s.pass, 5)));
+    renderLegend(passLegend, items, (visible) => drawLineChart(`chart-${key}-pass`, `tip-${key}-pass`, {
       categories: e.cats,
       series: visible,
-      yMin: 60, yMax: 100, valueSuffix: "%", height: 240,
+      yMin: passYMin, yMax: passYMax, valueSuffix: "%", height: 240,
     }));
   } else {
+    const items = [{ name: e.label + " pass rate", data: e.pass, color: e.color }];
+    if (s) items.push(s3Series("S3 pass", s.pass));
     drawLineChart(`chart-${key}-pass`, `tip-${key}-pass`, {
       categories: e.cats,
-      series: [{ name: e.label + " pass rate", data: e.pass, color: e.color }],
-      yMin: 60, yMax: 100, valueSuffix: "%", height: 200,
+      series: items,
+      yMin: passYMin, yMax: passYMax, valueSuffix: "%", height: 200,
     });
   }
 
-  drawLineChart(`chart-${key}-len`, `tip-${key}-len`, {
-    categories: e.cats,
-    series: [{ name: e.label + " length", data: e.len, color: e.color }],
-    valueSuffix: " tok", height: 200,
-    referenceLines: [{ value: 16384, label: "16K cap", tone: "danger" }],
-  });
+  if (e.rolloutAcc && e.rolloutAcc.length && document.getElementById(`chart-${key}-racc`)) {
+    const raccItems = [{ name: "Easy-Boxed", data: movingAvg(e.rolloutAcc, 5), color: e.color }];
+    if (s && s.rolloutAcc) raccItems.push(s3Series("S3", movingAvg(s.rolloutAcc, 5)));
+    drawLineChart(`chart-${key}-racc`, `tip-${key}-racc`, {
+      categories: e.cats, series: raccItems,
+      yMin: 0, yMax: 100, valueSuffix: "%", height: 240,
+    });
+  }
+
+  {
+    const items = [{ name: "Easy-Boxed", data: e.len, color: e.color }];
+    if (s) items.push(s3Series("S3", s.len));
+    drawLineChart(`chart-${key}-len`, `tip-${key}-len`, {
+      categories: e.cats,
+      series: items,
+      valueSuffix: " tok", height: 200,
+      referenceLines: [{ value: 16384, label: "16K cap", tone: "danger" }],
+    });
+  }
 
   if (e.trunc && document.getElementById(`chart-${key}-trunc`)) {
+    const items = [{ name: "Easy-Boxed clip@16K", data: e.trunc, color: e.color }];
+    if (s && s.trunc) items.push(s3Series("S3 clip@16K", s.trunc));
     drawLineChart(`chart-${key}-trunc`, `tip-${key}-trunc`, {
-      categories: e.cats,
-      series: [{ name: "clip@16K", data: e.trunc, color: COLORS.e2 }],
+      categories: e.cats, series: items,
       valueSuffix: "%", height: 200, yMin: 0,
     });
   }
 
   if (e.promptLen && document.getElementById(`chart-${key}-promptlen`)) {
+    const items = [{ name: "Easy-Boxed", data: e.promptLen, color: e.color }];
+    if (s) items.push(s3Series("S3", s.promptLen));
     drawLineChart(`chart-${key}-promptlen`, `tip-${key}-promptlen`, {
-      categories: e.cats,
-      series: [{ name: e.label + " prompt length", data: e.promptLen, color: e.color }],
+      categories: e.cats, series: items,
       valueSuffix: " tok", height: 200,
     });
   }
@@ -340,88 +451,102 @@ function renderExpPanel(key) {
   const lossLegend = document.getElementById(`legend-${key}-loss`);
   const lossMA = movingAvg(e.loss, 5);
   if (lossLegend) {
-    renderLegend(lossLegend, [
+    const items = [
       { name: "actor/loss", data: e.loss, color: COLORS.neutral },
-      { name: "5-step MA", data: lossMA, color: COLORS.e1 },
-    ], (visible) => drawLineChart(`chart-${key}-loss`, `tip-${key}-loss`, {
+      { name: "5-step MA", data: lossMA, color: e.color },
+    ];
+    renderLegend(lossLegend, items, (visible) => drawLineChart(`chart-${key}-loss`, `tip-${key}-loss`, {
       categories: e.cats,
       series: visible,
       height: 220,
     }));
   } else {
+    const items = [{ name: e.label + " actor/loss", data: e.loss, color: e.color }];
+    if (s) items.push(s3Series("S3 loss", s.loss));
     drawLineChart(`chart-${key}-loss`, `tip-${key}-loss`, {
-      categories: e.cats,
-      series: [{ name: e.label + " actor/loss", data: e.loss, color: e.color }],
-      height: 200,
+      categories: e.cats, series: items, height: 200,
     });
   }
 
-  drawLineChart(`chart-${key}-ent`, `tip-${key}-ent`, {
-    categories: e.cats,
-    series: [{ name: e.label + " entropy", data: e.ent, color: e.color }],
-    height: 200,
-  });
+  {
+    const items = [{ name: "Easy-Boxed entropy", data: e.ent, color: e.color }];
+    if (s) items.push(s3Series("S3 entropy", s.ent));
+    drawLineChart(`chart-${key}-ent`, `tip-${key}-ent`, {
+      categories: e.cats, series: items, height: 200,
+    });
+  }
 
   if (e.klLoss && e.klLoss.some((x) => x != null) && document.getElementById(`chart-${key}-klloss`)) {
+    const items = [{ name: "kl_loss ×100", data: e.klLoss, color: COLORS.danger }];
+    if (s && s.klLoss && s.klLoss.some(x => x != null)) items.push(s3Series("S3 kl_loss ×100", s.klLoss));
     drawLineChart(`chart-${key}-klloss`, `tip-${key}-klloss`, {
-      categories: e.cats,
-      series: [{ name: "kl_loss \u00d7100", data: e.klLoss, color: COLORS.danger }],
-      height: 200, yMin: 0,
+      categories: e.cats, series: items, height: 200, yMin: 0,
     });
   }
 
-  drawLineChart(`chart-${key}-grad`, `tip-${key}-grad`, {
-    categories: e.cats,
-    series: [{ name: e.label + " grad_norm", data: e.grad, color: e.color }],
-    height: 200,
-  });
-  drawLineChart(`chart-${key}-ppokl`, `tip-${key}-ppokl`, {
-    categories: e.cats,
-    series: [{ name: e.label + " ppo_kl \u00d71e5", data: e.ppokl, color: e.color }],
-    height: 200,
-    referenceLines: [{ value: 0, label: "0", tone: "neutral" }],
-  });
+  {
+    const items = [{ name: "Easy-Boxed grad_norm", data: e.grad, color: e.color }];
+    if (s) items.push(s3Series("S3 grad_norm", s.grad));
+    drawLineChart(`chart-${key}-grad`, `tip-${key}-grad`, {
+      categories: e.cats, series: items, height: 200,
+    });
+  }
+  {
+    const items = [{ name: e.label + " ppo_kl ×1e5", data: e.ppokl, color: e.color }];
+    if (s) items.push(s3Series("S3 ppo_kl ×1e5", s.ppokl));
+    drawLineChart(`chart-${key}-ppokl`, `tip-${key}-ppokl`, {
+      categories: e.cats, series: items, height: 200,
+      referenceLines: [{ value: 0, label: "0", tone: "neutral" }],
+    });
+  }
   const clipSeries = [{ name: "pg_clipfrac", data: e.clip, color: e.color }];
   if (e.clipLower) clipSeries.push({ name: "pg_clipfrac_lower", data: e.clipLower, color: COLORS.danger });
+  if (s) clipSeries.push(s3Series("S3 clipfrac", s.clip));
+  if (s && s.clipLower) clipSeries.push({ name: "S3 clipfrac_lower", data: s.clipLower, color: "#2dd4bf", dash: [6, 4] });
   drawLineChart(`chart-${key}-clip`, `tip-${key}-clip`, {
     categories: e.cats,
     series: clipSeries,
     valueSuffix: "%", height: 200, yMin: 0,
   });
-  drawLineChart(`chart-${key}-corr`, `tip-${key}-corr`, {
-    categories: e.cats,
-    series: [{ name: "(1\u2212corr)\u00d71e4", data: e.pearsonDev, color: e.color }],
-    height: 200, yMin: 0,
-  });
+  {
+    const items = [{ name: "(1−corr)×1e4", data: e.pearsonDev, color: e.color }];
+    if (s) items.push(s3Series("S3 (1−corr)×1e4", s.pearsonDev));
+    drawLineChart(`chart-${key}-corr`, `tip-${key}-corr`, {
+      categories: e.cats, series: items, height: 200, yMin: 0,
+    });
+  }
 
   if (e.rolloutKl && document.getElementById(`chart-${key}-rollkl`)) {
+    const items = [{ name: "rollout_corr/kl ×1e4", data: e.rolloutKl, color: COLORS.e3 }];
+    if (s && s.rolloutKl) items.push(s3Series("S3 rollout_kl ×1e4", s.rolloutKl));
     drawLineChart(`chart-${key}-rollkl`, `tip-${key}-rollkl`, {
-      categories: e.cats,
-      series: [{ name: "rollout_corr/kl \u00d71e4", data: e.rolloutKl, color: COLORS.e3 }],
-      height: 200, yMin: 0,
+      categories: e.cats, series: items, height: 200, yMin: 0,
     });
   }
   if (e.stepMin && document.getElementById(`chart-${key}-stepmin`)) {
+    const items = [{ name: "wall time / step", data: e.stepMin, color: COLORS.neutral }];
+    if (s && s.stepMin) items.push(s3Series("S3", s.stepMin));
     drawLineChart(`chart-${key}-stepmin`, `tip-${key}-stepmin`, {
-      categories: e.cats,
-      series: [{ name: "wall time / step", data: e.stepMin, color: COLORS.neutral }],
+      categories: e.cats, series: items,
       valueSuffix: " min", height: 200, yMin: 0,
     });
   }
   if (e.mfu && document.getElementById(`chart-${key}-mfu`)) {
     const avgMfu = meanOf(e.mfu);
+    const items = [{ name: "perf/mfu/actor", data: e.mfu, color: COLORS.e1 }];
+    if (s && s.mfu) items.push(s3Series("S3 MFU", s.mfu));
     drawLineChart(`chart-${key}-mfu`, `tip-${key}-mfu`, {
-      categories: e.cats,
-      series: [{ name: "perf/mfu/actor", data: e.mfu, color: COLORS.e1 }],
+      categories: e.cats, series: items,
       valueSuffix: "%", height: 200,
       referenceLines: avgMfu != null ? [{ value: avgMfu, label: `mean ${avgMfu.toFixed(1)}%`, tone: "neutral" }] : [],
     });
   }
   if (e.throughput && document.getElementById(`chart-${key}-thru`)) {
     const avgThru = meanOf(e.throughput);
+    const items = [{ name: "perf/throughput", data: e.throughput, color: COLORS.neutral }];
+    if (s && s.throughput) items.push(s3Series("S3 throughput", s.throughput));
     drawLineChart(`chart-${key}-thru`, `tip-${key}-thru`, {
-      categories: e.cats,
-      series: [{ name: "perf/throughput", data: e.throughput, color: COLORS.neutral }],
+      categories: e.cats, series: items,
       valueSuffix: " tok/s", height: 200,
       referenceLines: avgThru != null ? [{ value: avgThru, label: `mean ${Math.round(avgThru)}`, tone: "neutral" }] : [],
     });
@@ -548,6 +673,16 @@ function renderExpPanel(key) {
         valueSuffix: "%", yMin: 40, yMax: 85, height: 200,
       }));
     }
+    const mathLegendEl = document.getElementById(`legend-${key}-eval-math500`);
+    if (mathLegendEl && ev.math500) {
+      renderLegend(mathLegendEl, [
+        { name: "math_500", data: ev.math500, color: ev.color },
+      ], (visible) => drawLineChart(`chart-${key}-eval-math500`, `tip-${key}-eval-math500`, {
+        categories: EVAL_EASY_BOXED_FULL_STEPS,
+        series: visible,
+        valueSuffix: "%", yMin: 0, yMax: 100, height: 200,
+      }));
+    }
   }
 
   // ---- Agent / 工具调用（本实验 Easy-Boxed：BFCL-v3 + tau-bench）----
@@ -618,6 +753,15 @@ function renderEvalPanel() {
         series: visible,
         valueSuffix: "%", yMin: 40, yMax: 65, height: 240,
       }));
+    const mathLegendEl = document.getElementById("legend-evalfull-math500");
+    if (mathLegendEl) {
+      renderLegend(mathLegendEl, fullLegendItems("math500"),
+        (visible) => drawLineChart("chart-evalfull-math500", "tip-evalfull-math500", {
+          categories: EVAL_EASY_BOXED_FULL_STEPS,
+          series: visible,
+          valueSuffix: "%", yMin: 0, yMax: 100, height: 240,
+        }));
+    }
   }
 
   // ---- Agent / 工具调用能力（BFCL-v3 + tau-bench）：每个 index 一条曲线 ----
