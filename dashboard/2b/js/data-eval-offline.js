@@ -114,22 +114,22 @@ const EVAL_STAGE_S3_150 = {
     aime24: "/data/juicefs-white/5281-gpu-a100/lijunyi/evalscope/outputs/exp2card/e1_grpo_2b_s3_150/20260726_084042/reports/e1_grpo_2b_s3_150/aime24.json",
     aime25: "/data/juicefs-white/5281-gpu-a100/lijunyi/evalscope/outputs/exp2card/e1_grpo_2b_s3_150/20260726_084042/reports/e1_grpo_2b_s3_150/aime25.json",
     mmlu_temp: "/data/juicefs-white/5281-gpu-a100/lijunyi/evalscope/outputs/exp2card/e1_grpo_2b_s3_150/20260726_091746/reports/e1_grpo_2b_s3_150/mmlu.json",
-    bfcl_v3: "/data/juicefs-white/5281-gpu-a100/lijunyi/evalscope/outputs/agent2/20260730_170107_bfcl_rescore_v1/reports/e1_grpo_2b_s3_150/bfcl_v3.json",
+    bfcl_v3: "/data/juicefs-white/5281-gpu-a100/lijunyi/evalscope/outputs/agent2/20260731_200401/reports/e1_grpo_2b_s3_150/bfcl_v3.json",
     tau_bench: "/data/juicefs-white/5281-gpu-a100/lijunyi/evalscope/outputs/agent2/20260726_112538/reports/e1_grpo_2b_s3_150/tau_bench.json",
   },
   rows: [
     { task: "aime24", metric: "AveragePass@1", num: 30, score: 23.75, detail: "default 23.75" },
     { task: "aime25", metric: "AveragePass@1", num: 30, score: 25.84, detail: "AIME2025-I 27.50 / AIME2025-II 24.17" },
     { task: "mmlu_temp", metric: "AverageAccuracy", num: 617, score: 76.98, detail: "anatomy 63.70 / medical_genetics 76.50 / high_school_mathematics 89.81 / machine_learning 62.50" },
-    { task: "BFCL-v3", metric: "AverageAccuracy", num: 288, score: 38.90, detail: "limit=30/subset；irrelevance 100.00，其余子集 0.00" },
+    { task: "BFCL-v3", metric: "AverageAccuracy", num: 288, score: 56.50, detail: "limit=30/subset；irrelevance 100.00，其余子集 0.00" },
     { task: "tau_bench", metric: "Pass^1", num: 40, score: 55.00, detail: "retail 65.00 / airline 45.00" },
   ],
 };
 
-// ---- Agent BFCL / tool-use benchmarks (evalscope, auto-synced 2026-07-31) ----
+// ---- Agent BFCL / tool-use benchmarks (evalscope, auto-synced 2026-08-01) ----
 // Source: /data/juicefs-white/5281-gpu-a100/lijunyi/evalscope/outputs/agent2/<ts>/reports/<exp>_2b[_s3]_<step>/{bfcl_v3,tau_bench}.json
 // Coverage Easy: bfcl=0/75 · tau=0/75 · steps with any report: none
-// Coverage S3: bfcl=75/75 · tau=75/75 · steps with any report: 10/20/30/40/50/60/70/80/90/100/110/120/130/140/150
+// Coverage S3: bfcl=50/75 · tau=75/75 · steps with any report: 10/20/30/40/50/60/70/80/90/100/110/120/130/140/150
 // BFCL-v3: 10 subset ×30；bfcl=OVERALL（或缺省 top-level）；bfcl_mt=MULTI_TURN。
 // tau-bench: retail+airline×20，user-sim=gpt-5p5-apipro。null = 尚未评测。
 // Refresh: python3 scripts/monitoring/2b/sync_2b_agent_dashboard.py
@@ -176,32 +176,32 @@ const AGENT_S3_RAW_STEPS = ["10", "20", "30", "40", "50", "60", "70", "80", "90"
 const AGENT_S3_RAW = {
   e1: {
     label: "E1 GRPO S3",       color: COLORS.e1,
-    bfcl:   [39.6, 38.2, 39.2, 37.5, 38.9, 38.9, 39.6, 37.9, 37.8, 39.9, 36.1, 39.6, 39.2, 38.5, 38.9],
-    bfcl_mt:[0.0, 7.5, 7.5, 9.2, 0.0, 9.2, 0.0, 7.5, 0.0, 9.2, 0.0, 0.0, 0.0, 0.0, 0.0],
+    bfcl:   [54.5, 38.2, 39.2, 37.5, 51.2, 38.9, 52.4, 37.9, 54.2, 39.9, 55.5, 56.7, 53.1, 55.4, 56.5],
+    bfcl_mt:[10.0, 7.5, 7.5, 9.2, 8.3, 9.2, 6.7, 7.5, 10.6, 9.2, 11.7, 10.0, 11.1, 9.4, 17.2],
     tau:    [32.5, 40.0, 35.0, 35.0, 37.5, 47.5, 40.0, 40.0, 37.5, 40.0, 55.0, 35.0, 42.5, 50.0, 55.0],
   },
   e2: {
     label: "E2 DAPO S3",       color: COLORS.e2,
-    bfcl:   [39.6, 39.9, 42.4, 40.3, 40.6, 38.9, 41.7, 38.2, 38.9, 38.9, 38.2, 39.6, 38.9, 38.2, 38.5],
-    bfcl_mt:[0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+    bfcl:   [55.4, 56.6, 54.5, 51.4, 56.7, 57.7, 54.7, 56.6, 56.9, 51.8, 54.1, 55.3, 59.6, 52.6, 54.2],
+    bfcl_mt:[7.8, 10.6, 7.8, 6.1, 11.7, 5.6, 6.1, 7.2, 10.6, 7.8, 11.1, 8.9, 13.3, 7.2, 10.0],
     tau:    [35.0, 50.0, 27.5, 42.5, 45.0, 40.0, 37.5, 37.5, 40.0, 40.0, 40.0, 40.0, 45.0, 40.0, 42.5],
   },
   e3: {
     label: "E3 Dr.GRPO S3",    color: COLORS.e3,
-    bfcl:   [40.3, 39.9, 41.0, 41.3, 41.7, 41.7, 40.6, 41.7, 42.0, 43.1, 39.9, 43.4, 40.6, 43.1, 43.1],
-    bfcl_mt:[0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+    bfcl:   [53.4, 52.1, 54.5, 51.1, 54.2, 51.2, 53.6, 52.0, null, 51.9, 53.4, 52.1, 57.9, 53.3, 56.5],
+    bfcl_mt:[8.3, 9.4, 9.4, 11.7, 8.9, 11.7, 7.8, 7.8, 8.3, 7.2, 12.2, 13.9, 13.3, 5.6, 9.4],
     tau:    [27.5, 35.0, 32.5, 35.0, 42.5, 52.5, 50.0, 32.5, 42.5, 52.5, 52.5, 40.0, 42.5, 37.5, 40.0],
   },
   e4: {
     label: "E4 RLOO S3",       color: COLORS.e4,
-    bfcl:   [39.9, 41.0, 39.6, 39.9, 41.3, 39.6, 39.6, 41.3, 39.6, 39.9, 40.6, 39.2, 40.3, 41.0, 41.7],
-    bfcl_mt:[0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+    bfcl:   [49.4, 53.1, null, null, null, null, null, null, null, null, null, null, null, null, null],
+    bfcl_mt:[9.4, 10.0, null, null, null, null, null, null, null, null, null, null, null, null, null],
     tau:    [30.0, 50.0, 50.0, 32.5, 32.5, 37.5, 42.5, 40.0, 40.0, 42.5, 50.0, 42.5, 47.5, 37.5, 37.5],
   },
   e5: {
     label: "E5 REINFORCE++ S3", color: COLORS.e5,
-    bfcl:   [38.9, 40.6, 42.7, 42.4, 41.3, 39.9, 42.0, 41.7, 42.0, 43.8, 42.4, 39.2, 37.1, 39.6, 36.1],
-    bfcl_mt:[0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 9.2, 5.0, 10.8, 5.0],
+    bfcl:   [null, null, null, null, null, null, null, null, null, null, null, 39.2, 37.1, 39.6, 36.1],
+    bfcl_mt:[null, null, null, null, null, null, null, null, null, null, null, 9.2, 5.0, 10.8, 5.0],
     tau:    [37.5, 57.5, 42.5, 35.0, 37.5, 42.5, 37.5, 52.5, 35.0, 45.0, 47.5, 47.5, 25.0, 32.5, 52.5],
   },
 };
