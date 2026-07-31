@@ -1,7 +1,8 @@
-// S3 overlay series: teal + dashed so it never collides with experiment pinks
-// (especially E5 #db2777) or danger red on Easy-Boxed vs S3 dual charts.
-function s3Series(name, data) {
-  return { name, data, color: COLORS.s3, dash: [6, 4] };
+// S3 overlay: dashed. Prefer the experiment color so multi-exp charts stay
+// distinguishable; fall back to teal only when no per-exp color is given
+// (single-exp detail pages overlay one Easy solid vs one S3 dashed).
+function s3Series(name, data, color) {
+  return { name, data, color: color || COLORS.s3, dash: [6, 4] };
 }
 
 function getCssVar(name, fallback) {
@@ -860,14 +861,14 @@ function renderEvalPanel() {
   const src = (typeof EVAL_EASY_BOXED_FULL !== "undefined") ? EVAL_EASY_BOXED_FULL : EVAL_EASY_BOXED;
   const s3src = (typeof EVAL_FULL_S3 !== "undefined") ? EVAL_FULL_S3 : {};
 
-  // Easy-Boxed（Stage-1）实线用实验色；S3 统一 teal 虚线，避免与 E5 粉红实线撞色。
+  // Easy-Boxed 实线 / S3 同色虚线（按实验着色，E1–E5 可区分）。
   function seriesWithS3(metric) {
     const items = [];
     EVAL_EASY_BOXED_ORDER.forEach((k) => {
       const s3ev = s3src[k];
       const hasS3 = s3ev && s3ev[metric] && s3ev[metric].some((v) => v != null);
       items.push({ name: hasS3 ? `${src[k].label} (Easy-Boxed)` : src[k].label, data: src[k][metric], color: src[k].color });
-      if (hasS3) items.push(s3Series(`${src[k].label} (S3)`, s3ev[metric]));
+      if (hasS3) items.push(s3Series(`${src[k].label} (S3)`, s3ev[metric], src[k].color));
     });
     return items;
   }
@@ -968,15 +969,19 @@ function renderEvalPanel() {
     const order = (typeof AGENT_S3_ORDER !== "undefined") ? AGENT_S3_ORDER : Object.keys(AGENT_S3);
     const steps = (typeof AGENT_S3_STEPS !== "undefined") ? AGENT_S3_STEPS : EVAL_EASY_BOXED_FULL_STEPS;
     const easySrc = (typeof AGENT_EASY !== "undefined") ? AGENT_EASY : null;
-    const s3Color = getCssVar("--c-s3", COLORS.s3 || "#14b8a6");
     const hasValues = (series) => series && series.some((v) => v != null);
     const items = (dataKey) => {
       const out = [];
       order.forEach((k) => {
         const easy = easySrc && easySrc[k];
         const s3 = AGENT_S3[k];
-        if (easy && hasValues(easy[dataKey])) out.push({ name: easy.label, data: easy[dataKey], color: easy.color });
-        if (s3 && hasValues(s3[dataKey])) out.push({ name: s3.label, data: s3[dataKey], color: easySrc ? s3Color : s3.color, dash: easySrc ? [6, 5] : null });
+        const easyHas = easy && hasValues(easy[dataKey]);
+        // Keep per-exp colors so E1–E5 stay distinguishable. Dash S3 only when
+        // that exp's Easy series is also plotted (solid Easy vs dashed S3).
+        if (easyHas) out.push({ name: easy.label, data: easy[dataKey], color: easy.color });
+        if (s3 && hasValues(s3[dataKey])) {
+          out.push({ name: s3.label, data: s3[dataKey], color: s3.color, dash: easyHas ? [6, 5] : null });
+        }
       });
       return out;
     };
