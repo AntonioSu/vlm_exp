@@ -4,6 +4,15 @@ function s3Series(name, data) {
   return { name, data, color: COLORS.s3, dash: [6, 4] };
 }
 
+function getCssVar(name, fallback) {
+  try {
+    const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    return v || fallback;
+  } catch (_e) {
+    return fallback;
+  }
+}
+
 // Renders a clickable legend bound to a chart: clicking a series name toggles
 // it on/off and redraws with only the still-selected series (ECharts-style
 // legend select). A leading "隐藏全部/显示全部" button toggles every series
@@ -70,8 +79,10 @@ function yRangeFromSeries(series, { padRatio = 0.1, floor = 0, ceil = null } = {
 function drawLineChart(canvasId, tipId, { categories, series, yMin, yMax, valueSuffix = "", height = 260, referenceLines = [] }) {
   const canvas = document.getElementById(canvasId);
   const tip = document.getElementById(tipId);
+  if (!canvas) return;
   const dpr = window.devicePixelRatio || 1;
-  const cssWidth = canvas.parentElement.clientWidth;
+  let cssWidth = canvas.parentElement ? canvas.parentElement.clientWidth : 0;
+  if (cssWidth < 8) cssWidth = canvas.clientWidth || 320;
   canvas.style.height = height + "px";
   canvas.width = cssWidth * dpr;
   canvas.height = height * dpr;
@@ -796,13 +807,21 @@ function renderExpPanel(key) {
 
   // ---- Agent / 工具调用（本实验 S3：BFCL-v3 + tau-bench）----
   const agentEl = document.getElementById(`chart-${key}-agent-bfcl`);
-  if (agentEl && typeof AGENT_S3 !== "undefined" && AGENT_S3[key]) {
-    const ag = AGENT_S3[key];
-    const agSteps = (typeof AGENT_S3_STEPS !== "undefined") ? AGENT_S3_STEPS : EVAL_EASY_BOXED_FULL_STEPS;
+  if (agentEl && (typeof AGENT_EASY !== "undefined" || typeof AGENT_S3 !== "undefined")) {
+    const agSteps = (typeof AGENT_S3_STEPS !== "undefined") ? AGENT_S3_STEPS : (typeof AGENT_EASY_STEPS !== "undefined" ? AGENT_EASY_STEPS : EVAL_EASY_BOXED_FULL_STEPS);
+    const easy = (typeof AGENT_EASY !== "undefined") ? AGENT_EASY[key] : null;
+    const s3 = (typeof AGENT_S3 !== "undefined") ? AGENT_S3[key] : null;
     const drawAgent = (metric, suffix, floor, ceil) => {
       const legendEl = document.getElementById(`legend-${key}-agent-${suffix}`);
-      if (!document.getElementById(`chart-${key}-agent-${suffix}`) || !ag[metric]) return;
-      const items = [{ name: ag.label || key.toUpperCase(), data: ag[metric], color: ag.color || COLORS[key] }];
+      if (!document.getElementById(`chart-${key}-agent-${suffix}`)) return;
+      const items = [];
+      if (easy && easy[metric] && easy[metric].some((v) => v != null)) {
+        items.push({ name: easy.label || `${key.toUpperCase()} Easy`, data: easy[metric], color: easy.color || COLORS[key] });
+      }
+      if (s3 && s3[metric] && s3[metric].some((v) => v != null)) {
+        items.push({ name: s3.label || `${key.toUpperCase()} S3`, data: s3[metric], color: "#14b8a6", dash: [6, 4] });
+      }
+      if (!items.length) return;
       const draw = (visible) => {
         const [yMin, yMax] = yRangeFromSeries(visible, { floor, ceil });
         drawLineChart(`chart-${key}-agent-${suffix}`, `tip-${key}-agent-${suffix}`, {
@@ -823,6 +842,17 @@ function evalAtStep150(arr) {
   // EVAL_EASY_BOXED_STEPS last index = step 150
   const i = (typeof EVAL_EASY_BOXED_STEPS !== "undefined" ? EVAL_EASY_BOXED_STEPS.length : 15) - 1;
   return arr && arr[i] != null ? arr[i] : null;
+}
+
+function agentS3AtStep150(metricKey) {
+  if (typeof AGENT_S3 === "undefined" || typeof AGENT_S3_ORDER === "undefined") return [];
+  return AGENT_S3_ORDER.map((k) => {
+    const row = AGENT_S3[k];
+    const arr = row && row[metricKey];
+    if (!arr || !arr.length) return null;
+    const v = arr[arr.length - 1];
+    return v != null ? v : null;
+  });
 }
 
 function renderEvalPanel() {
@@ -915,13 +945,41 @@ function renderEvalPanel() {
     valueSuffix: "%", height: 200,
   });
 
-  // ---- Agent S3（BFCL-v3 + tau-bench）----
+  if (typeof AGENT_S3 !== "undefined" && document.getElementById("chart-agent-bfcl-150")) {
+    const agentOrder = (typeof AGENT_S3_ORDER !== "undefined") ? AGENT_S3_ORDER : EVAL_EASY_BOXED_ORDER;
+    const agentLabels = agentOrder.map((k) => AGENT_S3[k].label);
+    const agentColors = agentOrder.map((k) => AGENT_S3[k].color);
+    drawBarChart("chart-agent-bfcl-150", "tip-agent-bfcl-150", {
+      categories: agentLabels,
+      data: agentS3AtStep150("bfcl"),
+      colors: agentColors,
+      valueSuffix: "%", height: 200,
+    });
+    drawBarChart("chart-agent-tau-150", "tip-agent-tau-150", {
+      categories: agentLabels,
+      data: agentS3AtStep150("tau"),
+      colors: agentColors,
+      valueSuffix: "%", height: 200,
+    });
+  }
+
+  // ---- Agent（BFCL-v3 + tau-bench）----
   if (typeof AGENT_S3 !== "undefined" && document.getElementById("chart-agent-bfcl")) {
     const order = (typeof AGENT_S3_ORDER !== "undefined") ? AGENT_S3_ORDER : Object.keys(AGENT_S3);
     const steps = (typeof AGENT_S3_STEPS !== "undefined") ? AGENT_S3_STEPS : EVAL_EASY_BOXED_FULL_STEPS;
-    const items = (dataKey) => order
-      .filter((k) => AGENT_S3[k] && AGENT_S3[k][dataKey])
-      .map((k) => ({ name: AGENT_S3[k].label, data: AGENT_S3[k][dataKey], color: AGENT_S3[k].color }));
+    const easySrc = (typeof AGENT_EASY !== "undefined") ? AGENT_EASY : null;
+    const s3Color = getCssVar("--c-s3", COLORS.s3 || "#14b8a6");
+    const hasValues = (series) => series && series.some((v) => v != null);
+    const items = (dataKey) => {
+      const out = [];
+      order.forEach((k) => {
+        const easy = easySrc && easySrc[k];
+        const s3 = AGENT_S3[k];
+        if (easy && hasValues(easy[dataKey])) out.push({ name: easy.label, data: easy[dataKey], color: easy.color });
+        if (s3 && hasValues(s3[dataKey])) out.push({ name: s3.label, data: s3[dataKey], color: easySrc ? s3Color : s3.color, dash: easySrc ? [6, 5] : null });
+      });
+      return out;
+    };
     const yPad = (series, loPad, hiPad, floor, ceil) => {
       const vals = series.flatMap((s) => (s.data || []).filter((v) => v != null));
       if (!vals.length) return [floor, ceil];
@@ -930,6 +988,7 @@ function renderEvalPanel() {
       return [lo, Math.max(lo + 2, hi)];
     };
     const bfclItems = items("bfcl");
+    if (bfclItems.length && document.getElementById("legend-agent-bfcl")) {
     renderLegend(document.getElementById("legend-agent-bfcl"), bfclItems,
       (visible) => {
         const [yMin, yMax] = yPad(visible, 1, 2, 0, 60);
@@ -938,6 +997,7 @@ function renderEvalPanel() {
           valueSuffix: "%", yMin, yMax, height: 240,
         });
       });
+    }
     const mtItems = items("bfcl_mt");
     if (document.getElementById("legend-agent-mt")) {
       renderLegend(document.getElementById("legend-agent-mt"), mtItems,
