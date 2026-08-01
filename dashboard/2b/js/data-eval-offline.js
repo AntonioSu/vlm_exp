@@ -126,9 +126,9 @@ const EVAL_STAGE_S3_150 = {
   ],
 };
 
-// ---- Agent BFCL / tool-use benchmarks (evalscope, auto-synced 2026-08-01) ----
+// ---- Agent BFCL / tool-use benchmarks (evalscope, auto-synced 2026-08-02) ----
 // Source: /data/juicefs-white/5281-gpu-a100/lijunyi/evalscope/outputs/agent2/<ts>/reports/<exp>_2b[_s3]_<step>/{bfcl_v3,tau_bench}.json
-// Coverage Easy: bfcl=0/75 · tau=0/75 · steps with any report: none
+// Coverage Easy: bfcl=43/75 · tau=43/75 · steps with any report: 10/20/30/40/50/60/70/80/90/100/110/120/130/140/150
 // Coverage S3: bfcl=75/75 · tau=75/75 · steps with any report: 10/20/30/40/50/60/70/80/90/100/110/120/130/140/150
 // BFCL-v3: 10 subset ×30；bfcl=OVERALL（或缺省 top-level）；bfcl_mt=MULTI_TURN；S3 仅使用 native-FC 完整报告。
 // tau-bench: retail+airline×20，user-sim=gpt-5p5-apipro。null = 尚未评测。
@@ -139,32 +139,32 @@ const AGENT_EASY_STEPS = ["10", "20", "30", "40", "50", "60", "70", "80", "90", 
 const AGENT_EASY = {
   e1: {
     label: "E1 GRPO Easy",     color: COLORS.e1,
-    bfcl:   [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
-    bfcl_mt:[null, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
-    tau:    [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
+    bfcl:   [49.8, 53.2, null, 54.3, 48.8, 54.1, 49.6, 54.4, 51.6, 56.6, 53.3, null, 54.1, 56.9, 53.0],
+    bfcl_mt:[9.4, 5.6, null, 8.9, 5.6, 11.1, 8.9, 12.2, 7.2, 6.7, 10.0, null, 8.3, 10.0, 8.3],
+    tau:    [37.5, 50.0, 0.0, 45.0, 52.5, 57.5, 45.0, 52.5, 45.0, 55.0, 32.5, null, 50.0, 40.0, 45.0],
   },
   e2: {
     label: "E2 DAPO Easy",     color: COLORS.e2,
-    bfcl:   [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
-    bfcl_mt:[null, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
-    tau:    [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
+    bfcl:   [52.6, 55.7, 51.2, 52.3, 50.8, 52.5, 55.3, 53.1, 55.7, null, null, null, null, null, null],
+    bfcl_mt:[5.6, 13.9, 6.7, 10.0, 7.8, 10.0, 12.2, 10.0, 11.1, null, null, null, null, null, null],
+    tau:    [45.0, 52.5, 52.5, 42.5, 42.5, 42.5, 57.5, 42.5, 47.5, null, null, null, null, null, null],
   },
   e3: {
     label: "E3 Dr.GRPO Easy",  color: COLORS.e3,
-    bfcl:   [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
-    bfcl_mt:[null, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
-    tau:    [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
+    bfcl:   [null, null, null, null, null, null, null, null, 53.8, null, 57.7, 57.0, 57.6, 56.1, 54.1],
+    bfcl_mt:[null, null, null, null, null, null, null, null, 10.0, null, 12.8, 13.9, 14.4, 11.7, 9.4],
+    tau:    [null, null, null, null, null, null, null, null, 45.0, null, 65.0, 47.5, 50.0, 42.5, 52.5],
   },
   e4: {
     label: "E4 RLOO Easy",     color: COLORS.e4,
-    bfcl:   [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
-    bfcl_mt:[null, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
-    tau:    [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
+    bfcl:   [53.6, 55.0, 52.8, 55.8, 56.5, 54.3, 58.7, 54.4, 53.6, 58.4, 58.3, null, 53.6, 51.4, 54.3],
+    bfcl_mt:[10.0, 7.8, 6.7, 6.7, 12.2, 6.7, 15.6, 6.1, 6.1, 8.9, 3.9, null, 7.8, 8.9, 8.3],
+    tau:    [47.5, 40.0, 42.5, 52.5, 50.0, 42.5, 52.5, 32.5, 45.0, 60.0, 37.5, null, 35.0, 37.5, 47.5],
   },
   e5: {
     label: "E5 REINFORCE++ Easy", color: COLORS.e5,
-    bfcl:   [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
-    bfcl_mt:[null, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
+    bfcl:   [52.5, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
+    bfcl_mt:[7.2, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
     tau:    [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
   },
 };

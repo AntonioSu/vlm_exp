@@ -5,13 +5,11 @@
       <ol class="toc-list">
         <li><a href="#cmp-sec-overview"><span class="toc-num">0</span><span class="toc-title">概览</span></a></li>
         <li><a href="#cmp-sec-eb-pass"><span class="toc-num">1</span><span class="toc-title">EB · Pass</span></a></li>
-        <li><a href="#cmp-sec-eb-racc"><span class="toc-num">2</span><span class="toc-title">EB · Rollout Acc</span></a></li>
-        <li><a href="#cmp-sec-eb-len"><span class="toc-num">3</span><span class="toc-title">EB · 长度 / 熵</span></a></li>
-        <li><a href="#cmp-sec-eb-grad"><span class="toc-num">4</span><span class="toc-title">EB · Grad / 耗时</span></a></li>
-        <li><a href="#cmp-sec-s3-pass"><span class="toc-num">5</span><span class="toc-title">S3 · Pass</span></a></li>
-        <li><a href="#cmp-sec-s3-racc"><span class="toc-num">6</span><span class="toc-title">S3 · Rollout Acc</span></a></li>
-        <li><a href="#cmp-sec-s3-len"><span class="toc-num">7</span><span class="toc-title">S3 · 长度 / 熵</span></a></li>
-        <li><a href="#cmp-sec-s3-grad"><span class="toc-num">8</span><span class="toc-title">S3 · Grad / 耗时</span></a></li>
+        <li><a href="#cmp-sec-eb-len"><span class="toc-num">2</span><span class="toc-title">EB · 长度 / 熵</span></a></li>
+        <li><a href="#cmp-sec-eb-grad"><span class="toc-num">3</span><span class="toc-title">EB · Grad / 耗时</span></a></li>
+        <li><a href="#cmp-sec-s3-pass"><span class="toc-num">4</span><span class="toc-title">S3 · Pass</span></a></li>
+        <li><a href="#cmp-sec-s3-len"><span class="toc-num">5</span><span class="toc-title">S3 · 长度 / 熵</span></a></li>
+        <li><a href="#cmp-sec-s3-grad"><span class="toc-num">6</span><span class="toc-title">S3 · Grad / 耗时</span></a></li>
       </ol>
     </nav>
     <div class="detail-main">
@@ -25,19 +23,11 @@
 
       <h2 class="sec-title" style="margin-top:8px">Easy-Boxed（E1–E5）</h2>
       <section class="detail-sec" id="cmp-sec-eb-pass">
-        <h2>Pass rate 学习曲线对比（%，5-step 移动平均）</h2>
+        <h2>Pass rate 学习曲线对比（%，逐 step）</h2>
         <div class="chart-card">
           <div class="legend" id="legend-pass"></div>
           <div class="chart-wrap"><canvas id="chart-pass" height="280"></canvas><div class="tooltip" id="tip-pass"></div></div>
         </div>
-      </section>
-      <section class="detail-sec" id="cmp-sec-eb-racc">
-        <h2>E2 DAPO Rollout Sample Accuracy（%，5-step 移动平均）</h2>
-        <div class="chart-card">
-          <div class="legend" id="legend-racc"></div>
-          <div class="chart-wrap"><canvas id="chart-racc" height="280"></canvas><div class="tooltip" id="tip-racc"></div></div>
-        </div>
-        <p class="caption">DAPO 的 critic/rewards/mean 因奖励范围非 [-1,1] 导致 pass rate 失真；此处从 rollout_dump 直接统计真实正确率。</p>
       </section>
       <section class="detail-sec grid2" id="cmp-sec-eb-len">
         <div>
@@ -74,19 +64,11 @@
       <h2 class="sec-title" style="margin-top:28px">S3（E1–E5）</h2>
       <p class="tertiary">S3 数据源：logs/exp2card/e1_grpo_2b_s3 … e5_reinforce_pp_2b_s3。五组均已满 150 步（E5 的 console 日志因续训重启被覆盖，曲线改由 tensorboard/exp2card/e5_reinforce_pp_2b_s3 的 event 文件重建）。</p>
       <section class="detail-sec" id="cmp-sec-s3-pass">
-        <h2>S3 Pass rate（%，5-step 移动平均）</h2>
+        <h2>S3 Pass rate（%，逐 step）</h2>
         <div class="chart-card">
           <div class="legend" id="legend-s3-pass"></div>
           <div class="chart-wrap"><canvas id="chart-s3-pass" height="280"></canvas><div class="tooltip" id="tip-s3-pass"></div></div>
         </div>
-      </section>
-      <section class="detail-sec" id="cmp-sec-s3-racc">
-        <h2>S3 E2 DAPO Rollout Sample Accuracy（%，5-step 移动平均）</h2>
-        <div class="chart-card">
-          <div class="legend" id="legend-s3-racc"></div>
-          <div class="chart-wrap"><canvas id="chart-s3-racc" height="280"></canvas><div class="tooltip" id="tip-s3-racc"></div></div>
-        </div>
-        <p class="caption">DAPO 的 critic/rewards/mean 因奖励范围非 [-1,1] 导致 pass rate 失真；此处从 rollout_dump 直接统计真实正确率。</p>
       </section>
       <section class="detail-sec grid2" id="cmp-sec-s3-len">
         <div>
