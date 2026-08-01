@@ -1,10 +1,14 @@
 #!/usr/bin/env python3
-"""Parse multimodal train logs into dashboard/mm/js/data-m1-train.js.
+"""Parse multimodal train logs into dashboard/mm/js/data-m*-train.js.
 
 Mirrors polaris parse_4b_logs.py field set (timing / stability / efficiency)
 so the MM dashboard can show the same mid-step indices as 4B E1 GRPO.
 
   python3 scripts/analysis/gen_mm_train_dashboard_data.py
+  python3 scripts/analysis/gen_mm_train_dashboard_data.py \
+    --log-dir /data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/logs/exp2card_mm/m2_mix50_2b \
+    --output dashboard/mm/js/data-m2-train.js \
+    --var-name MM_M2_TRAIN --label 'M2 · 50% 图文' --short-label M2 --color '#059669'
 """
 
 from __future__ import annotations
@@ -18,8 +22,9 @@ from pathlib import Path
 from typing import Any
 
 VLM_EXP = Path("/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp")
+POLARIS_MM_JS = Path(__file__).resolve().parents[2] / "dashboard" / "mm" / "js"
 DEFAULT_LOG_DIR = VLM_EXP / "logs" / "exp2card_mm" / "m1_geo3k100_2b"
-DEFAULT_OUT = VLM_EXP / "dashboard" / "mm" / "js" / "data-m1-train.js"
+DEFAULT_OUT = POLARIS_MM_JS / "data-m1-train.js"
 
 NUM = r"np\.float64\(([\-\d\.eE]+)\)|np\.int32\(([\-\d\.eE]+)\)|([\-\d\.eE]+)"
 
@@ -34,7 +39,13 @@ def grab(pattern: str, line: str) -> float | None:
     return None
 
 
-def parse_logs(log_dir: Path) -> dict[str, Any] | None:
+def parse_logs(
+    log_dir: Path,
+    *,
+    label: str = "M1 · 100% Geo3K",
+    short_label: str = "M1",
+    color: str = "#d97706",
+) -> dict[str, Any] | None:
     files = sorted(glob.glob(str(log_dir / "train_*.log")))
     steps: dict[int, dict[str, float | None]] = {}
     last_progress = None
@@ -142,9 +153,9 @@ def parse_logs(log_dir: Path) -> dict[str, Any] | None:
         "generatedBy": "scripts/analysis/gen_mm_train_dashboard_data.py",
         "source": str(log_dir),
         "logFiles": [Path(f).name for f in files],
-        "label": "M1 · 100% Geo3K",
-        "shortLabel": "M1",
-        "color": "#d97706",
+        "label": label,
+        "shortLabel": short_label,
+        "color": color,
         "nSteps": n,
         "coveredSteps": ordered,
         "firstStep": ordered[0],
@@ -195,28 +206,37 @@ def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--log-dir", type=Path, default=DEFAULT_LOG_DIR)
     p.add_argument("--output", type=Path, default=DEFAULT_OUT)
+    p.add_argument("--var-name", default="MM_M1_TRAIN", help="window variable name")
+    p.add_argument("--label", default="M1 · 100% Geo3K")
+    p.add_argument("--short-label", default="M1")
+    p.add_argument("--color", default="#d97706")
     return p.parse_args()
 
 
 def main() -> None:
     args = parse_args()
-    data = parse_logs(args.log_dir)
+    data = parse_logs(
+        args.log_dir,
+        label=args.label,
+        short_label=args.short_label,
+        color=args.color,
+    )
     if data is None:
         raise SystemExit(f"No train steps found under {args.log_dir}")
     args.output.parent.mkdir(parents=True, exist_ok=True)
     body = json.dumps(data, ensure_ascii=False, indent=2)
     args.output.write_text(
-        "// ---- M1 train-log metrics (timing / stability / efficiency) ----\n"
+        f"// ---- {args.short_label} train-log metrics (timing / stability / efficiency) ----\n"
         f"// Auto-generated {data['generatedAt']} by {data['generatedBy']}\n"
         "// Refresh: python3 scripts/analysis/gen_mm_train_dashboard_data.py\n"
-        "window.MM_M1_TRAIN = "
+        f"window.{args.var_name} = "
         + body
         + ";\n",
         encoding="utf-8",
     )
     s = data["summary"]
     print(
-        f"Wrote {args.output} · steps {data['firstStep']}–{data['lastStep']} "
+        f"Wrote {args.output} · {args.var_name} · steps {data['firstStep']}–{data['lastStep']} "
         f"(n={data['nSteps']}) · elapsed={data['elapsedStr']} · "
         f"stepMin≈{s['stepMinMean']} · mfu≈{s['mfuMean']}% · thru≈{s['throughputMean']}"
     )
