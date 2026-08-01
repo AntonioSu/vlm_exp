@@ -7,6 +7,7 @@
     neutral: "#6b7280",
     m0: "#2563eb",
     m1: "#d97706",
+    m2: "#059669",
   };
 
   function drawBarChart(canvasId, tipId, { categories, data, colors, valueSuffix = "", height = 220 }) {
@@ -163,6 +164,7 @@
     series.forEach((s) => {
       ctx.strokeStyle = s.color;
       ctx.lineWidth = 2;
+      ctx.setLineDash(s.dash || []);
       ctx.beginPath();
       let penDown = false;
       s.data.forEach((v, i) => {
@@ -172,6 +174,7 @@
         else ctx.lineTo(x, y);
       });
       ctx.stroke();
+      ctx.setLineDash([]);
       s.data.forEach((v, i) => {
         if (v == null) return;
         ctx.beginPath();
@@ -427,23 +430,76 @@
     }
   }
 
-  function renderRollouts() {
-    const summary = window.MM_M1_ROLLOUT_SUMMARY;
-    if (!summary?.rows?.length) return;
+  function stepCats(n) {
+    return Array.from({ length: n }, (_, i) => {
+      const s = i + 1;
+      return s === 1 || s % 10 === 0 ? String(s) : "";
+    });
+  }
 
-    const rows = summary.rows;
-    const cats = rows.map((r, i) => (r.step % 10 === 0 || i === 0 || i === rows.length - 1 ? String(r.step) : ""));
-    const accPct = rows.map((r) => Math.round(r.accuracy * 10000) / 100);
-    const meanScore = rows.map((r) => Math.round(r.meanScore * 10000) / 10000);
-    const chars = rows.map((r) => Math.round(r.meanOutputChars));
-    const accMA = movingAverage(accPct, 5);
+  function padTo(arr, n) {
+    const out = (arr || []).slice(0, n);
+    while (out.length < n) out.push(null);
+    return out;
+  }
+
+  function rolloutBySource(summary, source) {
+    const byStep = new Map();
+    for (const r of summary?.rows || []) {
+      if (source && r.source && r.source !== source) continue;
+      byStep.set(r.step, r);
+    }
+    if (!byStep.size) return null;
+    const maxStep = Math.max(...byStep.keys());
+    const acc = [];
+    const score = [];
+    const chars = [];
+    for (let s = 1; s <= maxStep; s++) {
+      const r = byStep.get(s);
+      acc.push(r ? Math.round(r.accuracy * 10000) / 100 : null);
+      score.push(r ? Math.round(r.meanScore * 10000) / 10000 : null);
+      chars.push(r ? Math.round(r.meanOutputChars) : null);
+    }
+    return { n: maxStep, acc, score, chars };
+  }
+
+  function trainRuns() {
+    return [
+      window.MM_M1_TRAIN && { key: "m1", t: window.MM_M1_TRAIN, dash: null },
+      window.MM_M2_TRAIN && { key: "m2", t: window.MM_M2_TRAIN, dash: [6, 4] },
+    ].filter(Boolean);
+  }
+
+  function renderRollouts() {
+    const m1 = rolloutBySource(window.MM_M1_ROLLOUT_SUMMARY, "geo3k")
+      || rolloutBySource(window.MM_M1_ROLLOUT_SUMMARY, null);
+    const m2geo = rolloutBySource(window.MM_M2_ROLLOUT_SUMMARY, "geo3k");
+    const m2text = rolloutBySource(window.MM_M2_ROLLOUT_SUMMARY, "text");
+    if (!m1 && !m2geo) return;
+
+    const n = Math.max(m1?.n || 0, m2geo?.n || 0, m2text?.n || 0, 150);
+    const cats = stepCats(n);
+    const seriesAcc = [];
+    const seriesScore = [];
+    const seriesChars = [];
+
+    if (m1) {
+      seriesAcc.push({ name: "M1 Geo3K acc", data: padTo(m1.acc, n), color: COLORS.m1 });
+      seriesScore.push({ name: "M1 mean score", data: padTo(m1.score, n), color: COLORS.m1 });
+      seriesChars.push({ name: "M1 chars", data: padTo(m1.chars, n), color: COLORS.m1 });
+    }
+    if (m2geo) {
+      seriesAcc.push({ name: "M2 Geo3K acc", data: padTo(m2geo.acc, n), color: COLORS.m2, dash: [6, 4] });
+      seriesScore.push({ name: "M2 Geo3K score", data: padTo(m2geo.score, n), color: COLORS.m2, dash: [6, 4] });
+      seriesChars.push({ name: "M2 Geo3K chars", data: padTo(m2geo.chars, n), color: COLORS.m2, dash: [6, 4] });
+    }
+    if (m2text) {
+      seriesScore.push({ name: "M2 text score", data: padTo(m2text.score, n), color: "#9333ea", dash: [2, 3] });
+    }
 
     drawLineChart("chart-mm-roll-acc", "tip-mm-roll-acc", {
       categories: cats,
-      series: [
-        { name: "Geo3K train acc", data: accPct, color: COLORS.m1 },
-        { name: "5-step MA", data: accMA, color: COLORS.m0 },
-      ],
+      series: seriesAcc,
       valueSuffix: "%",
       height: 260,
       yMin: 0,
@@ -451,132 +507,125 @@
     });
     drawLineChart("chart-mm-roll-score", "tip-mm-roll-score", {
       categories: cats,
-      series: [{ name: "mean score", data: meanScore, color: COLORS.m1 }],
+      series: seriesScore,
       height: 220,
-      yMin: 0,
-      yMax: 1,
     });
     drawLineChart("chart-mm-roll-chars", "tip-mm-roll-chars", {
       categories: cats,
-      series: [{ name: "mean output chars", data: chars, color: COLORS.neutral }],
+      series: seriesChars,
       height: 220,
     });
   }
 
   function renderTrain() {
-    const t = window.MM_M1_TRAIN;
-    if (!t) return;
-    const cats = t.cats || [];
-    const color = t.color || COLORS.m1;
-    const s = t.summary || {};
-    const tm = t.timingMean || {};
+    const runs = trainRuns();
+    if (!runs.length) return;
+    const n = Math.max(...runs.map((r) => r.t.nSteps || 0), 150);
+    const cats = stepCats(n);
 
     const stats = document.getElementById("mm-train-stats");
     if (stats) {
-      stats.innerHTML = `
-        <div class="stat"><div class="stat-val">${t.elapsedStr || "—"}</div><div class="stat-label">已跑墙钟（progress bar）</div></div>
-        <div class="stat"><div class="stat-val">${s.stepMinMean != null ? s.stepMinMean + " min" : "—"}</div><div class="stat-label">mean step time</div></div>
-        <div class="stat"><div class="stat-val">${s.mfuMean != null ? s.mfuMean + "%" : "—"}</div><div class="stat-label">mean MFU</div></div>
-        <div class="stat"><div class="stat-val">${s.throughputMean != null ? s.throughputMean : "—"}</div><div class="stat-label">mean throughput tok/s</div></div>
-        <div class="stat"><div class="stat-val">${s.gradMean != null ? s.gradMean : "—"}</div><div class="stat-label">mean grad_norm</div></div>
-        <div class="stat"><div class="stat-val">${s.entLast != null ? s.entLast : "—"}</div><div class="stat-label">entropy @ last</div></div>`;
+      stats.innerHTML = runs.map(({ t }) => {
+        const s = t.summary || {};
+        const prog = t.progressDone != null ? `${t.progressDone}/${t.progressTotal}` : `${t.lastStep}/${t.nSteps}`;
+        return `
+          <div class="stat"><div class="stat-val" style="color:${t.color || COLORS.neutral}">${t.shortLabel || "?"}</div><div class="stat-label">${t.label || ""} · ${prog}</div></div>
+          <div class="stat"><div class="stat-val">${t.elapsedStr || "—"}</div><div class="stat-label">${t.shortLabel} 墙钟（末段 progress）</div></div>
+          <div class="stat"><div class="stat-val">${s.stepMinMean != null ? s.stepMinMean + " min" : "—"}</div><div class="stat-label">${t.shortLabel} mean step</div></div>
+          <div class="stat"><div class="stat-val">${s.mfuMean != null ? s.mfuMean + "%" : "—"}</div><div class="stat-label">${t.shortLabel} mean MFU</div></div>`;
+      }).join("");
     }
 
     const cap = document.getElementById("mm-train-caption");
     if (cap) {
-      const prog = t.progressDone != null ? `${t.progressDone}/${t.progressTotal}` : `${t.lastStep}/${t.nSteps}`;
-      cap.innerHTML =
-        `来源 <span class="mono">${t.source}</span> · 日志步 ${t.firstStep}–${t.lastStep}（progress ${prog}）· ` +
-        `生成 <span class="mono">${t.generatedAt}</span> / <span class="mono">${t.generatedBy}</span>。` +
-        `阶段均值：gen ${tm.gen ?? "—"}s · update_actor ${tm.update_actor ?? "—"}s · ref ${tm.ref ?? "—"}s · old_log_prob ${tm.old_log_prob ?? "—"}s。`;
+      cap.innerHTML = runs.map(({ t }) => {
+        const tm = t.timingMean || {};
+        const prog = t.progressDone != null ? `${t.progressDone}/${t.progressTotal}` : `${t.lastStep}/${t.nSteps}`;
+        return `<strong style="color:${t.color}">${t.shortLabel}</strong>：` +
+          `<span class="mono">${t.source}</span> · ${t.firstStep}–${t.lastStep}（${prog}）· ` +
+          `gen ${tm.gen ?? "—"}s / update_actor ${tm.update_actor ?? "—"}s / ref ${tm.ref ?? "—"}s`;
+      }).join("<br>") +
+        `<br>实线 = M1，虚线 = M2。生成 <span class="mono">${runs[0].t.generatedAt}</span> / <span class="mono">gen_mm_train_dashboard_data.py</span>。`;
     }
+
+    const seriesOf = (picker) => runs.map(({ t, dash }) => ({
+      name: t.shortLabel,
+      data: padTo(picker(t) || [], n),
+      color: t.color || COLORS.neutral,
+      dash,
+    }));
 
     // ---- time cost ----
     drawLineChart("chart-mm-stepmin", "tip-mm-stepmin", {
       categories: cats,
-      series: [{ name: "wall time / step", data: t.stepMin || [], color }],
+      series: seriesOf((t) => t.stepMin),
       valueSuffix: " min",
       height: 220,
-      referenceLines: s.stepMinMean != null
-        ? [{ value: s.stepMinMean, label: `mean ${s.stepMinMean}`, color: COLORS.m0 }]
-        : [],
     });
-    if (t.timing) {
-      drawLineChart("chart-mm-timing", "tip-mm-timing", {
-        categories: cats,
-        series: [
-          { name: "gen", data: t.timing.gen || [], color: "#dc2626" },
-          { name: "update_actor", data: t.timing.update_actor || [], color },
-          { name: "ref", data: t.timing.ref || [], color: "#059669" },
-          { name: "old_log_prob", data: t.timing.old_log_prob || [], color: COLORS.m0 },
-        ],
-        valueSuffix: "s",
-        height: 240,
-      });
-      drawBarChart("chart-mm-timing-mean", "tip-mm-timing-mean", {
-        categories: ["gen", "update_actor", "ref", "old_log_prob", "update_weights", "adv"],
-        data: [
-          tm.gen, tm.update_actor, tm.ref, tm.old_log_prob, tm.update_weights, tm.adv,
-        ],
-        colors: ["#dc2626", color, "#059669", COLORS.m0, "#9333ea", COLORS.neutral],
-        valueSuffix: "s",
-        height: 220,
-      });
-    }
+    drawLineChart("chart-mm-timing", "tip-mm-timing", {
+      categories: cats,
+      series: runs.flatMap(({ t, dash, key }) => ([
+        { name: `${t.shortLabel} gen`, data: padTo(t.timing?.gen || [], n), color: key === "m2" ? "#f97316" : "#dc2626", dash },
+        { name: `${t.shortLabel} update_actor`, data: padTo(t.timing?.update_actor || [], n), color: t.color, dash },
+      ])),
+      valueSuffix: "s",
+      height: 240,
+    });
+    drawBarChart("chart-mm-timing-mean", "tip-mm-timing-mean", {
+      categories: runs.flatMap(({ t }) => [`${t.shortLabel} gen`, `${t.shortLabel} actor`]),
+      data: runs.flatMap(({ t }) => [t.timingMean?.gen ?? null, t.timingMean?.update_actor ?? null]),
+      colors: runs.flatMap(({ t, key }) => [key === "m2" ? "#f97316" : "#dc2626", t.color]),
+      valueSuffix: "s",
+      height: 220,
+    });
 
     // ---- stability ----
     drawLineChart("chart-mm-grad", "tip-mm-grad", {
       categories: cats,
-      series: [{ name: "grad_norm", data: t.grad || [], color }],
+      series: seriesOf((t) => t.grad),
       height: 200,
     });
     drawLineChart("chart-mm-ent", "tip-mm-ent", {
       categories: cats,
-      series: [{ name: "entropy", data: t.ent || [], color: COLORS.m0 }],
+      series: seriesOf((t) => t.ent),
       height: 200,
     });
     drawLineChart("chart-mm-ppokl", "tip-mm-ppokl", {
       categories: cats,
-      series: [{ name: "ppo_kl ×1e5", data: t.ppokl || [], color }],
+      series: seriesOf((t) => t.ppokl),
       height: 200,
       referenceLines: [{ value: 0, label: "0", color: COLORS.neutral }],
     });
     drawLineChart("chart-mm-clip", "tip-mm-clip", {
       categories: cats,
-      series: [
-        { name: "pg_clipfrac", data: t.clip || [], color },
-        { name: "trunc@16K", data: t.trunc || [], color: "#dc2626" },
-      ],
+      series: runs.flatMap(({ t, dash, key }) => ([
+        { name: `${t.shortLabel} clipfrac`, data: padTo(t.clip || [], n), color: t.color, dash },
+        { name: `${t.shortLabel} trunc@16K`, data: padTo(t.trunc || [], n), color: key === "m2" ? "#ea580c" : "#dc2626", dash: dash || [2, 3] },
+      ])),
       valueSuffix: "%",
       height: 200,
     });
     drawLineChart("chart-mm-corr", "tip-mm-corr", {
       categories: cats,
-      series: [{ name: "(1−corr)×1e4", data: t.pearsonDev || [], color: "#059669" }],
+      series: seriesOf((t) => t.pearsonDev),
       height: 200,
     });
 
     // ---- efficiency ----
     drawLineChart("chart-mm-mfu", "tip-mm-mfu", {
       categories: cats,
-      series: [{ name: "MFU actor", data: t.mfu || [], color }],
+      series: seriesOf((t) => t.mfu),
       valueSuffix: "%",
       height: 200,
-      referenceLines: s.mfuMean != null
-        ? [{ value: s.mfuMean, label: `mean ${s.mfuMean}%`, color: COLORS.m0 }]
-        : [],
     });
     drawLineChart("chart-mm-thru", "tip-mm-thru", {
       categories: cats,
-      series: [{ name: "throughput", data: t.throughput || [], color: COLORS.neutral }],
+      series: seriesOf((t) => t.throughput),
       height: 200,
-      referenceLines: s.throughputMean != null
-        ? [{ value: s.throughputMean, label: `mean ${s.throughputMean}`, color: COLORS.m0 }]
-        : [],
     });
     drawLineChart("chart-mm-len", "tip-mm-len", {
       categories: cats,
-      series: [{ name: "response_length", data: t.len || [], color }],
+      series: seriesOf((t) => t.len),
       height: 200,
       referenceLines: [{ value: 16384, label: "16K cap", color: "#dc2626" }],
     });

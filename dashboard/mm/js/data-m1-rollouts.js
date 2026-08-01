@@ -1,12 +1,12 @@
 window.MM_M1_ROLLOUT_SUMMARY = {
   "source": "m1_geo3k100_2b rollout summary",
-  "generatedFrom": "/data/lijunyi/vlm_exp/logs/exp2card_mm/m1_geo3k100_2b/rollout_dump",
+  "generatedFrom": "/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/logs/exp2card_mm/m1_geo3k100_2b/rollout_dump",
   "generatedBy": "scripts/analysis/summarize_mm_rollouts.py",
   "note": "Training rollout metrics; not Geo3K test-set evaluation.",
   "overall": {
-    "samples": 26368,
-    "accuracy": 0.6671344053398058,
-    "meanScore": 0.6004247572815534
+    "samples": 38400,
+    "accuracy": 0.6736197916666666,
+    "meanScore": 0.6062604166666667
   },
   "rows": [
     {
@@ -813,25 +813,401 @@ window.MM_M1_ROLLOUT_SUMMARY = {
       "step": 101,
       "source": "geo3k",
       "samples": 256,
-      "accuracy": 0.76953125,
-      "meanScore": 0.692578125,
-      "meanOutputChars": 15603.828125
+      "accuracy": 0.765625,
+      "meanScore": 0.6890625,
+      "meanOutputChars": 15955.5234375
     },
     {
       "step": 102,
       "source": "geo3k",
       "samples": 256,
-      "accuracy": 0.640625,
-      "meanScore": 0.5765625,
-      "meanOutputChars": 20693.375
+      "accuracy": 0.6484375,
+      "meanScore": 0.58359375,
+      "meanOutputChars": 20483.40625
     },
     {
       "step": 103,
       "source": "geo3k",
       "samples": 256,
+      "accuracy": 0.7109375,
+      "meanScore": 0.63984375,
+      "meanOutputChars": 16034.890625
+    },
+    {
+      "step": 104,
+      "source": "geo3k",
+      "samples": 256,
+      "accuracy": 0.72265625,
+      "meanScore": 0.650390625,
+      "meanOutputChars": 16604.8359375
+    },
+    {
+      "step": 105,
+      "source": "geo3k",
+      "samples": 256,
+      "accuracy": 0.55078125,
+      "meanScore": 0.495703125,
+      "meanOutputChars": 23684.890625
+    },
+    {
+      "step": 106,
+      "source": "geo3k",
+      "samples": 256,
+      "accuracy": 0.5625,
+      "meanScore": 0.50625,
+      "meanOutputChars": 18311.99609375
+    },
+    {
+      "step": 107,
+      "source": "geo3k",
+      "samples": 256,
+      "accuracy": 0.6796875,
+      "meanScore": 0.61171875,
+      "meanOutputChars": 15206.015625
+    },
+    {
+      "step": 108,
+      "source": "geo3k",
+      "samples": 256,
+      "accuracy": 0.60546875,
+      "meanScore": 0.544921875,
+      "meanOutputChars": 19660.96484375
+    },
+    {
+      "step": 109,
+      "source": "geo3k",
+      "samples": 256,
+      "accuracy": 0.7265625,
+      "meanScore": 0.65390625,
+      "meanOutputChars": 16366.66796875
+    },
+    {
+      "step": 110,
+      "source": "geo3k",
+      "samples": 256,
+      "accuracy": 0.55859375,
+      "meanScore": 0.5027343750000001,
+      "meanOutputChars": 20959.66796875
+    },
+    {
+      "step": 111,
+      "source": "geo3k",
+      "samples": 256,
+      "accuracy": 0.59375,
+      "meanScore": 0.534375,
+      "meanOutputChars": 19196.0859375
+    },
+    {
+      "step": 112,
+      "source": "geo3k",
+      "samples": 256,
+      "accuracy": 0.62109375,
+      "meanScore": 0.558984375,
+      "meanOutputChars": 19723.9453125
+    },
+    {
+      "step": 113,
+      "source": "geo3k",
+      "samples": 256,
+      "accuracy": 0.71875,
+      "meanScore": 0.646875,
+      "meanOutputChars": 16992.58984375
+    },
+    {
+      "step": 114,
+      "source": "geo3k",
+      "samples": 256,
+      "accuracy": 0.64453125,
+      "meanScore": 0.580078125,
+      "meanOutputChars": 18174.09765625
+    },
+    {
+      "step": 115,
+      "source": "geo3k",
+      "samples": 256,
+      "accuracy": 0.6484375,
+      "meanScore": 0.58359375,
+      "meanOutputChars": 19972.5859375
+    },
+    {
+      "step": 116,
+      "source": "geo3k",
+      "samples": 256,
+      "accuracy": 0.69140625,
+      "meanScore": 0.622265625,
+      "meanOutputChars": 21012.96484375
+    },
+    {
+      "step": 117,
+      "source": "geo3k",
+      "samples": 256,
+      "accuracy": 0.64453125,
+      "meanScore": 0.580078125,
+      "meanOutputChars": 18821.6328125
+    },
+    {
+      "step": 118,
+      "source": "geo3k",
+      "samples": 256,
+      "accuracy": 0.73046875,
+      "meanScore": 0.657421875,
+      "meanOutputChars": 16429.8125
+    },
+    {
+      "step": 119,
+      "source": "geo3k",
+      "samples": 256,
+      "accuracy": 0.6171875,
+      "meanScore": 0.5554687500000001,
+      "meanOutputChars": 19679.69140625
+    },
+    {
+      "step": 120,
+      "source": "geo3k",
+      "samples": 256,
+      "accuracy": 0.72265625,
+      "meanScore": 0.650390625,
+      "meanOutputChars": 15672.72265625
+    },
+    {
+      "step": 121,
+      "source": "geo3k",
+      "samples": 256,
+      "accuracy": 0.71484375,
+      "meanScore": 0.6433593750000001,
+      "meanOutputChars": 14602.9609375
+    },
+    {
+      "step": 122,
+      "source": "geo3k",
+      "samples": 256,
       "accuracy": 0.69921875,
       "meanScore": 0.629296875,
-      "meanOutputChars": 15554.55859375
+      "meanOutputChars": 17014.29296875
+    },
+    {
+      "step": 123,
+      "source": "geo3k",
+      "samples": 256,
+      "accuracy": 0.7890625,
+      "meanScore": 0.71015625,
+      "meanOutputChars": 15934.80078125
+    },
+    {
+      "step": 124,
+      "source": "geo3k",
+      "samples": 256,
+      "accuracy": 0.66796875,
+      "meanScore": 0.601171875,
+      "meanOutputChars": 20027.3046875
+    },
+    {
+      "step": 125,
+      "source": "geo3k",
+      "samples": 256,
+      "accuracy": 0.765625,
+      "meanScore": 0.6890625,
+      "meanOutputChars": 16575.60546875
+    },
+    {
+      "step": 126,
+      "source": "geo3k",
+      "samples": 256,
+      "accuracy": 0.6796875,
+      "meanScore": 0.61171875,
+      "meanOutputChars": 18828.80859375
+    },
+    {
+      "step": 127,
+      "source": "geo3k",
+      "samples": 256,
+      "accuracy": 0.703125,
+      "meanScore": 0.6328125,
+      "meanOutputChars": 17704.5859375
+    },
+    {
+      "step": 128,
+      "source": "geo3k",
+      "samples": 256,
+      "accuracy": 0.67578125,
+      "meanScore": 0.6082031250000001,
+      "meanOutputChars": 19710.4765625
+    },
+    {
+      "step": 129,
+      "source": "geo3k",
+      "samples": 256,
+      "accuracy": 0.8125,
+      "meanScore": 0.7312500000000001,
+      "meanOutputChars": 12584.37890625
+    },
+    {
+      "step": 130,
+      "source": "geo3k",
+      "samples": 256,
+      "accuracy": 0.734375,
+      "meanScore": 0.6609375000000001,
+      "meanOutputChars": 16674.08203125
+    },
+    {
+      "step": 131,
+      "source": "geo3k",
+      "samples": 256,
+      "accuracy": 0.82421875,
+      "meanScore": 0.741796875,
+      "meanOutputChars": 12719.05859375
+    },
+    {
+      "step": 132,
+      "source": "geo3k",
+      "samples": 256,
+      "accuracy": 0.7890625,
+      "meanScore": 0.71015625,
+      "meanOutputChars": 14680.0234375
+    },
+    {
+      "step": 133,
+      "source": "geo3k",
+      "samples": 256,
+      "accuracy": 0.7734375,
+      "meanScore": 0.6960937500000001,
+      "meanOutputChars": 16754.6953125
+    },
+    {
+      "step": 134,
+      "source": "geo3k",
+      "samples": 256,
+      "accuracy": 0.76171875,
+      "meanScore": 0.685546875,
+      "meanOutputChars": 14965.27734375
+    },
+    {
+      "step": 135,
+      "source": "geo3k",
+      "samples": 256,
+      "accuracy": 0.640625,
+      "meanScore": 0.5765625,
+      "meanOutputChars": 20248.33984375
+    },
+    {
+      "step": 136,
+      "source": "geo3k",
+      "samples": 256,
+      "accuracy": 0.7265625,
+      "meanScore": 0.65390625,
+      "meanOutputChars": 15164.33203125
+    },
+    {
+      "step": 137,
+      "source": "geo3k",
+      "samples": 256,
+      "accuracy": 0.625,
+      "meanScore": 0.5625,
+      "meanOutputChars": 15972.15625
+    },
+    {
+      "step": 138,
+      "source": "geo3k",
+      "samples": 256,
+      "accuracy": 0.58203125,
+      "meanScore": 0.523828125,
+      "meanOutputChars": 16443.7421875
+    },
+    {
+      "step": 139,
+      "source": "geo3k",
+      "samples": 256,
+      "accuracy": 0.703125,
+      "meanScore": 0.6328125,
+      "meanOutputChars": 13283.484375
+    },
+    {
+      "step": 140,
+      "source": "geo3k",
+      "samples": 256,
+      "accuracy": 0.6328125,
+      "meanScore": 0.56953125,
+      "meanOutputChars": 14470.99609375
+    },
+    {
+      "step": 141,
+      "source": "geo3k",
+      "samples": 256,
+      "accuracy": 0.63671875,
+      "meanScore": 0.5730468750000001,
+      "meanOutputChars": 16094.5703125
+    },
+    {
+      "step": 142,
+      "source": "geo3k",
+      "samples": 256,
+      "accuracy": 0.66015625,
+      "meanScore": 0.594140625,
+      "meanOutputChars": 17803.38671875
+    },
+    {
+      "step": 143,
+      "source": "geo3k",
+      "samples": 256,
+      "accuracy": 0.703125,
+      "meanScore": 0.6328125,
+      "meanOutputChars": 13451.50390625
+    },
+    {
+      "step": 144,
+      "source": "geo3k",
+      "samples": 256,
+      "accuracy": 0.7265625,
+      "meanScore": 0.65390625,
+      "meanOutputChars": 14877.74609375
+    },
+    {
+      "step": 145,
+      "source": "geo3k",
+      "samples": 256,
+      "accuracy": 0.625,
+      "meanScore": 0.5625,
+      "meanOutputChars": 15016.65625
+    },
+    {
+      "step": 146,
+      "source": "geo3k",
+      "samples": 256,
+      "accuracy": 0.83984375,
+      "meanScore": 0.755859375,
+      "meanOutputChars": 8996.83984375
+    },
+    {
+      "step": 147,
+      "source": "geo3k",
+      "samples": 256,
+      "accuracy": 0.6953125,
+      "meanScore": 0.6257812500000001,
+      "meanOutputChars": 14123.51171875
+    },
+    {
+      "step": 148,
+      "source": "geo3k",
+      "samples": 256,
+      "accuracy": 0.6875,
+      "meanScore": 0.61875,
+      "meanOutputChars": 13701.59765625
+    },
+    {
+      "step": 149,
+      "source": "geo3k",
+      "samples": 256,
+      "accuracy": 0.74609375,
+      "meanScore": 0.671484375,
+      "meanOutputChars": 10839.9921875
+    },
+    {
+      "step": 150,
+      "source": "geo3k",
+      "samples": 256,
+      "accuracy": 0.65234375,
+      "meanScore": 0.587109375,
+      "meanOutputChars": 12902.4921875
     }
   ]
 };
