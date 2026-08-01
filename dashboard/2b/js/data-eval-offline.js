@@ -129,8 +129,8 @@ const EVAL_STAGE_S3_150 = {
 // ---- Agent BFCL / tool-use benchmarks (evalscope, auto-synced 2026-08-01) ----
 // Source: /data/juicefs-white/5281-gpu-a100/lijunyi/evalscope/outputs/agent2/<ts>/reports/<exp>_2b[_s3]_<step>/{bfcl_v3,tau_bench}.json
 // Coverage Easy: bfcl=0/75 · tau=0/75 · steps with any report: none
-// Coverage S3: bfcl=54/75 · tau=75/75 · steps with any report: 10/20/30/40/50/60/70/80/90/100/110/120/130/140/150
-// BFCL-v3: 10 subset ×30；bfcl=OVERALL（或缺省 top-level）；bfcl_mt=MULTI_TURN。
+// Coverage S3: bfcl=75/75 · tau=75/75 · steps with any report: 10/20/30/40/50/60/70/80/90/100/110/120/130/140/150
+// BFCL-v3: 10 subset ×30；bfcl=OVERALL（或缺省 top-level）；bfcl_mt=MULTI_TURN；S3 仅使用 native-FC 完整报告。
 // tau-bench: retail+airline×20，user-sim=gpt-5p5-apipro。null = 尚未评测。
 // Refresh: python3 scripts/monitoring/2b/sync_2b_agent_dashboard.py
 
@@ -188,20 +188,20 @@ const AGENT_S3_RAW = {
   },
   e3: {
     label: "E3 Dr.GRPO S3",    color: COLORS.e3,
-    bfcl:   [53.4, 52.1, 54.5, 51.1, 54.2, 51.2, 53.6, 52.0, null, 51.9, 53.4, 52.1, 57.9, 53.3, 56.5],
-    bfcl_mt:[8.3, 9.4, 9.4, 11.7, 8.9, 11.7, 7.8, 7.8, null, 7.2, 12.2, 13.9, 13.3, 5.6, 9.4],
+    bfcl:   [53.4, 52.1, 54.5, 51.1, 54.2, 51.2, 53.6, 52.0, 55.9, 51.9, 53.4, 52.1, 57.9, 53.3, 56.5],
+    bfcl_mt:[8.3, 9.4, 9.4, 11.7, 8.9, 11.7, 7.8, 7.8, 13.3, 7.2, 12.2, 13.9, 13.3, 5.6, 9.4],
     tau:    [27.5, 35.0, 32.5, 35.0, 42.5, 52.5, 50.0, 32.5, 42.5, 52.5, 52.5, 40.0, 42.5, 37.5, 40.0],
   },
   e4: {
     label: "E4 RLOO S3",       color: COLORS.e4,
-    bfcl:   [49.4, 53.1, 50.5, 52.0, 50.2, 51.0, null, null, null, null, null, null, null, null, null],
-    bfcl_mt:[9.4, 10.0, 11.1, 8.9, 7.2, 9.4, null, null, null, null, null, null, null, null, null],
+    bfcl:   [49.4, 53.1, 50.5, 52.0, 50.2, 51.0, 49.2, 52.5, 53.0, 53.6, 50.6, 49.5, 49.1, 52.7, 50.0],
+    bfcl_mt:[9.4, 10.0, 11.1, 8.9, 7.2, 9.4, 8.3, 12.8, 15.6, 11.1, 11.7, 12.8, 13.3, 15.0, 12.2],
     tau:    [30.0, 50.0, 50.0, 32.5, 32.5, 37.5, 42.5, 40.0, 40.0, 42.5, 50.0, 42.5, 47.5, 37.5, 37.5],
   },
   e5: {
     label: "E5 REINFORCE++ S3", color: COLORS.e5,
-    bfcl:   [null, null, null, null, null, null, null, null, null, null, null, 39.2, 37.1, 39.6, 36.1],
-    bfcl_mt:[null, null, null, null, null, null, null, null, null, null, null, 9.2, 5.0, 10.8, 5.0],
+    bfcl:   [53.1, 50.0, 52.7, 54.0, 52.0, 50.3, 51.9, 48.1, 52.2, 52.7, 50.5, 39.2, 37.1, 39.6, 36.1],
+    bfcl_mt:[6.7, 10.0, 10.5, 11.1, 6.7, 6.7, 9.4, 7.2, 8.9, 6.7, 6.7, 9.2, 5.0, 10.8, 5.0],
     tau:    [37.5, 57.5, 42.5, 35.0, 37.5, 42.5, 37.5, 52.5, 35.0, 45.0, 47.5, 47.5, 25.0, 32.5, 52.5],
   },
 };
