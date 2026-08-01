@@ -137,7 +137,7 @@ CUDA_VISIBLE_DEVICES=0 bash \
 
 其中 `scripts/eval/eval_geo3k.py` 复用训练时的 Qwen 多模态模板和 Geo3K 官方判分逻辑，逐题落 JSONL、支持中断续跑，并同时汇报 `sample_accuracy` 和 `pass_at_n`。文本部分复用 evalscope，覆盖 `mmlu_temp`、`aime24`、`aime25`、`math_500`，采样口径统一为 temperature=0.6、top_p=0.95、max_tokens=16384、n=8。本机安装的 EvalScope 0.17.1 不识别新版自定义 `mmlu_temp` adapter，因此 `eval.sh` 将其等价映射为标准 MMLU 的 `anatomy`、`medical_genetics`、`high_school_mathematics`、`machine_learning` 四个子集，并显式保持 5-shot；数据缓存已改到工作区可写目录。
 
-`scripts/eval/run_mm_evaluation_pipeline.sh` 已作为独立 session 等待 M1/M2/M3 的 step-150 checkpoint；每组训练完成后会自动合并、评测，失败则保留日志并重试，成功标记写入 `evaluation/completed/`。所有组完成后用 `scripts/archive/archive_mm_results.sh` 生成 `$ROOT/polaris/archive/mm_exp2card/` 快照（不复制大体积 checkpoint）。
+`scripts/eval/run_mm_evaluation_pipeline.sh` 已作为独立 session 等待 M1/M2/M3 的 step-150 checkpoint；每组训练完成后会自动合并、评测，失败则保留日志并重试，成功标记写入 `evaluation/completed/<exp>_step150.done`（并写 `<exp>.done` 别名）。若要补齐中间每 10 step 的正式离线评测（Geo3K + 文本），用 `scripts/eval/run_mm_eval_queue.sh`，或按组跑 `supplement_m1_eval.sh` / `supplement_m2_eval.sh` / `supplement_m3_eval.sh`（默认 `SKIP_EXISTING=1`，缺 actor 时跳过）。所有组完成后用 `scripts/archive/archive_mm_results.sh` 生成 `$ROOT/polaris/archive/mm_exp2card/` 快照（不复制大体积 checkpoint）。
 
 **对比维度**：
 

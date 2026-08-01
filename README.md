@@ -146,6 +146,16 @@ CUDA_VISIBLE_DEVICES=0 bash scripts/eval/evaluate_mm_checkpoint.sh <experiment_n
 # optional: EVAL_STEP=70 for mid-run checkpoints
 ```
 
+Step-wise queue (every-10 formal grid; skips complete markers by default):
+
+```bash
+CUDA_VISIBLE_DEVICES=0 bash scripts/eval/run_mm_eval_queue.sh
+# or per group, waiting for a free GPU / optional train PID:
+CUDA_VISIBLE_DEVICES=0 bash scripts/eval/supplement_m1_eval.sh
+CUDA_VISIBLE_DEVICES=0 bash scripts/eval/supplement_m2_eval.sh
+CUDA_VISIBLE_DEVICES=0 ONLY_STEPS="10 20" bash scripts/eval/supplement_m3_eval.sh
+```
+
 Background waiter for M1–M3 step-150:
 
 ```bash
@@ -161,7 +171,7 @@ M0 baseline uses the existing E1 merged weights under `polaris` (`scripts/eval/e
 - Text sampling: temperature 0.6, top_p 0.95, max_tokens 16384, n=8.
 - `mmlu_temp` mapped to four standard MMLU subsets (5-shot) for EvalScope compatibility.
 
-Done markers: `evaluation/completed/<exp>.done`.
+Done markers: `evaluation/completed/<exp>_step<N>.done` (plus `<exp>.done` alias at step 150).
 
 ### 5. Rollout analysis & dashboard data
 
@@ -225,6 +235,10 @@ Root `./start.sh` / `./stop.sh` also serve the repo tree on port 3000; prefer `d
 | `train/run_mm_training_pipeline.sh` | Supervise M1→M2→M3 |
 | `train/reward_mm_mixed.py` | Mixed reward for verl |
 | `eval/run_mm_evaluation_pipeline.sh` | Wait + eval step-150 |
+| `eval/run_mm_eval_queue.sh` | Eval M1–M3 every-10 checkpoints |
+| `eval/supplement_m1_eval.sh` | Fill missing M1 step evals |
+| `eval/supplement_m2_eval.sh` | Fill missing M2 step evals |
+| `eval/supplement_m3_eval.sh` | Fill missing M3 step evals |
 | `eval/evaluate_mm_checkpoint.sh` | Merge + Geo3K + text eval |
 | `eval/eval_geo3k.py` | Offline Geo3K (JSONL, resumable) |
 | `analysis/summarize_mm_rollouts.py` | Rollout CSV summaries |
