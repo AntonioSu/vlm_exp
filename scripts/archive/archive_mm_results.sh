@@ -51,7 +51,9 @@ for script in \
   train/run_smoke_mm.sh train/run_mm_mix_2b.sh train/run_m1_geo3k_2b.sh train/run_m2_mix50_2b.sh \
   train/run_m3_mix20_2b.sh train/run_mm_training_pipeline.sh train/reward_mm_mixed.py \
   train/test_reward_mm_mixed.py \
-  eval/run_mm_evaluation_pipeline.sh eval/run_m0_baseline_supervisor.sh \
+  eval/run_mm_evaluation_pipeline.sh eval/run_mm_eval_queue.sh \
+  eval/supplement_m1_eval.sh eval/supplement_m2_eval.sh eval/supplement_m3_eval.sh \
+  eval/run_m0_baseline_supervisor.sh \
   eval/evaluate_mm_checkpoint.sh eval/evaluate_m0_text.sh eval/eval_geo3k.py \
   analysis/summarize_mm_rollouts.py analysis/gen_mm_rollout_dashboard_data.py \
   analysis/gen_mm_eval_dashboard_data.py analysis/gen_mm_train_dashboard_data.py \
