@@ -210,11 +210,11 @@ function drawBarChart(canvasId, tipId, { categories, data, colors, valueSuffix =
 
 function render() {
   renderLegend(document.getElementById("legend-pass"), [
-    { name: "E1 GRPO", data: EASY_BOXED_E1_PASS_MA, color: COLORS.e1 },
-    { name: "E2 DAPO", data: EASY_BOXED_E2_PASS_MA, color: COLORS.e2 },
-    { name: "E3 Dr.GRPO", data: EASY_BOXED_E3_PASS_MA, color: COLORS.e3 },
-    { name: "E4 RLOO", data: EASY_BOXED_E4_PASS_MA, color: COLORS.e4 },
-    { name: "E5 REINFORCE++", data: EASY_BOXED_E5_PASS_MA, color: COLORS.e5 },
+    { name: "E1 GRPO", data: EXP.e1.pass, color: COLORS.e1 },
+    { name: "E2 DAPO", data: EXP.e2.pass, color: COLORS.e2 },
+    { name: "E3 Dr.GRPO", data: EXP.e3.pass, color: COLORS.e3 },
+    { name: "E4 RLOO", data: EXP.e4.pass, color: COLORS.e4 },
+    { name: "E5 REINFORCE++", data: EXP.e5.pass, color: COLORS.e5 },
   ], (visible) => drawLineChart("chart-pass", "tip-pass", {
     categories: STEP_CATS,
     series: visible,
@@ -265,31 +265,22 @@ function render() {
     valueSuffix: "h", height: 220,
   });
 
-  // ---- S3（独立对比图；有数据的实验才入图）----
+  // ---- S3（独立对比图；逐 step 原始 pass，不做移动平均）----
   const s3PassLegend = document.getElementById("legend-s3-pass");
-  if (!s3PassLegend || typeof S3_E1_PASS_MA === "undefined") return;
+  if (!s3PassLegend) return;
 
   const s3Pass = [];
-  if (typeof S3_E1_PASS_MA !== "undefined") s3Pass.push({ name: "S3 E1 GRPO", data: S3_E1_PASS_MA, color: COLORS.e1 });
-  if (typeof S3_E2_PASS_MA !== "undefined") s3Pass.push({ name: "S3 E2 DAPO", data: S3_E2_PASS_MA, color: COLORS.e2 });
-  if (typeof S3_E3_PASS_MA !== "undefined") s3Pass.push({ name: "S3 E3 Dr.GRPO", data: S3_E3_PASS_MA, color: COLORS.e3 });
-  if (typeof S3_E4_PASS_MA !== "undefined") s3Pass.push({ name: "S3 E4 RLOO", data: S3_E4_PASS_MA, color: COLORS.e4 });
-  if (typeof S3_E5_PASS_MA !== "undefined") s3Pass.push({ name: "S3 E5 REINFORCE++", data: S3_E5_PASS_MA, color: COLORS.e5 });
+  if (EXP.s3_e1 && EXP.s3_e1.pass) s3Pass.push({ name: "S3 E1 GRPO", data: EXP.s3_e1.pass, color: COLORS.e1 });
+  if (EXP.s3_e2 && EXP.s3_e2.pass) s3Pass.push({ name: "S3 E2 DAPO", data: EXP.s3_e2.pass, color: COLORS.e2 });
+  if (EXP.s3_e3 && EXP.s3_e3.pass) s3Pass.push({ name: "S3 E3 Dr.GRPO", data: EXP.s3_e3.pass, color: COLORS.e3 });
+  if (EXP.s3_e4 && EXP.s3_e4.pass) s3Pass.push({ name: "S3 E4 RLOO", data: EXP.s3_e4.pass, color: COLORS.e4 });
+  if (EXP.s3_e5 && EXP.s3_e5.pass) s3Pass.push({ name: "S3 E5 REINFORCE++", data: EXP.s3_e5.pass, color: COLORS.e5 });
   if (s3Pass.length) {
     renderLegend(s3PassLegend, s3Pass, (visible) => drawLineChart("chart-s3-pass", "tip-s3-pass", {
       categories: STEP_CATS,
       series: visible,
       yMin: 0, yMax: 80, valueSuffix: "%", height: 280,
     }));
-  }
-
-  const s3RaccLegend = document.getElementById("legend-s3-racc");
-  if (s3RaccLegend && typeof S3_E2_ROLLOUT_ACC_MA !== "undefined") {
-    drawLineChart("chart-s3-racc", "tip-s3-racc", {
-      categories: STEP_CATS,
-      series: [{ name: "S3 E2 DAPO", data: S3_E2_ROLLOUT_ACC_MA, color: COLORS.e2 }],
-      yMin: 0, yMax: 80, valueSuffix: "%", height: 280,
-    });
   }
 
   const s3Len = [];
