@@ -25,19 +25,24 @@ for exp in "${experiments[@]}"; do
     sleep 300
   done
 
-  while [[ ! -f "${DONE_DIR}/${exp}.done" ]]; do
+  # evaluate_mm_checkpoint.sh writes <exp>_step<N>.done; also accept the
+  # convenience alias <exp>.done written by the step-wise eval queue at 150.
+  while [[ ! -f "${DONE_DIR}/${exp}_step150.done" && ! -f "${DONE_DIR}/${exp}.done" ]]; do
     run_log=${LOG_DIR}/${exp}_$(date +%Y%m%d_%H%M%S).log
     echo "[$(date -Is)] ${exp}: starting evaluation on GPU ${GPU}; log=${run_log}"
-    CUDA_VISIBLE_DEVICES=${GPU} PORT=${PORT} \
+    CUDA_VISIBLE_DEVICES=${GPU} PORT=${PORT} EVAL_STEP=150 \
       bash "${VLM_EXP}/scripts/eval/evaluate_mm_checkpoint.sh" "${exp}" \
       > "${run_log}" 2>&1
     exit_code=$?
     echo "[$(date -Is)] ${exp}: evaluation exited ${exit_code}"
-    if [[ ! -f "${DONE_DIR}/${exp}.done" ]]; then
+    if [[ -f "${DONE_DIR}/${exp}_step150.done" ]]; then
+      touch "${DONE_DIR}/${exp}.done"
+    elif [[ ! -f "${DONE_DIR}/${exp}.done" ]]; then
       echo "[$(date -Is)] ${exp}: incomplete, retrying after 300 seconds"
       sleep 300
     fi
   done
+  touch "${DONE_DIR}/${exp}.done"
 done
 
 echo "[$(date -Is)] M1, M2, and M3 evaluation complete"

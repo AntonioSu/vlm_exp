@@ -11,7 +11,16 @@ fi
 EXP=$1
 export CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES:-0}
 SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
-VLM_EXP=${VLM_EXP:-$(cd "${SCRIPT_DIR}/../.." && pwd)}
+# Prefer the runtime data root (checkpoints / evaluation/); fall back to the
+# script tree when that layout is self-contained.
+DEFAULT_VLM_EXP=/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp
+if [[ -z "${VLM_EXP:-}" ]]; then
+  if [[ -d "${DEFAULT_VLM_EXP}/model/exp2card_mm" ]]; then
+    VLM_EXP=${DEFAULT_VLM_EXP}
+  else
+    VLM_EXP=$(cd "${SCRIPT_DIR}/../.." && pwd)
+  fi
+fi
 ROOT=${ROOT:-$(cd "${VLM_EXP}/.." && pwd)}
 POLARIS=${POLARIS:-${ROOT}/polaris}
 EVALSCOPE=${EVALSCOPE:-${ROOT}/evalscope}
@@ -135,7 +144,11 @@ trap - EXIT
 
 mkdir -p "${DONE_DIR}"
 touch "${DONE_DIR}/${EXP}_step${EVAL_STEP}.done"
+# Convenience alias for the step-150 waiter pipeline.
+if [[ "${EVAL_STEP}" -eq 150 ]]; then
+  touch "${DONE_DIR}/${EXP}.done"
+fi
 
-echo "Evaluation complete: ${EXP}"
+echo "Evaluation complete: ${EXP} step ${EVAL_STEP}"
 echo "Geo3K summary: ${GEO_OUT}.summary.json"
 echo "Text results: ${EVALSCOPE}/outputs/exp2card_mm/${EXP}_step${EVAL_STEP}/"
