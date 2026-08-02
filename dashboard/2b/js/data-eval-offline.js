@@ -128,7 +128,7 @@ const EVAL_STAGE_S3_150 = {
 
 // ---- Agent BFCL / tool-use benchmarks (evalscope, auto-synced 2026-08-02) ----
 // Source: /data/juicefs-white/5281-gpu-a100/lijunyi/evalscope/outputs/agent2/<ts>/reports/<exp>_2b[_s3]_<step>/{bfcl_v3,tau_bench}.json
-// Coverage Easy: bfcl=73/75 · tau=74/75 · steps with any report: 10/20/30/40/50/60/70/80/90/100/110/120/130/140/150
+// Coverage Easy: bfcl=75/75 · tau=75/75 · steps with any report: 10/20/30/40/50/60/70/80/90/100/110/120/130/140/150
 // Coverage S3: bfcl=75/75 · tau=75/75 · steps with any report: 10/20/30/40/50/60/70/80/90/100/110/120/130/140/150
 // BFCL-v3: 10 subset ×30；bfcl=OVERALL（或缺省 top-level）；bfcl_mt=MULTI_TURN；S3 仅使用 native-FC 完整报告。
 // tau-bench: retail+airline×20，user-sim=gpt-5p5-apipro。null = 尚未评测。
@@ -139,9 +139,9 @@ const AGENT_EASY_STEPS = ["10", "20", "30", "40", "50", "60", "70", "80", "90", 
 const AGENT_EASY = {
   e1: {
     label: "E1 GRPO Easy",     color: COLORS.e1,
-    bfcl:   [49.8, 53.2, null, 54.3, 48.8, 54.1, 49.6, 54.4, 51.6, 56.6, 53.3, null, 54.1, 56.9, 53.0],
-    bfcl_mt:[9.4, 5.6, null, 8.9, 5.6, 11.1, 8.9, 12.2, 7.2, 6.7, 10.0, null, 8.3, 10.0, 8.3],
-    tau:    [37.5, 50.0, 0.0, 45.0, 52.5, 57.5, 45.0, 52.5, 45.0, 55.0, 32.5, null, 50.0, 40.0, 45.0],
+    bfcl:   [49.8, 53.2, 51.9, 54.3, 48.8, 54.1, 49.6, 54.4, 51.6, 56.6, 53.3, 52.8, 54.1, 56.9, 53.0],
+    bfcl_mt:[9.4, 5.6, 3.3, 8.9, 5.6, 11.1, 8.9, 12.2, 7.2, 6.7, 10.0, 9.4, 8.3, 10.0, 8.3],
+    tau:    [37.5, 50.0, 45.0, 45.0, 52.5, 57.5, 45.0, 52.5, 45.0, 55.0, 32.5, 0.0, 50.0, 40.0, 45.0],
   },
   e2: {
     label: "E2 DAPO Easy",     color: COLORS.e2,
