@@ -35,18 +35,6 @@ fi
 
 EXP=$1
 export CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES:-0}
-# Prefer the runtime data root (checkpoints / evaluation/); fall back to the
-# script tree when that layout is self-contained.
-if [[ -z "${VLM_EXP:-}" ]]; then
-  if [[ -d "${DEFAULT_VLM_EXP}/model/exp2card_mm" ]]; then
-    VLM_EXP=${DEFAULT_VLM_EXP}
-  else
-    VLM_EXP=$(cd "${SCRIPT_DIR}/../.." && pwd)
-  fi
-fi
-ROOT=${ROOT:-$(cd "${VLM_EXP}/.." && pwd)}
-POLARIS=${POLARIS:-${ROOT}/polaris}
-EVALSCOPE=${EVALSCOPE:-${ROOT}/evalscope}
 ENVBIN=/home/jeeves/.conda/envs/verl_qwen35/bin
 EVAL_STEP=${EVAL_STEP:-150}
 ACTOR_DIR=${VLM_EXP}/model/exp2card_mm/${EXP}/global_step_${EVAL_STEP}/actor
