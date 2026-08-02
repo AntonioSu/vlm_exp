@@ -111,11 +111,11 @@ const EVAL_STAGE_S3_150 = {
   label: "E1 GRPO 2B S3 step150",
   model: "model/exp2card/e1_grpo_2b_s3/merged_150",
   reports: {
-    aime24: "/data/juicefs-white/5281-gpu-a100/lijunyi/evalscope/outputs/exp2card/e1_grpo_2b_s3_150/20260726_084042/reports/e1_grpo_2b_s3_150/aime24.json",
-    aime25: "/data/juicefs-white/5281-gpu-a100/lijunyi/evalscope/outputs/exp2card/e1_grpo_2b_s3_150/20260726_084042/reports/e1_grpo_2b_s3_150/aime25.json",
-    mmlu_temp: "/data/juicefs-white/5281-gpu-a100/lijunyi/evalscope/outputs/exp2card/e1_grpo_2b_s3_150/20260726_091746/reports/e1_grpo_2b_s3_150/mmlu.json",
-    bfcl_v3: "/data/juicefs-white/5281-gpu-a100/lijunyi/evalscope/outputs/agent2/20260731_200401/reports/e1_grpo_2b_s3_150/bfcl_v3.json",
-    tau_bench: "/data/juicefs-white/5281-gpu-a100/lijunyi/evalscope/outputs/agent2/20260726_112538/reports/e1_grpo_2b_s3_150/tau_bench.json",
+    aime24: "evalscope/outputs/exp2card/e1_grpo_2b_s3_150/20260726_084042/reports/e1_grpo_2b_s3_150/aime24.json",
+    aime25: "evalscope/outputs/exp2card/e1_grpo_2b_s3_150/20260726_084042/reports/e1_grpo_2b_s3_150/aime25.json",
+    mmlu_temp: "evalscope/outputs/exp2card/e1_grpo_2b_s3_150/20260726_091746/reports/e1_grpo_2b_s3_150/mmlu.json",
+    bfcl_v3: "evalscope/outputs/agent2/20260731_200401/reports/e1_grpo_2b_s3_150/bfcl_v3.json",
+    tau_bench: "evalscope/outputs/agent2/20260726_112538/reports/e1_grpo_2b_s3_150/tau_bench.json",
   },
   rows: [
     { task: "aime24", metric: "AveragePass@1", num: 30, score: 23.75, detail: "default 23.75" },
@@ -127,7 +127,7 @@ const EVAL_STAGE_S3_150 = {
 };
 
 // ---- Agent BFCL / tool-use benchmarks (evalscope, auto-synced 2026-08-02) ----
-// Source: /data/juicefs-white/5281-gpu-a100/lijunyi/evalscope/outputs/agent2/<ts>/reports/<exp>_2b[_s3]_<step>/{bfcl_v3,tau_bench}.json
+// Source: evalscope/outputs/agent2/<ts>/reports/<exp>_2b[_s3]_<step>/{bfcl_v3,tau_bench}.json
 // Coverage Easy: bfcl=75/75 · tau=75/75 · steps with any report: 10/20/30/40/50/60/70/80/90/100/110/120/130/140/150
 // Coverage S3: bfcl=75/75 · tau=75/75 · steps with any report: 10/20/30/40/50/60/70/80/90/100/110/120/130/140/150
 // BFCL-v3: 10 subset ×30；bfcl=OVERALL（或缺省 top-level）；bfcl_mt=MULTI_TURN；S3 仅使用 native-FC 完整报告。
