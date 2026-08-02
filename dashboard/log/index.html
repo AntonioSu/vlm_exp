@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>实验日志 — RL 实验看板</title>
+<link rel="stylesheet" href="../common/base.css">
+<link rel="stylesheet" href="log.css">
+</head>
+<body>
+
+<div class="site-header">
+  <div class="site-header-inner">
+    <a class="site-brand" href="../index.html"><span class="dot">●</span> RL 实验看板</a>
+    <div class="site-nav">
+      <a href="../index.html">总览</a>
+      <a href="../algo/index.html">算法介绍</a>
+      <a href="../benchmark/index.html">Benchmark 介绍</a>
+      <a href="../2b/index.html">2B 训练</a>
+      <a href="../4b/index.html">4B 训练</a>
+      <a href="../mm/index.html">多模态训练</a>
+      <a href="../conclusion/index.html">综合结论</a>
+      <a href="../log/index.html" class="active">实验日志</a>
+    </div>
+  </div>
+</div>
+
+<div class="log-page">
+  <h1>实验日志</h1>
+  <p class="log-lede">
+    按时间倒序记录本轮 Qwen3.5 RL 对比实验的关键节点：训练跑满、评测同步、看板更新与环境固化。
+    曲线与数字见 <a href="../2b/index.html">2B</a> / <a href="../4b/index.html">4B</a> / <a href="../mm/index.html">多模态</a>；跨规模结论见 <a href="../conclusion/index.html">综合结论</a>。
+  </p>
+
+  <div class="feed">
+
+    <article class="feed-item">
+      <div class="feed-marker" aria-hidden="true"></div>
+      <div class="feed-head">
+        <span class="feed-date">2026-08-02</span>
+        <span class="feed-label">看板更新：</span>
+      </div>
+      <div class="feed-row">
+        <span class="feed-time">01:14</span>
+        <div class="feed-content">
+          <p>新增「实验日志」页（本页），时间线样式对齐看板共享视觉语言</p>
+          <p>综合结论页已并入站内导航；2B / 4B 跨规模成立 vs 反转可直接读</p>
+        </div>
+      </div>
+    </article>
+
+    <article class="feed-item">
+      <div class="feed-marker" aria-hidden="true"></div>
+      <div class="feed-head">
+        <span class="feed-date">2026-08-01</span>
+        <span class="feed-label">训练进展：</span>
+      </div>
+      <div class="feed-row">
+        <span class="feed-time">00:51</span>
+        <div class="feed-content">
+          <p>多模态 M1 / M2 均已跑满 150/150；M3 进行中（~21/150）</p>
+          <p>看板训练曲线已同步 M1（实线）与 M2（虚线）</p>
+          <p>M1 light Geo3K：@70 <strong>13.64%</strong> → @100 <strong>14.81%</strong>（n=1 · max_tokens=512）</p>
+        </div>
+      </div>
+    </article>
+
+    <article class="feed-item">
+      <div class="feed-marker" aria-hidden="true"></div>
+      <div class="feed-head">
+        <span class="feed-date">2026-07-31</span>
+        <span class="feed-label">评测结果：</span>
+      </div>
+      <div class="feed-row">
+        <span class="feed-time">23:59</span>
+        <div class="feed-content">
+          <p>2B offline evalscope 同步（Stage-1 + Stage-3）</p>
+          <p>定盘看 aime25@150：RLOO(E4) 领先；mmlu@150 看 REINFORCE++(E5)</p>
+          <p>数据写入 <span class="mono">2b/js/data-eval-offline.js</span></p>
+        </div>
+      </div>
+    </article>
+
+    <article class="feed-item">
+      <div class="feed-marker" aria-hidden="true"></div>
+      <div class="feed-head">
+        <span class="feed-date">2026-07-30</span>
+        <span class="feed-label">评测结果：</span>
+      </div>
+      <div class="feed-row">
+        <span class="feed-time">16:47</span>
+        <div class="feed-content">
+          <p>4B Easy-Boxed offline 全齐（E1–E5 · 75/75）</p>
+          <p>峰值 aime24 <strong>E2@80 · 80.4%</strong>；峰值 aime25 <strong>E2@80 · 62.5%</strong></p>
+          <p>Agent 侧 BFCL / tau-bench 同步；数学 RL 几乎不抬 MULTI_TURN</p>
+        </div>
+      </div>
+    </article>
+
+    <article class="feed-item">
+      <div class="feed-marker" aria-hidden="true"></div>
+      <div class="feed-head">
+        <span class="feed-date">2026-07-30</span>
+        <span class="feed-label">训练进展：</span>
+      </div>
+      <div class="feed-row">
+        <span class="feed-time">12:00</span>
+        <div class="feed-content">
+          <p>2B Easy-Boxed E1–E5 与 S3 E1–E5 均已满 150/150</p>
+          <p>4B Easy-Boxed E1–E5 满 150；S3 监控接入（E1 已满，其余随队列）</p>
+          <p>E5-S3 stdout 日志被续训覆盖，曲线改由 TensorBoard event 重建</p>
+        </div>
+      </div>
+    </article>
+
+    <article class="feed-item">
+      <div class="feed-marker" aria-hidden="true"></div>
+      <div class="feed-head">
+        <span class="feed-date">2026-07-30</span>
+        <span class="feed-label">环境固化：</span>
+      </div>
+      <div class="feed-row">
+        <span class="feed-time">03:53</span>
+        <div class="feed-content">
+          <p><span class="mono">scripts/setup/</span> 体检 / 安装 / smoke 三件套落地</p>
+          <p>vLLM 0.24 + torch 2.11 + CUDA 13 forward-compat；勿再设 <span class="mono">VLLM_ATTENTION_BACKEND</span></p>
+          <p>确认 FLA：日志需出现 <span class="mono">Using Triton/FLA GDN prefill kernel</span></p>
+        </div>
+      </div>
+    </article>
+
+    <article class="feed-item">
+      <div class="feed-marker" aria-hidden="true"></div>
+      <div class="feed-head">
+        <span class="feed-date">2026-07-21</span>
+        <span class="feed-label">训练进展：</span>
+      </div>
+      <div class="feed-row">
+        <span class="feed-time">18:00</span>
+        <div class="feed-content">
+          <p>多模态链路烟测通过（2 step）</p>
+          <p>验证：多模态生成、图文混训、mixed reward、双验证集指标</p>
+          <p>M0 正式基线：Geo3K <strong>57.3%</strong> · MATH-500 <strong>86.4%</strong> · MMLU <strong>78.3%</strong></p>
+        </div>
+      </div>
+    </article>
+
+    <article class="feed-item">
+      <div class="feed-marker" aria-hidden="true"></div>
+      <div class="feed-head">
+        <span class="feed-date">2026-07-10</span>
+        <span class="feed-label">方案锁定：</span>
+      </div>
+      <div class="feed-row">
+        <span class="feed-time">09:01</span>
+        <div class="feed-content">
+          <p>统一不变量：non-thinking · 16K response · batch=32 · n=8 · 150 step</p>
+          <p>算法谱系：GRPO / DAPO / Dr.GRPO / RLOO / REINFORCE++（PPO 本轮未训）</p>
+          <p>三条赛道：2B 主赛道 · 4B 放大复验 · 多模态固定 GRPO 改图文配比</p>
+        </div>
+      </div>
+    </article>
+
+  </div>
+</div>
+
+<div class="footer-note">
+  时间线样式参考 <a href="https://spaces.ac.cn/me.html" target="_blank" rel="noopener">spaces.ac.cn</a>「微言微语」。条目随实验推进手写追加；数字以各赛道看板与 <code>archive/</code> 为准。
+</div>
+
+</body>
+</html>
