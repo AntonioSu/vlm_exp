@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>DAPO — 算法介绍</title>
+<link rel="stylesheet" href="../common/base.css">
+<link rel="stylesheet" href="algo.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+</head>
+<body class="algo-body">
+
+<div class="site-header">
+  <div class="site-header-inner">
+    <a class="site-brand" href="../index.html"><span class="dot">●</span> RL 实验看板</a>
+    <div class="site-nav">
+      <a href="../index.html">总览</a>
+      <a href="../algo/index.html" class="active">算法介绍</a>
+      <a href="../benchmark/index.html">Benchmark 介绍</a>
+      <a href="../2b/index.html">2B 训练</a>
+      <a href="../4b/index.html">4B 训练</a>
+      <a href="../mm/index.html">多模态训练</a>
+      <a href="../conclusion/index.html">综合结论</a>
+      <a href="../log/index.html">实验日志</a>
+    </div>
+  </div>
+</div>
+
+<div class="algo-page algo-page-with-toc">
+  <div class="algo-subnav">
+    <a href="base.html">基座</a>
+    <a href="index.html" class="active">RL 算法</a>
+    <a href="mm.html">多模态</a>
+  </div>
+  <nav class="algo-switcher" aria-label="RL 算法">
+    <a class="switcher-home" href="index.html">总览</a>
+    <span class="switcher-sep" aria-hidden="true"></span>
+    <a class="chip-ppo" href="ppo.html">PPO</a><a class="chip-grpo" href="grpo.html">GRPO</a><a class="chip-dapo is-active" href="dapo.html">DAPO</a><a class="chip-dr" href="drgrpo.html">Dr.GRPO</a><a class="chip-rloo" href="rloo.html">RLOO</a><a class="chip-rpp" href="reinforce_pp.html">REINFORCE++</a>
+  </nav>
+  <header class="algo-hero algo-hero-compact">
+    <div class="algo-hero-text">
+      <p class="algo-kicker"><a href="index.html">RL 算法</a> · Family B · Group-Relative</p>
+      <h1>DAPO</h1>
+      <p class="lede">本轮有训 · 曲线见 <a href="../2b/index.html">2B</a> / <a href="../4b/index.html">4B</a> · 返回 <a href="index.html">算法总览</a></p>
+    </div>
+  </header>
+  <div class="algo-layout">
+  <nav class="algo-toc" aria-label="目录">
+    <p class="toc-heading">本页</p>
+    <ol class="toc-list">
+      <li data-a="dapo"><a href="#mod-dapo"><span class="toc-num">1</span><span class="toc-title">总览</span></a></li><li data-a="dapo"><a href="#sym"><span class="toc-num">2</span><span class="toc-title">符号</span></a></li><li data-a="dapo"><a href="#kit-clip"><span class="toc-num">3</span><span class="toc-title">Clip-Higher</span></a></li><li data-a="dapo"><a href="#kit-ds"><span class="toc-num">4</span><span class="toc-title">Dynamic Sampling</span></a></li><li data-a="dapo"><a href="#kit-token"><span class="toc-num">5</span><span class="toc-title">Token-level Loss</span></a></li><li data-a="dapo"><a href="#kit-overlong"><span class="toc-num">6</span><span class="toc-title">Overlong</span></a></li><li data-a="dapo"><a href="#pros"><span class="toc-num">7</span><span class="toc-title">优缺点</span></a></li>
+    </ol>
+  </nav>
+  <div class="algo-main">
+<section class="algo-section module-sec" id="mod-dapo" data-a="dapo">
+    <p class="module-tag">Family B · 工程增强 · 本轮有训</p>
+    <h2>DAPO</h2>
+    <p class="sec-sub">Decoupled Clip and Dynamic sAmpling Policy Optimization</p>
+    <div class="module-intro">
+      <p>
+        DAPO = <strong>GRPO 骨架</strong> + 论文四件套。Advantage 仍按<strong>同题 $G$ 条</strong>做组内相对（与 GRPO 相同，不是 REINFORCE++ 的全 batch 白化）。
+        相对论文 GRPO 改的是：非对称 clip、丢掉无梯度组、把样本级 loss 改成组内 token 级、以及超长软惩罚。本轮脚本另关 KL。
+      </p>
+      <p class="how"><strong>核心：</strong>组内 $\hat{A}$ + Clip-Higher / Dynamic Sampling / Token-level Loss / Overlong · <span class="mono">reward_manager=dapo</span> · <span class="mono">adv_estimator=grpo</span></p>
+      <ul class="ref-list">
+        <li>
+          <span class="ref-label">Paper</span>
+          <a href="https://arxiv.org/abs/2503.14476" target="_blank" rel="noopener">DAPO: An Open-Source LLM Reinforcement Learning System at Scale</a>
+          <span class="ref-meta">arXiv:2503.14476</span>
+        </li>
+        <li>
+          <span class="ref-label">Repo</span>
+          <a href="https://github.com/BytedTsinghua-SIA/DAPO" target="_blank" rel="noopener">BytedTsinghua-SIA/DAPO</a>
+          <span class="ref-meta">项目主仓</span>
+        </li>
+      </ul>
+      <div class="formula-block">
+        <p class="formula-label">DAPO 目标（论文式，同题 $G$ 条）</p>
+        <div class="formula">$$\mathcal{J}_{\text{DAPO}}(\theta)=\mathbb{E}_{q,\{o_i\}_{i=1}^{G}}\!\left[\frac{1}{\sum_{i=1}^{G}|o_i|}\sum_{i=1}^{G}\sum_{t=1}^{|o_i|}\min\!\Big(r_{i,t}(\theta)\,\hat{A}_i,\;\mathrm{clip}(r_{i,t}(\theta),1{-}\epsilon_{\text{low}},1{+}\epsilon_{\text{high}})\,\hat{A}_i\Big)\right]$$</div>
+        <p class="formula-note">
+          约束：组内不能全对也不能全错（Dynamic Sampling）。
+          $\hat{A}_i$ 仍是组内 reward 相对标准化；分母 $\sum_i|o_i|$ 是<strong>该 group 总 token 数</strong>（Token-level Loss）。
+        </p>
+      </div>
+    </div>
+
+    <div class="kit-grid" id="dapo-kit">
+      <article class="kit-item" id="sym">
+        <p class="kit-num">S</p>
+        <h3>符号</h3>
+        <p class="kit-desc">阅读后面公式前先扫一眼这些符号。</p>
+        <div class="formula-block">
+          <div class="table-wrap kit-table kit-table-wide">
+            <table class="sym-table">
+              <thead><tr><th>符号</th><th>含义</th></tr></thead>
+              <tbody>
+                <tr><td>$q$</td><td>一道题 / 一个 prompt</td></tr>
+                <tr><td>$G$</td><td>同题采样条数（本轮通常 $G{=}8$）</td></tr>
+                <tr><td>$o_i$</td><td>第 $i$ 条回复（token 序列）；$|o_i|$=长度，$o_{i,t}$=第 $t$ 个 token；$i=1,\dots,G$</td></tr>
+                <tr><td>$r_{i,t}(\theta)$</td><td>重要性比率 $\pi_\theta(o_{i,t}\mid q,o_{i,&lt;t})\,/\,\pi_{\text{old}}(\cdots)$</td></tr>
+                <tr><td>$\hat{A}_i$</td><td>第 $i$ 条的<strong>组内相对 advantage</strong>（标量，broadcast 到该条每个 token）；<strong>不是</strong>下式的 $\ell$</td></tr>
+                <tr><td>$\ell_{i,t}$</td><td>第 $i$ 条第 $t$ 个 token 的 <strong>PPO/GRPO 裁剪 surrogate 项</strong>（见下），已含 $\hat{A}_i$</td></tr>
+                <tr><td>$L$</td><td>最大响应长度硬上限（本轮 <span class="mono">max_resp_len=16384</span>）</td></tr>
+                <tr><td>$L_{\text{buf}}$</td><td>软惩罚缓冲带长度（本轮 <span class="mono">overlong_buffer_cfg.len=2048</span>）</td></tr>
+                <tr><td>$L_{\text{soft}}$</td><td>开始软罚的起点，$L_{\text{soft}}=L-L_{\text{buf}}$（本轮 14336）</td></tr>
+                <tr><td>$\Delta$</td><td>超出软起点的长度，$\Delta=|o_i|-L_{\text{soft}}$；$\Delta\le 0$ 不罚</td></tr>
+                <tr><td>$c$</td><td>Overlong 惩罚系数（本轮 <span class="mono">penalty_factor=1.0</span>）</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="formula-note">$\ell_{i,t}$ 见 Clip-Higher / Token-level Loss；$L,L_{\text{buf}},L_{\text{soft}}$ 见 Overlong；$\hat{A}_i$ 仍是组内相对，不是 REINFORCE++ 的 batch 白化。</p>
+        </div>
+      </article>
+
+      <article class="kit-item" id="kit-clip">
+        <p class="kit-num">1</p>
+        <h3>非对称剪裁 · Clip-Higher</h3>
+        <p class="kit-desc">解耦上下裁剪界：抬高上界，让低概率「好 token」有更大提升空间，缓解熵崩溃。</p>
+        <div class="formula-block">
+          <p class="formula-label">重要性比率</p>
+          <div class="formula">$$r_{i,t}(\theta) = \frac{\pi_\theta(o_{i,t}\mid q,o_{i,&lt;t})}{\pi_{\theta_{\text{old}}}(o_{i,t}\mid q,o_{i,&lt;t})}$$</div>
+          <p class="formula-label">非对称裁剪（本轮 $\epsilon_{\text{low}}=0.2,\;\epsilon_{\text{high}}=0.28$）</p>
+          <div class="formula">$$\ell_{i,t} = \max\!\Big(-\hat{A}_i\,r_{i,t}(\theta),\;-\hat{A}_i\,\mathrm{clip}\big(r_{i,t}(\theta),\,1{-}\epsilon_{\text{low}},\,1{+}\epsilon_{\text{high}}\big)\Big)$$</div>
+          <p class="formula-note">
+            有效区间 $[0.80,\,1.28]$（对称 PPO / GRPO 为 $[0.80,\,1.20]$）。
+            $\hat{A}&gt;0$ 时上界更松；$\hat{A}&lt;0$ 时下界仍紧。
+            配置：<span class="mono">clip_ratio_low=0.2</span> · <span class="mono">clip_ratio_high=0.28</span>
+          </p>
+        </div>
+      </article>
+
+      <article class="kit-item" id="kit-ds">
+        <p class="kit-num">2</p>
+        <h3>动态采样 · Dynamic Sampling</h3>
+        <p class="kit-desc">过滤同题组内全对 / 全错（$\hat{A}$ 全 0、无梯度），重复采样直到凑满有效 train batch。</p>
+        <div class="formula-block">
+          <p class="formula-label">组过滤（metric 通常取 acc）</p>
+          <div class="formula">$$\text{keep}(g) \iff \mathrm{std}\!\big(\{m_{g,i}\}_{i=1}^{G}\big) &gt; 0 \iff 0 &lt; \#\{\text{correct in }g\} &lt; G$$</div>
+          <p class="formula-label">凑满有效 prompt</p>
+          <div class="formula">$$\text{while } \#\text{kept prompts} &lt; B_{\text{train}} \;\wedge\; \#\text{gen} &lt; N_{\max}:\quad \text{再采一批}$$</div>
+          <p class="formula-note">
+            最终轨迹数 $B_{\text{train}}\times G$（本轮 $G{=}8$）。
+            配置：<span class="mono">filter_groups.enable=True</span> · <span class="mono">metric=acc</span> · <span class="mono">max_num_gen_batches=10</span>。
+            <strong>本轮注记：</strong>完整逻辑在 <span class="mono">recipe/dapo</span>；E2 走 <span class="mono">main_ppo</span> 时 <span class="mono">filter_groups</span> 为静默 no-op，实际接近「DAPO w/o Dynamic Sampling」，退化组靠离线难度池缓解。
+          </p>
+        </div>
+      </article>
+
+      <article class="kit-item" id="kit-token">
+        <p class="kit-num">3</p>
+        <h3>Token 级损失 · Token-level Policy Gradient Loss</h3>
+        <p class="kit-desc">
+          下面两式是<strong>策略目标 $\mathcal{J}$（如何把各 token 的 loss 加总）</strong>，不是 advantage $\hat{A}$ 本身。
+          相对样本级，<strong>对长输出更友好</strong>：长回复里的每个 token 权重相同，不会被 $1/|o_i|$ 稀释。
+        </p>
+        <div class="formula-block">
+          <p class="formula-label">单个 token 的损失项 $\ell_{i,t}$（这里才出现 $\hat{A}$）</p>
+          <div class="formula">$$\ell_{i,t}=\min\!\Big(r_{i,t}(\theta)\,\hat{A}_i,\;\mathrm{clip}(r_{i,t}(\theta),\,1{-}\epsilon_{\text{low}},\,1{+}\epsilon_{\text{high}})\,\hat{A}_i\Big)$$</div>
+          <p class="formula-note" style="margin-bottom:4px">
+            训练时常见写法是对 $-\ell$ 做梯度下降；上式与看板 Clip-Higher 里的 $\max(-\hat{A} r,\,-\hat{A}\,\mathrm{clip}(r))$ 等价（差一个符号约定）。
+            Outcome reward 下同一条回复的所有 $t$ 共用同一个 $\hat{A}_i$。
+          </p>
+          <p class="formula-label">论文 GRPO · 样本级聚合（对 $\ell_{i,t}$ 求和）</p>
+          <div class="formula">$$\mathcal{J}_{\text{GRPO}} = \mathbb{E}_q\!\left[\frac{1}{G}\sum_{i=1}^{G}\frac{1}{|o_i|}\sum_{t=1}^{|o_i|}\ell_{i,t}\right]$$</div>
+          <p class="formula-label">论文 DAPO · Token 级聚合（分母 = 该组总 token 数）</p>
+          <div class="formula">$$\mathcal{J}_{\text{DAPO}} = \mathbb{E}_q\!\left[\frac{1}{\sum_{i=1}^{G}|o_i|}\sum_{i=1}^{G}\sum_{t=1}^{|o_i|}\ell_{i,t}\right]$$</div>
+          <p class="formula-note">
+            <strong>这两式比的是「怎么平均 $\ell$」</strong>，不是重新定义 $\hat{A}$。
+            GRPO：先对每条做 $1/|o_i|$，再对 $G$ 条做 $1/G$ → 长短答各占 $1/G$。
+            DAPO：直接除以 $\sum_i|o_i|$ → 每个 token 权重相同，长答贡献更大。
+          </p>
+        </div>
+      </article>
+
+      <article class="kit-item" id="kit-overlong">
+        <p class="kit-num">4</p>
+        <h3>软过长惩罚 · Overlong Reward Shaping</h3>
+        <p class="kit-desc">在硬截断前设缓冲带，对超长回答做线性软罚，避免「一截断就硬吃 −1」的奖励噪声。</p>
+        <div class="formula-block">
+          <p class="formula-label">软区间与超出长度</p>
+          <div class="formula">$$L_{\text{soft}} = L - L_{\text{buf}},\qquad \Delta = |o_i| - L_{\text{soft}}$$</div>
+          <p class="formula-label">惩罚与最终 reward</p>
+          <div class="formula">$$r_{\text{overlong}} = \min\!\Big(-\frac{\Delta}{L_{\text{buf}}}\cdot c,\;0\Big),\qquad r_{\text{final}} = r_{\text{score}} + r_{\text{overlong}}$$</div>
+          <p class="formula-note">
+            本轮 $L{=}16384$，$L_{\text{buf}}{=}2048$，$c{=}1.0$：从 14336 起罚，到 16384 罚满 $-1$。
+          </p>
+          <div class="table-wrap kit-table kit-table-wide">
+            <table>
+              <thead><tr><th>响应长度</th><th>$\Delta$</th><th>$r_{\text{overlong}}$</th></tr></thead>
+              <tbody>
+                <tr><td>≤ 14336</td><td>≤ 0</td><td>0</td></tr>
+                <tr><td>15360</td><td>1024</td><td>−0.5</td></tr>
+                <tr><td>16384</td><td>2048</td><td>−1.0</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="formula-note" style="border-top:none;padding-top:0;margin-top:8px">
+            配置：<span class="mono">reward.reward_kwargs.overlong_buffer_cfg.*</span> · <span class="mono">max_resp_len</span>。
+            看板看准确率用 <span class="mono">critic/score/mean</span>（惩罚前），勿用含 overlong 的 <span class="mono">critic/rewards/mean</span>。
+          </p>
+        </div>
+      </article>
+    </div>
+
+    <div class="module-pros" id="pros">
+      <div class="pros-col">
+        <h4>优点</h4>
+        <p>Clip-Higher 保探索、抑熵崩溃；Dynamic Sampling 去掉零梯度组；Token-level 让组内长短答按 token 公平贡献；Overlong 降截断噪声；关 KL 更快。</p>
+      </div>
+      <div class="pros-col">
+        <h4>缺点</h4>
+        <p>超参多；动态采样费墙钟；仍保留组内除 std（难度偏置）；软罚可能压短长推理。本轮 Dynamic Sampling 未生效，且 E1/E2 同用 token-mean。</p>
+      </div>
+    </div>
+  </section>
+  <nav class="algo-pager">
+    <a class="pager-link prev" href="grpo.html"><span class="pager-dir">上一篇</span><span class="pager-name">GRPO</span></a>
+    <a class="pager-home" href="index.html">返回算法总览</a>
+    <a class="pager-link next" href="drgrpo.html"><span class="pager-dir">下一篇</span><span class="pager-name">Dr.GRPO</span></a>
+  </nav>
+
+  </div><!-- /.algo-main -->
+  </div><!-- /.algo-layout -->
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  renderMathInElement(document.body, {
+    delimiters: [
+      {left: "$$", right: "$$", display: true},
+      {left: "\\[", right: "\\]", display: true},
+      {left: "$", right: "$", display: false},
+      {left: "\\(", right: "\\)", display: false}
+    ],
+    throwOnError: false
+  });
+});
+</script>
+
+<script>
+(function () {
+  const links = Array.from(document.querySelectorAll(".algo-toc a[href^='#']"));
+  if (!links.length) return;
+  const sections = links
+    .map((a) => document.querySelector(a.getAttribute("href")))
+    .filter(Boolean);
+  function setActive(id) {
+    links.forEach((a) => {
+      a.classList.toggle("is-active", a.getAttribute("href") === "#" + id);
+    });
+  }
+  const observer = new IntersectionObserver(
+    (entries) => {
+      const visible = entries
+        .filter((e) => e.isIntersecting)
+        .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
+      if (visible[0]) setActive(visible[0].target.id);
+    },
+    { rootMargin: "-20% 0px -60% 0px", threshold: [0, 0.25, 0.5, 1] }
+  );
+  sections.forEach((s) => observer.observe(s));
+  const hash = location.hash.slice(1);
+  if (hash && document.getElementById(hash)) setActive(hash);
+  else if (sections[0]) setActive(sections[0].id);
+})();
+</script>
+
+</body>
+</html>
