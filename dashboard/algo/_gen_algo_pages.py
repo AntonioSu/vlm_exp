@@ -36,7 +36,7 @@ HEADER = """<!doctype html>
       <a href="../4b/index.html">4B 训练</a>
       <a href="../mm/index.html">多模态训练</a>
       <a href="../conclusion/index.html">综合结论</a>
-      <a href="../log/index.html">实验日志</a>
+      <a href="../chronicle/index.html">实验日志</a>
     </div>
   </div>
 </div>
@@ -591,7 +591,7 @@ INDEX = r'''<!doctype html>
       <a href="../4b/index.html">4B 训练</a>
       <a href="../mm/index.html">多模态训练</a>
       <a href="../conclusion/index.html">综合结论</a>
-      <a href="../log/index.html">实验日志</a>
+      <a href="../chronicle/index.html">实验日志</a>
     </div>
   </div>
 </div>
