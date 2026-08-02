@@ -8,7 +8,10 @@
     m0: "#2563eb",
     m1: "#d97706",
     m2: "#059669",
+    m3: "#0891b2",
   };
+  const GEN_COLORS = { m1: "#dc2626", m2: "#f97316", m3: "#a855f7" };
+  const TRUNC_COLORS = { m1: "#dc2626", m2: "#ea580c", m3: "#c026d3" };
 
   function drawBarChart(canvasId, tipId, { categories, data, colors, valueSuffix = "", height = 220 }) {
     const canvas = document.getElementById(canvasId);
@@ -467,6 +470,7 @@
     return [
       window.MM_M1_TRAIN && { key: "m1", t: window.MM_M1_TRAIN, dash: null },
       window.MM_M2_TRAIN && { key: "m2", t: window.MM_M2_TRAIN, dash: [6, 4] },
+      window.MM_M3_TRAIN && { key: "m3", t: window.MM_M3_TRAIN, dash: [2, 3] },
     ].filter(Boolean);
   }
 
@@ -475,9 +479,11 @@
       || rolloutBySource(window.MM_M1_ROLLOUT_SUMMARY, null);
     const m2geo = rolloutBySource(window.MM_M2_ROLLOUT_SUMMARY, "geo3k");
     const m2text = rolloutBySource(window.MM_M2_ROLLOUT_SUMMARY, "text");
-    if (!m1 && !m2geo) return;
+    const m3all = rolloutBySource(window.MM_M3_ROLLOUT_SUMMARY, "all")
+      || rolloutBySource(window.MM_M3_ROLLOUT_SUMMARY, null);
+    if (!m1 && !m2geo && !m3all) return;
 
-    const n = Math.max(m1?.n || 0, m2geo?.n || 0, m2text?.n || 0, 150);
+    const n = Math.max(m1?.n || 0, m2geo?.n || 0, m2text?.n || 0, m3all?.n || 0, 150);
     const cats = stepCats(n);
     const seriesAcc = [];
     const seriesScore = [];
@@ -495,6 +501,11 @@
     }
     if (m2text) {
       seriesScore.push({ name: "M2 text score", data: padTo(m2text.score, n), color: "#9333ea", dash: [2, 3] });
+    }
+    if (m3all) {
+      seriesAcc.push({ name: "M3 mixed acc", data: padTo(m3all.acc, n), color: COLORS.m3, dash: [2, 3] });
+      seriesScore.push({ name: "M3 mixed score", data: padTo(m3all.score, n), color: COLORS.m3, dash: [2, 3] });
+      seriesChars.push({ name: "M3 chars", data: padTo(m3all.chars, n), color: COLORS.m3, dash: [2, 3] });
     }
 
     drawLineChart("chart-mm-roll-acc", "tip-mm-roll-acc", {
@@ -542,10 +553,10 @@
         const tm = t.timingMean || {};
         const prog = t.progressDone != null ? `${t.progressDone}/${t.progressTotal}` : `${t.lastStep}/${t.nSteps}`;
         return `<strong style="color:${t.color}">${t.shortLabel}</strong>：` +
-          `<span class="mono">${t.source}</span> · ${t.firstStep}–${t.lastStep}（${prog}）· ` +
+          `${t.firstStep}–${t.lastStep}（${prog}）· ` +
           `gen ${tm.gen ?? "—"}s / update_actor ${tm.update_actor ?? "—"}s / ref ${tm.ref ?? "—"}s`;
       }).join("<br>") +
-        `<br>实线 = M1，虚线 = M2。生成 <span class="mono">${runs[0].t.generatedAt}</span> / <span class="mono">gen_mm_train_dashboard_data.py</span>。`;
+        `<br>实线 = M1，虚线 = M2，点虚线 = M3。生成 <span class="mono">${runs[0].t.generatedAt}</span> / <span class="mono">gen_mm_train_dashboard_data.py</span>。`;
     }
 
     const seriesOf = (picker) => runs.map(({ t, dash }) => ({
@@ -565,7 +576,7 @@
     drawLineChart("chart-mm-timing", "tip-mm-timing", {
       categories: cats,
       series: runs.flatMap(({ t, dash, key }) => ([
-        { name: `${t.shortLabel} gen`, data: padTo(t.timing?.gen || [], n), color: key === "m2" ? "#f97316" : "#dc2626", dash },
+        { name: `${t.shortLabel} gen`, data: padTo(t.timing?.gen || [], n), color: GEN_COLORS[key] || "#dc2626", dash },
         { name: `${t.shortLabel} update_actor`, data: padTo(t.timing?.update_actor || [], n), color: t.color, dash },
       ])),
       valueSuffix: "s",
@@ -574,7 +585,7 @@
     drawBarChart("chart-mm-timing-mean", "tip-mm-timing-mean", {
       categories: runs.flatMap(({ t }) => [`${t.shortLabel} gen`, `${t.shortLabel} actor`]),
       data: runs.flatMap(({ t }) => [t.timingMean?.gen ?? null, t.timingMean?.update_actor ?? null]),
-      colors: runs.flatMap(({ t, key }) => [key === "m2" ? "#f97316" : "#dc2626", t.color]),
+      colors: runs.flatMap(({ t, key }) => [GEN_COLORS[key] || "#dc2626", t.color]),
       valueSuffix: "s",
       height: 220,
     });
@@ -600,7 +611,7 @@
       categories: cats,
       series: runs.flatMap(({ t, dash, key }) => ([
         { name: `${t.shortLabel} clipfrac`, data: padTo(t.clip || [], n), color: t.color, dash },
-        { name: `${t.shortLabel} trunc@16K`, data: padTo(t.trunc || [], n), color: key === "m2" ? "#ea580c" : "#dc2626", dash: dash || [2, 3] },
+        { name: `${t.shortLabel} trunc@16K`, data: padTo(t.trunc || [], n), color: TRUNC_COLORS[key] || "#dc2626", dash: dash || [2, 3] },
       ])),
       valueSuffix: "%",
       height: 200,

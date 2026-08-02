@@ -1,6 +1,6 @@
 window.MM_M1_ROLLOUT_SUMMARY = {
   "source": "m1_geo3k100_2b rollout summary",
-  "generatedFrom": "/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/logs/exp2card_mm/m1_geo3k100_2b/rollout_dump",
+  "generatedFrom": "vlm_exp/logs/exp2card_mm/m1_geo3k100_2b/rollout_dump",
   "generatedBy": "scripts/analysis/summarize_mm_rollouts.py",
   "note": "Training rollout metrics; not Geo3K test-set evaluation.",
   "overall": {
