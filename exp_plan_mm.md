@@ -2,7 +2,7 @@
 
 > **文档拆分**：本文只保留实验**方案**（设计/脚本/流程）。训练进度、巡检日志与评测数字见 [`exp_result_mm.md`](./exp_result_mm.md)。
 
-机器：单机 4× A100-80GB（与 E1–E5 文本实验共用，需排队）。工作区根目录 `/data/juicefs-white/5281-gpu-a100/lijunyi`（下文 `$ROOT`）；`vlm_exp` / `polaris` / `verl-main` / `evalscope` 均在其下。目标：在**完全相同的模型、算法(GRPO)、序列长度、预算**下，只改变**训练数据里图文样本的占比**（0% / 20% / 50% / 100%），对比：
+机器：单机 4× A100-80GB（与 E1–E5 文本实验共用，需排队）。工作区根目录 `$WORKSPACE_ROOT`（下文 `$ROOT`）；`vlm_exp` / `polaris` / `verl-main` / `evalscope` 均在其下。目标：在**完全相同的模型、算法(GRPO)、序列长度、预算**下，只改变**训练数据里图文样本的占比**（0% / 20% / 50% / 100%），对比：
 
 1. 视觉推理能力的获得速度与上限（Geo3K 验证/测试集 acc）；
 2. 纯文本数学能力是否被图文数据"稀释"或"带崩"（复用 aime24/math_500 探针，与 E1 GRPO 直接可比）。
@@ -47,29 +47,29 @@ processor output keys: ['input_ids', 'attention_mask', 'mm_token_type_ids', 'pix
 
 ```bash
 # 1) 下载 + 预处理 Geo3K（走 hf-mirror，因为直连 huggingface.co 会 TLS 失败）
-cd /data/juicefs-white/5281-gpu-a100/lijunyi/verl-main
+cd verl-main
 export HF_ENDPOINT=https://hf-mirror.com
 unset HF_HUB_OFFLINE TRANSFORMERS_OFFLINE
 python examples/data_preprocess/geo3k.py \
-  --local_save_dir /data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/parquet/mm/geo3k_raw
+  --local_save_dir vlm_exp/parquet/mm/geo3k_raw
 # 产出：geo3k_raw/train.parquet(2101行) geo3k_raw/test.parquet(601行)
 # schema: images(ndarray[dict]) / data_source='hiyouga/geometry3k' / prompt(含<image>占位符)
 #         / ability='math' / reward_model.ground_truth / extra_info
 
 # 2) 按比例切分文本子集 + 训练中验证用的 geo3k 探针
-python /data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/data_process/build_mm_mix.py
-# 产出：/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/parquet/mm/text_subset_m2_2101.parquet（M2用）
-#       /data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/parquet/mm/text_subset_m3_8404.parquet（M3用）
-#       /data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/parquet/mm/geo3k_val_probe_100.parquet（训练中 test_freq 验证探针，对齐 aime24 的 30 题量级）
+python vlm_exp/data_process/build_mm_mix.py
+# 产出：vlm_exp/parquet/mm/text_subset_m2_2101.parquet（M2用）
+#       vlm_exp/parquet/mm/text_subset_m3_8404.parquet（M3用）
+#       vlm_exp/parquet/mm/geo3k_val_probe_100.parquet（训练中 test_freq 验证探针，对齐 aime24 的 30 题量级）
 ```
 
 Geo3K 预处理与混合切片已在本机跑过，产物已落盘在 `$ROOT/vlm_exp/parquet/mm/`，可直接被下面的训练脚本引用。**注意**：`vlm_exp` 是独立于 `polaris` 的 git 仓库（`$ROOT/vlm_exp` → `git@github.com:AntonioSu/vlm_exp.git`）；`polaris_easy_boxed.parquet`、`verl_env.sh`、`aime24.parquet`、`trans_weight.sh` 等共享基础设施仍在 `$ROOT/polaris/` 下引用，多模态专属脚本/数据/产出都在 `vlm_exp` 名下。
 
 ## 3. Reward 设计
 
-同一 batch 里会混有 `data_source=math_dapo/aime24`（纯文本）和 `data_source=hiyouga/geometry3k`（图文）的行。写了统一的 dispatcher `/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/scripts/train/reward_mm_mixed.py`：
+同一 batch 里会混有 `data_source=math_dapo/aime24`（纯文本）和 `data_source=hiyouga/geometry3k`（图文）的行。写了统一的 dispatcher `vlm_exp/scripts/train/reward_mm_mixed.py`：
 
-```43:46:/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/scripts/train/reward_mm_mixed.py
+```43:46:vlm_exp/scripts/train/reward_mm_mixed.py
 def compute_score(data_source, solution_str, ground_truth, extra_info=None):
     if data_source == "hiyouga/geometry3k":
         return _score_geo3k(solution_str, ground_truth)
@@ -83,17 +83,17 @@ def compute_score(data_source, solution_str, ground_truth, extra_info=None):
 
 | 脚本 | 用途 |
 | --- | --- |
-| `/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/scripts/train/run_mm_mix_2b.sh` | 共享骨架（继承 E1 统一配置块 + 多模态改动），由下面三个脚本设环境变量后调用 |
-| `/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/scripts/train/run_m1_geo3k_2b.sh` | M1：100% 图文 |
-| `/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/scripts/train/run_m2_mix50_2b.sh` | M2：50/50 混合 |
-| `/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/scripts/train/run_m3_mix20_2b.sh` | M3：20/80 混合 |
-| `/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/scripts/train/run_smoke_mm.sh` | **正式跑前必须先跑**的多模态链路烟测（2 step、极小 batch，见第 6 节） |
+| `vlm_exp/scripts/train/run_mm_mix_2b.sh` | 共享骨架（继承 E1 统一配置块 + 多模态改动），由下面三个脚本设环境变量后调用 |
+| `vlm_exp/scripts/train/run_m1_geo3k_2b.sh` | M1：100% 图文 |
+| `vlm_exp/scripts/train/run_m2_mix50_2b.sh` | M2：50/50 混合 |
+| `vlm_exp/scripts/train/run_m3_mix20_2b.sh` | M3：20/80 混合 |
+| `vlm_exp/scripts/train/run_smoke_mm.sh` | **正式跑前必须先跑**的多模态链路烟测（2 step、极小 batch，见第 6 节） |
 
-M1–M3 相对 E1 统一配置块的改动只有：`data.train_files`（换成图文混合列表）、`data.image_key=images`、`data.val_files`（加一路 geo3k 视觉验证探针）、`reward.custom_reward_function.path`（换成 mixed dispatcher）、`trainer.project_name=exp2card_mm`（与文本实验的 `exp2card` 分开存放，避免混淆）。checkpoint 存 `/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/model/exp2card_mm/<实验名>/`，日志存 `/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/logs/exp2card_mm/<实验名>/`。
+M1–M3 相对 E1 统一配置块的改动只有：`data.train_files`（换成图文混合列表）、`data.image_key=images`、`data.val_files`（加一路 geo3k 视觉验证探针）、`reward.custom_reward_function.path`（换成 mixed dispatcher）、`trainer.project_name=exp2card_mm`（与文本实验的 `exp2card` 分开存放，避免混淆）。checkpoint 存 `vlm_exp/model/exp2card_mm/<实验名>/`，日志存 `vlm_exp/logs/exp2card_mm/<实验名>/`。
 
 **小数据组的 epoch 设置**：M1 训练池只有 2101 行（`train_batch_size=32` → 每 epoch ≈66 step），需要 `total_epochs=10` 循环凑够 150 step；M2 池 4202 行（`total_epochs=5`）；M3 池 10505 行（`total_epochs=2`）。实际停止点仍由 `total_training_steps=150` 控制，`total_epochs` 只是保证不会在还没到 150 step 时就因为 epoch 耗尽而提前停止。
 
-**已知偏离 E1 配置的一处（`enforce_eager=True`，非科学性变量）**：M1 首次正式跑时用 E1 原始的 `enforce_eager=False`（开 CUDA-graph capture + torch.compile）复现了崩溃——`torch._inductor` 的 autotune 缓存保存阶段抛出 `PermissionError: /data/lijunyi`（一个与本次路径迁移无关的 torch/vLLM 内部缓存路径解析问题，多次排查未能定位到具体源头；`enforce_eager=True` 的烟测脚本从未触发这条编译路径，因此未提前暴露）。为尽快解除阻塞，`run_mm_mix_2b.sh` 改为 `enforce_eager=True`（跳过 vLLM 的 CUDA-graph 编译，只影响 rollout 吞吐，不影响模型数值/正确性）。这与 E1 的 `enforce_eager=False`不一致，如果 M1–M3 的 rollout 吞吐显著低于 E1 折算值，这是已知原因；若后续需要修复以恢复可比性，需要进一步定位该 torch/vLLM 缓存路径 bug。
+**已知偏离 E1 配置的一处（`enforce_eager=True`，非科学性变量）**：M1 首次正式跑时用 E1 原始的 `enforce_eager=False`（开 CUDA-graph capture + torch.compile）复现了崩溃——`torch._inductor` 的 autotune 缓存保存阶段抛出 `PermissionError: $WORKSPACE_ROOT`（一个与本次路径迁移无关的 torch/vLLM 内部缓存路径解析问题，多次排查未能定位到具体源头；`enforce_eager=True` 的烟测脚本从未触发这条编译路径，因此未提前暴露）。为尽快解除阻塞，`run_mm_mix_2b.sh` 改为 `enforce_eager=True`（跳过 vLLM 的 CUDA-graph 编译，只影响 rollout 吞吐，不影响模型数值/正确性）。这与 E1 的 `enforce_eager=False`不一致，如果 M1–M3 的 rollout 吞吐显著低于 E1 折算值，这是已知原因；若后续需要修复以恢复可比性，需要进一步定位该 torch/vLLM 缓存路径 bug。
 
 ## 5. 为什么不在本轮铺开算法/分辨率/冻结视觉编码器等其它消融轴
 
@@ -110,7 +110,7 @@ M1–M3 相对 E1 统一配置块的改动只有：`data.train_files`（换成�
 
    ```bash
    conda activate verl_qwen35
-   bash /data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/scripts/train/run_smoke_mm.sh
+   bash vlm_exp/scripts/train/run_smoke_mm.sh
    ```
 
    验证四件事：① Qwen3.5-2B 原生 vision 在 FSDP2+vLLM 0.24 下多模态生成不报错（新路径，此前只验证过纯文本）；② 混合"有图"与"无图"两个 parquet 文件的 `data.train_files` 列表能正常 concatenate 并在同一 batch 内联合训练；③ `reward_mm_mixed.py` 对同一 batch 内的文本/图文行都能正确分发判分；④ `data.val_files` 两路验证集能各自产出 `val-core/math_dapo(或aime24)/...` 与 `val-core/hiyouga/geometry3k/...` 指标。若显存不够，先降 `actor_rollout_ref.rollout.gpu_memory_utilization`（当前 0.5，图文比纯文本占用更多，可能需要降到 0.4 左右，参照 `run_qwen3_5_2b_video_fsdp.sh` 官方示例用的是 0.1，但那是 4 卡张量并行摊薄后的值，2 卡场景需要重新试）。
@@ -118,10 +118,10 @@ M1–M3 相对 E1 统一配置块的改动只有：`data.train_files`（换成�
 2. **等 E4(RLOO)/E5(REINFORCE++) 跑完，GPU 空出来后**，依次启动 M1 → M2 → M3（建议这个顺序：先跑信号最强、最快出结果的纯图文组，再跑混合组）：
 
    ```bash
-   bash /data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/scripts/train/run_m1_geo3k_2b.sh
+   bash vlm_exp/scripts/train/run_m1_geo3k_2b.sh
    # 默认使用 GPU0,1；如需并行利用空闲卡，可覆盖 MM_CUDA_VISIBLE_DEVICES
-   MM_CUDA_VISIBLE_DEVICES=2,3 bash /data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/scripts/train/run_m2_mix50_2b.sh
-   bash /data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/scripts/train/run_m3_mix20_2b.sh
+   MM_CUDA_VISIBLE_DEVICES=2,3 bash vlm_exp/scripts/train/run_m2_mix50_2b.sh
+   bash vlm_exp/scripts/train/run_m3_mix20_2b.sh
    ```
 
    断点续训：直接重跑同一条命令即可（`resume_mode=auto`）。
@@ -131,7 +131,7 @@ M1–M3 相对 E1 统一配置块的改动只有：`data.train_files`（换成�
 ```bash
 # 一条命令依次完成：FSDP→HF 合并、Geo3K 601 题视觉评测、文本能力评测
 CUDA_VISIBLE_DEVICES=0 bash \
-  /data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/scripts/eval/evaluate_mm_checkpoint.sh \
+  vlm_exp/scripts/eval/evaluate_mm_checkpoint.sh \
   <实验名>
 ```
 
@@ -158,7 +158,7 @@ CUDA_VISIBLE_DEVICES=0 bash \
 
 ## 9. 待办
 
-- [x] 跑 `/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/scripts/train/run_smoke_mm.sh`，确认多模态 FSDP2+vLLM 链路无报错
+- [x] 跑 `vlm_exp/scripts/train/run_smoke_mm.sh`，确认多模态 FSDP2+vLLM 链路无报错
 - [ ] M1 → M2 → M3 正式训练（进度与事故见 [`exp_result_mm.md`](./exp_result_mm.md)）
 - [x] 写 Geo3K 601 题的离线批量评测脚本（`scripts/eval/eval_geo3k.py`；1 题端到端 vLLM 推理与判分已验证）
 - [x] M0(=E1 step150) 正式基线评测（数字见 [`exp_result_mm.md`](./exp_result_mm.md)）
