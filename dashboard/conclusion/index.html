@@ -278,8 +278,8 @@
             <tr>
               <td class="algo">M3</td>
               <td>20% 混合</td>
-              <td>~21/150 进行中</td>
-              <td>更贴近真实 post-training 配比；跑满 + 评测后才谈「用多少图文换多少视觉、掉多少文本」。</td>
+              <td>150/150 满</td>
+              <td>训练曲线已同步（mixed overall；dump 无 modality tag）；<strong>formal / light 离线评测待补</strong>——配比权衡曲线的低图文端点。</td>
             </tr>
           </tbody>
         </table>
@@ -449,7 +449,7 @@
         <ul class="bullet-list">
           <li><strong>Size：</strong> 4B S3 尚未五组跑满；S3 上的算法排序暂以 Easy-Boxed + 已有 S3 曲线为限。</li>
           <li><strong>Param：</strong> 无 lr / batch / n 网格；「Param」节是开关效应，不是超参最优解。</li>
-          <li><strong>MM：</strong> M1–M3 formal 评测未齐；M1 light 不可与 M0 比绝对值；M3 仍在训练。</li>
+          <li><strong>MM：</strong> M1–M3 训练均已 150/150；formal 评测未齐；M1 light 不可与 M0 比绝对值。</li>
           <li><strong>Algo：</strong> PPO 未纳入——不能推出「critic-free 一定优于 PPO」。Agent 评测噪声大，不宜细排名次。</li>
         </ul>
         <p class="footer-links">
