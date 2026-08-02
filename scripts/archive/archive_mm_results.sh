@@ -3,9 +3,30 @@
 # Checkpoints are intentionally excluded because each group is very large; use the
 # original model/exp2card_mm/<experiment>/ path if weights are needed.
 set -euo pipefail
+SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+# Resolve workspace root without hardcoding user paths.
+if [[ -z "${WORKSPACE_ROOT:-}" ]]; then
+  if [[ -f "${SCRIPT_DIR}/../../../scripts/workspace_root.sh" ]]; then
+    # polaris/vlm_exp/scripts/<...>/
+    source "${SCRIPT_DIR}/../../../scripts/workspace_root.sh"
+  elif [[ -f "${SCRIPT_DIR}/../../../../polaris/scripts/workspace_root.sh" ]]; then
+    # sibling vlm_exp/scripts/<...>/
+    source "${SCRIPT_DIR}/../../../../polaris/scripts/workspace_root.sh"
+  else
+    _pkg=$(cd "${SCRIPT_DIR}/../.." && pwd)
+    WORKSPACE_ROOT=$(cd "${_pkg}/.." && pwd)
+    # nested polaris/vlm_exp → go up one more if needed
+    if [[ "$(basename "${_pkg}")" == "vlm_exp" && "$(basename "$(dirname "${_pkg}")")" == "polaris" ]]; then
+      WORKSPACE_ROOT=$(cd "${_pkg}/../.." && pwd)
+    fi
+    export WORKSPACE_ROOT
+    unset _pkg
+  fi
+fi
+POLARIS=${POLARIS:-${WORKSPACE_ROOT}/polaris}
+VLM_EXP=${VLM_EXP:-${WORKSPACE_ROOT}/vlm_exp}
+VERL_DIR=${VERL_DIR:-${WORKSPACE_ROOT}/verl-main}
 
-VLM_EXP=${VLM_EXP:-/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp}
-POLARIS=${POLARIS:-/data/juicefs-white/5281-gpu-a100/lijunyi/polaris}
 ARCHIVE_ROOT=${ARCHIVE_ROOT:-${POLARIS}/archive/mm_exp2card}
 
 experiments=(m0_e1_grpo_2b m1_geo3k100_2b m2_mix50_2b m3_mix20_2b)
