@@ -6,11 +6,31 @@
 #   4) data.val_files 多数据源验证是否能分别产出 val-core/<data_source>/... 指标
 # 跑 2 个 step、极小 batch，几分钟内应该出结果；出错时看 GPU 显存与 vLLM 是否支持 qwen3_5 多模态输入。
 set -xeuo pipefail
+SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+# Resolve workspace root without hardcoding user paths.
+if [[ -z "${WORKSPACE_ROOT:-}" ]]; then
+  if [[ -f "${SCRIPT_DIR}/../../../scripts/workspace_root.sh" ]]; then
+    # polaris/vlm_exp/scripts/<...>/
+    source "${SCRIPT_DIR}/../../../scripts/workspace_root.sh"
+  elif [[ -f "${SCRIPT_DIR}/../../../../polaris/scripts/workspace_root.sh" ]]; then
+    # sibling vlm_exp/scripts/<...>/
+    source "${SCRIPT_DIR}/../../../../polaris/scripts/workspace_root.sh"
+  else
+    _pkg=$(cd "${SCRIPT_DIR}/../.." && pwd)
+    WORKSPACE_ROOT=$(cd "${_pkg}/.." && pwd)
+    # nested polaris/vlm_exp → go up one more if needed
+    if [[ "$(basename "${_pkg}")" == "vlm_exp" && "$(basename "$(dirname "${_pkg}")")" == "polaris" ]]; then
+      WORKSPACE_ROOT=$(cd "${_pkg}/../.." && pwd)
+    fi
+    export WORKSPACE_ROOT
+    unset _pkg
+  fi
+fi
+POLARIS=${POLARIS:-${WORKSPACE_ROOT}/polaris}
+VLM_EXP=${VLM_EXP:-${WORKSPACE_ROOT}/vlm_exp}
+VERL_DIR=${VERL_DIR:-${WORKSPACE_ROOT}/verl-main}
 
 ENVBIN=/home/jeeves/.conda/envs/verl_qwen35/bin
-VERL_DIR=/data/juicefs-white/5281-gpu-a100/lijunyi/verl-main
-POLARIS=/data/juicefs-white/5281-gpu-a100/lijunyi/polaris
-VLM_EXP=/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp
 
 source ${POLARIS}/scripts/verl_env.sh
 export CUDA_VISIBLE_DEVICES=0,1
