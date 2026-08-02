@@ -67,7 +67,7 @@ PY
 }
 
 text_complete() {
-  local root=evalscope/outputs/exp2card_mm/m0_e1_grpo_2b
+  local root=${WORKSPACE_ROOT}/evalscope/outputs/exp2card_mm/m0_e1_grpo_2b
   [[ -d "${root}" ]] || return 1
   "${ENVBIN}/python" - "${root}" <<'PY'
 from pathlib import Path
@@ -117,7 +117,7 @@ launch_geo() {
     export CUDA_VISIBLE_DEVICES=2
     export HF_HUB_OFFLINE=1
     export TRANSFORMERS_OFFLINE=1
-    export PYTHONPATH=${VLM_EXP}/scripts:verl-main:${PYTHONPATH:-}
+    export PYTHONPATH=${VLM_EXP}/scripts:${VERL_DIR}:${PYTHONPATH:-}
     exec "${ENVBIN}/python" "${VLM_EXP}/scripts/eval/eval_geo3k.py" \
       --model "${MODEL}" \
       --output "${GEO_OUT}" \
