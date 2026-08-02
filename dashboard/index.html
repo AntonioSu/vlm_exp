@@ -100,7 +100,7 @@
       </div>
       <div class="intro-item">
         <h4>看板怎么读</h4>
-        <p>「算法介绍」讲定义与权衡；「Benchmark 介绍」说明 AIME / MMLU / BFCL / tau-bench 怎么判分；「2B / 4B 训练」放训练曲线与评测对比；「综合结论」汇总 2B/4B 跨规模发现；「多模态训练」展示执行状态与评测；「实验日志」按时间线记节点。下方卡片按入口进入。</p>
+        <p>「算法介绍」讲定义与权衡；「Benchmark 介绍」说明 AIME / MMLU / BFCL / tau-bench 怎么判分；「2B / 4B 训练」放训练曲线与评测对比；「综合结论」按 Model Size / Param / MM / Algorithm 四轴汇总；「多模态训练」展示执行状态与评测；「实验日志」按时间线记节点。下方卡片按入口进入。</p>
       </div>
       <div class="intro-item">
         <h4>数据与复现</h4>
@@ -175,13 +175,13 @@
       <a class="track-card" href="conclusion/index.html">
         <div class="bar" style="background:var(--danger)"></div>
         <div class="go">进入 →</div>
-        <div class="kicker">Synthesis · 2B × 4B</div>
+        <div class="kicker">Synthesis · Size · Param · MM · Algo</div>
         <h3>综合结论</h3>
-        <p class="desc">跨规模对照：哪些结论两边成立、哪些会反转；E1–E5 怎么选；训练动态与 offline 评测的总览。</p>
+        <p class="desc">按四轴汇总：模型规模、共享超参/开关、多模态配比、E1–E5 算法；跨规模成立 vs 反转与怎么选。</p>
         <div class="stat-row">
-          <span><b>成立</b> DAPO 最快 · 数学 RL≠Agent</span>
-          <span><b>反转</b> Dr.GRPO 长度 · DAPO 数学</span>
-          <span>4B 峰值 aime <b>E2@80</b></span>
+          <span><b>Size</b> 2B 散 · 4B 看 offline</span>
+          <span><b>MM</b> M0 基线 · M1 伤文本</span>
+          <span><b>Algo</b> E2 快 · E4 定盘 2B</span>
         </div>
       </a>
 
@@ -203,7 +203,7 @@
 </div>
 
 <div class="footer-note">
-  数据来源：<code>archive/e*_2b/</code>、<code>archive/eval_2b/summary.md</code>、<code>archive/eval_4b/summary.md</code>、<code>logs/exp2card/e*_4b/</code>、<code>vlm_exp/exp_plan_mm.md</code>、<code>dashboard/mm/js/data-eval.js</code>（Geo3K + evalscope MM）各自的训练日志、评测结果与方案文档；2B/4B 跨规模汇总见 <code>dashboard/conclusion/</code>。零依赖静态网页（无 CDN、无框架），<code>bash serve.sh</code> 起服务后浏览器访问，或直接拖入浏览器以 <code>file://</code> 方式打开。
+  数据来源：<code>archive/e*_2b/</code>、<code>archive/eval_2b/summary.md</code>、<code>archive/eval_4b/summary.md</code>、<code>logs/exp2card/e*_4b/</code>、<code>vlm_exp/exp_plan_mm.md</code>、<code>dashboard/mm/js/data-eval.js</code>（Geo3K + evalscope MM）各自的训练日志、评测结果与方案文档；四轴综合结论见 <code>dashboard/conclusion/</code>。零依赖静态网页（无 CDN、无框架），<code>bash serve.sh</code> 起服务后浏览器访问，或直接拖入浏览器以 <code>file://</code> 方式打开。
 </div>
 
 </body>
