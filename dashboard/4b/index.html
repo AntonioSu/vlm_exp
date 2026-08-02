@@ -27,7 +27,7 @@
 
 <div class="page">
   <h1>4B 训练监控 — Qwen3.5-4B（E1–E5 + S3）</h1>
-  <p class="subtitle">4×A100-80GB · TP=4 · 关闭 offload · non-thinking · 16K response · Easy-Boxed E1–E5 均已跑满 150/150 步；S3 E1/E2 已完成 150 步，S3 E3 Dr.GRPO 进行中（~26/150）。训练曲线由 <code>scripts/monitoring/4b/parse_4b_logs.py</code> 从 <code>logs/exp2card/e*_4b{,_s3}/</code> 生成。算法定义见 <a href="../algo/index.html">算法介绍</a> · 评测协议见 <a href="../benchmark/index.html">Benchmark 介绍</a>。</p>
+  <p class="subtitle">4×A100-80GB · TP=4 · 关闭 offload · non-thinking · 16K response · Easy-Boxed E1–E5 均已跑满 150/150 步；S3 E1–E3 已完成 150 步，S3 E4 RLOO 进行中（1/150）。训练曲线由 <code>scripts/monitoring/4b/parse_4b_logs.py</code> 从 <code>logs/exp2card/e*_4b{,_s3}/</code> 生成。算法定义见 <a href="../algo/index.html">算法介绍</a> · 评测协议见 <a href="../benchmark/index.html">Benchmark 介绍</a>。</p>
 
   <div class="subtabs">
     <button class="subtab-btn active" data-subtab="compare">对比总览（E1–E5 + S3）</button>
@@ -42,17 +42,18 @@
   <div id="panel-container"></div>
 </div>
 
-<script src="js/data-compare.js?v=20260801130100"></script>
-<script src="js/data-easy-boxed-eval.js?v=20260802172138"></script>
-<script src="js/data-easy-boxed-e1.js?v=20260801130100"></script>
-<script src="js/data-easy-boxed-e2.js?v=20260801130100"></script>
-<script src="js/data-easy-boxed-e3.js?v=20260801130100"></script>
-<script src="js/data-easy-boxed-e4.js?v=20260801130100"></script>
-<script src="js/data-easy-boxed-e5.js?v=20260801130100"></script>
-<script src="js/data-s3-e1.js?v=20260801130100"></script>
-<script src="js/data-s3-e2.js?v=20260801130100"></script>
-<script src="js/data-s3-e3.js?v=20260801130100"></script>
-<script src="js/charts.js?v=20260802004500"></script>
+<script src="js/data-compare.js?v=20260802173406"></script>
+<script src="js/data-easy-boxed-eval.js?v=20260802181356"></script>
+<script src="js/data-easy-boxed-e1.js?v=20260802173406"></script>
+<script src="js/data-easy-boxed-e2.js?v=20260802173406"></script>
+<script src="js/data-easy-boxed-e3.js?v=20260802173406"></script>
+<script src="js/data-easy-boxed-e4.js?v=20260802173406"></script>
+<script src="js/data-easy-boxed-e5.js?v=20260802173406"></script>
+<script src="js/data-s3-e1.js?v=20260802173406"></script>
+<script src="js/data-s3-e2.js?v=20260802173406"></script>
+<script src="js/data-s3-e3.js?v=20260802173406"></script>
+<script src="js/data-s3-e4.js?v=20260802173406"></script>
+<script src="js/charts.js?v=20260802173445"></script>
 <script src="js/tab-loader.js?v=20260801130100"></script>
 </body>
 </html>

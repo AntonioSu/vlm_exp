@@ -1,5 +1,5 @@
 // ---- Evaluation results (evalscope offline, auto-synced 2026-08-02) ----
-// Source: /data/lijunyi/evalscope/outputs/exp2card/<exp>_4b_<step>/*/reports/<model>/*.json
+// Source: evalscope/outputs/exp2card/<exp>_4b_<step>/*/reports/<model>/*.json
 // 评测配置: eval_exp4b.sh + verl_qwen35 vLLM 0.24；
 // aime24/aime25 temperature=0.6 top_p=0.95 max_tokens=16384 n=8（30题×n8=240 采样）；
 // mmlu_temp n=2；enable_thinking=False；batch_size=64。
@@ -70,6 +70,12 @@ const EVAL_FULL_S3 = {
     aime25: [44.17, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
     math500:[94.58, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
   },
+  e2: {
+    mmlu:   [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
+    aime24: [74.58, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
+    aime25: [46.25, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
+    math500:[95.12, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
+  },
   e3: {
     mmlu:   [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
     aime24: [67.50, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
@@ -78,7 +84,7 @@ const EVAL_FULL_S3 = {
   },
 };
 // ---- Agent / tool-use benchmarks (evalscope, auto-synced 2026-08-02) ----
-// Source: /data/juicefs-white/5281-gpu-a100/lijunyi/evalscope/outputs/agent2/<ts>/reports/<exp>_4b_<step>/{bfcl_v3,tau_bench}.json
+// Source: evalscope/outputs/agent2/<ts>/reports/<exp>_4b_<step>/{bfcl_v3,tau_bench}.json
 // Coverage: bfcl=75 · tau=75 · steps with any report: 10/20/30/40/50/60/70/80/90/100/110/120/130/140/150
 // BFCL-v3: 10 subset ×30；bfcl=OVERALL（新版无聚合项时用 macro_score）；bfcl_mt=MULTI_TURN。
 // tau-bench: retail+airline×20，user-sim=gpt-5p5-apipro。null = 尚未评测。

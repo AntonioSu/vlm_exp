@@ -1,6 +1,21 @@
-// Teal dashed overlay for S3 stage (mirrors 2B dashboard).
-function s3Series(name, data) {
-  return { name, data, color: COLORS.s3, dash: [6, 4] };
+// S3 overlay: dashed. Prefer the experiment color so multi-exp charts stay
+// distinguishable; fall back to teal only when no per-exp color is given
+// (single-exp detail pages overlay one Easy solid vs one S3 dashed).
+function s3Series(name, data, color) {
+  return { name, data, color: color || COLORS.s3, dash: [6, 4] };
+}
+
+function yRangeFromSeries(series, { padRatio = 0.1, floor = 0, ceil = null } = {}) {
+  const vals = series.flatMap((s) => (s.data || [])).filter((v) => v != null);
+  if (!vals.length) return [floor ?? 0, ceil ?? 1];
+  let min = Math.min(...vals);
+  let max = Math.max(...vals);
+  const pad = (max - min) * padRatio || 1;
+  min = Math.floor(min - pad);
+  max = Math.ceil(max + pad);
+  if (floor != null) min = Math.max(min, floor);
+  if (ceil != null) max = Math.min(max, ceil);
+  return [min, Math.max(min + 1, max)];
 }
 
 // Renders a clickable legend bound to a chart: clicking a series name toggles
@@ -645,34 +660,52 @@ function renderExpPanel(key) {
     }
   }
 
-  // ---- Evalscope 评测结果（若该组已完成 offline 评测）----
+  // ---- Evalscope 评测结果（Easy-Boxed 实线；有 S3 offline 时叠加同色虚线）----
   if (typeof EVAL_EASY_BOXED_FULL !== "undefined" && EVAL_EASY_BOXED_FULL[key] && document.getElementById(`chart-${key}-eval-mmlu`)) {
     const ev = EVAL_EASY_BOXED_FULL[key];
-    drawLineChart(`chart-${key}-eval-mmlu`, `tip-${key}-eval-mmlu`, {
-      categories: EVAL_EASY_BOXED_FULL_STEPS,
-      series: [{ name: "mmlu_temp", data: ev.mmlu, color: ev.color }],
-      valueSuffix: "%", yMin: 89, yMax: 93, height: 200,
-    });
+    const s3ev = (typeof EVAL_FULL_S3 !== "undefined" && EVAL_FULL_S3[key]) ? EVAL_FULL_S3[key] : null;
+    const hasS3 = (metric) => s3ev && s3ev[metric] && s3ev[metric].some((v) => v != null);
+
+    const mmluItems = [{ name: hasS3("mmlu") ? "mmlu_temp (Easy-Boxed)" : "mmlu_temp", data: ev.mmlu, color: ev.color }];
+    if (hasS3("mmlu")) mmluItems.push(s3Series("mmlu_temp (S3)", s3ev.mmlu, ev.color));
+    const mmluLegendEl = document.getElementById(`legend-${key}-eval-mmlu`);
+    const drawMmlu = (visible) => {
+      const [yMin, yMax] = yRangeFromSeries(visible, { floor: 80, ceil: 100 });
+      drawLineChart(`chart-${key}-eval-mmlu`, `tip-${key}-eval-mmlu`, {
+        categories: EVAL_EASY_BOXED_FULL_STEPS, series: visible,
+        valueSuffix: "%", yMin, yMax, height: 200,
+      });
+    };
+    if (mmluLegendEl) renderLegend(mmluLegendEl, mmluItems, drawMmlu);
+    else drawMmlu(mmluItems);
+
     const aimeLegendEl = document.getElementById(`legend-${key}-eval-aime`);
     if (aimeLegendEl) {
-      renderLegend(aimeLegendEl, [
-        { name: "aime24", data: ev.aime24, color: COLORS.danger },
-        { name: "aime25", data: ev.aime25, color: ev.color },
-      ], (visible) => drawLineChart(`chart-${key}-eval-aime`, `tip-${key}-eval-aime`, {
-        categories: EVAL_EASY_BOXED_FULL_STEPS,
-        series: visible,
-        valueSuffix: "%", yMin: 40, yMax: 85, height: 200,
-      }));
+      const aimeItems = [
+        { name: hasS3("aime24") || hasS3("aime25") ? "aime24 (Easy-Boxed)" : "aime24", data: ev.aime24, color: COLORS.e1 },
+        { name: hasS3("aime24") || hasS3("aime25") ? "aime25 (Easy-Boxed)" : "aime25", data: ev.aime25, color: ev.color },
+      ];
+      if (hasS3("aime24")) aimeItems.push({ name: "aime24 (S3)", data: s3ev.aime24, color: COLORS.e2, dash: [6, 4] });
+      if (hasS3("aime25")) aimeItems.push(s3Series("aime25 (S3)", s3ev.aime25, ev.color));
+      renderLegend(aimeLegendEl, aimeItems, (visible) => {
+        const [yMin, yMax] = yRangeFromSeries(visible, { floor: 30, ceil: 90 });
+        drawLineChart(`chart-${key}-eval-aime`, `tip-${key}-eval-aime`, {
+          categories: EVAL_EASY_BOXED_FULL_STEPS, series: visible,
+          valueSuffix: "%", yMin, yMax, height: 200,
+        });
+      });
     }
     const mathLegendEl = document.getElementById(`legend-${key}-eval-math500`);
     if (mathLegendEl && ev.math500) {
-      renderLegend(mathLegendEl, [
-        { name: "math_500", data: ev.math500, color: ev.color },
-      ], (visible) => drawLineChart(`chart-${key}-eval-math500`, `tip-${key}-eval-math500`, {
-        categories: EVAL_EASY_BOXED_FULL_STEPS,
-        series: visible,
-        valueSuffix: "%", yMin: 0, yMax: 100, height: 200,
-      }));
+      const mathItems = [{ name: hasS3("math500") ? "math_500 (Easy-Boxed)" : "math_500", data: ev.math500, color: ev.color }];
+      if (hasS3("math500")) mathItems.push(s3Series("math_500 (S3)", s3ev.math500, ev.color));
+      renderLegend(mathLegendEl, mathItems, (visible) => {
+        const [yMin, yMax] = yRangeFromSeries(visible, { floor: 0, ceil: 100 });
+        drawLineChart(`chart-${key}-eval-math500`, `tip-${key}-eval-math500`, {
+          categories: EVAL_EASY_BOXED_FULL_STEPS, series: visible,
+          valueSuffix: "%", yMin, yMax, height: 200,
+        });
+      });
     }
   }
 
@@ -723,36 +756,40 @@ function renderEvalPanel() {
     valueSuffix: "%", height: 200,
   });
 
-  // ---- 补充：E1/E2/E4/E5 全 step 明细（含 aime24）----
+  // ---- Easy-Boxed 全 step 明细 + S3 同色虚线叠加 ----
   if (typeof EVAL_EASY_BOXED_FULL !== "undefined" && document.getElementById("chart-evalfull-mmlu")) {
-    const fullLegendItems = (dataKey) => EVAL_EASY_BOXED_FULL_ORDER.map(k => ({ name: EVAL_EASY_BOXED_FULL[k].label, data: EVAL_EASY_BOXED_FULL[k][dataKey], color: EVAL_EASY_BOXED_FULL[k].color }));
-    renderLegend(document.getElementById("legend-evalfull-mmlu"), fullLegendItems("mmlu"),
-      (visible) => drawLineChart("chart-evalfull-mmlu", "tip-evalfull-mmlu", {
-        categories: EVAL_EASY_BOXED_FULL_STEPS,
-        series: visible,
-        valueSuffix: "%", yMin: 89, yMax: 93, height: 240,
-      }));
-    renderLegend(document.getElementById("legend-evalfull-aime24"), fullLegendItems("aime24"),
-      (visible) => drawLineChart("chart-evalfull-aime24", "tip-evalfull-aime24", {
-        categories: EVAL_EASY_BOXED_FULL_STEPS,
-        series: visible,
-        valueSuffix: "%", yMin: 55, yMax: 85, height: 240,
-      }));
-    renderLegend(document.getElementById("legend-evalfull-aime25"), fullLegendItems("aime25"),
-      (visible) => drawLineChart("chart-evalfull-aime25", "tip-evalfull-aime25", {
-        categories: EVAL_EASY_BOXED_FULL_STEPS,
-        series: visible,
-        valueSuffix: "%", yMin: 40, yMax: 65, height: 240,
-      }));
-    const mathLegendEl = document.getElementById("legend-evalfull-math500");
-    if (mathLegendEl) {
-      renderLegend(mathLegendEl, fullLegendItems("math500"),
-        (visible) => drawLineChart("chart-evalfull-math500", "tip-evalfull-math500", {
+    const s3src = (typeof EVAL_FULL_S3 !== "undefined") ? EVAL_FULL_S3 : {};
+    const seriesWithS3 = (metric) => {
+      const items = [];
+      EVAL_EASY_BOXED_FULL_ORDER.forEach((k) => {
+        const row = EVAL_EASY_BOXED_FULL[k];
+        const s3ev = s3src[k];
+        const hasS3 = s3ev && s3ev[metric] && s3ev[metric].some((v) => v != null);
+        items.push({
+          name: hasS3 ? `${row.label} (Easy-Boxed)` : row.label,
+          data: row[metric],
+          color: row.color,
+        });
+        if (hasS3) items.push(s3Series(`${row.label} (S3)`, s3ev[metric], row.color));
+      });
+      return items;
+    };
+    const drawMetric = (legendId, chartId, tipId, metric, floor, ceil) => {
+      const legendEl = document.getElementById(legendId);
+      if (!legendEl) return;
+      renderLegend(legendEl, seriesWithS3(metric), (visible) => {
+        const [yMin, yMax] = yRangeFromSeries(visible, { floor, ceil });
+        drawLineChart(chartId, tipId, {
           categories: EVAL_EASY_BOXED_FULL_STEPS,
           series: visible,
-          valueSuffix: "%", yMin: 0, yMax: 100, height: 240,
-        }));
-    }
+          valueSuffix: "%", yMin, yMax, height: 240,
+        });
+      });
+    };
+    drawMetric("legend-evalfull-mmlu", "chart-evalfull-mmlu", "tip-evalfull-mmlu", "mmlu", 80, 100);
+    drawMetric("legend-evalfull-aime24", "chart-evalfull-aime24", "tip-evalfull-aime24", "aime24", 40, 90);
+    drawMetric("legend-evalfull-aime25", "chart-evalfull-aime25", "tip-evalfull-aime25", "aime25", 30, 70);
+    drawMetric("legend-evalfull-math500", "chart-evalfull-math500", "tip-evalfull-math500", "math500", 0, 100);
   }
 
   // ---- Agent / 工具调用能力（BFCL-v3 + tau-bench）：每个 index 一条曲线 ----

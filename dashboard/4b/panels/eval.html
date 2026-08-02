@@ -14,11 +14,11 @@
 
         <section class="detail-sec" id="eval-sec-overview">
           <h2 class="sec-title">概览</h2>
-          <p class="sec-sub">评测配置 · step150 汇总对比</p>
-          <p class="tertiary">Source: <code>/data/lijunyi/evalscope</code>（<code>run_queue_4b.sh</code> + <code>eval_exp4b.sh</code>，verl_qwen35 vLLM 0.24 serving）。评测配置：aime25 <code>temperature=0.6, top_p=0.95, max_tokens=16384, n=8</code>；mmlu_temp <code>n=2</code>；<code>enable_thinking=False</code>。权重路径 <code>model/exp2card/&lt;exp&gt;/merged_&lt;step&gt;</code>。汇总表见 <code>archive/eval_4b/summary.md</code>。</p>
+          <p class="sec-sub">评测配置 · Easy-Boxed 实线 / S3 虚线 · step150 汇总对比</p>
+          <p class="tertiary">Source: <code>evalscope</code>（<code>run_queue_4b.sh</code> + <code>eval_exp4b.sh</code>，verl_qwen35 vLLM 0.24 serving）。评测配置：aime25 <code>temperature=0.6, top_p=0.95, max_tokens=16384, n=8</code>；mmlu_temp <code>n=2</code>；<code>enable_thinking=False</code>。权重路径 <code>model/exp2card/&lt;exp&gt;/merged_&lt;step&gt;</code>。S3 offline 报告目录 <code>outputs/exp2card/&lt;exp&gt;_4b_s3_&lt;step&gt;{,_manual}</code>。刷新：<code>python3 scripts/monitoring/4b/sync_4b_eval_dashboard.py</code>。</p>
           <div class="callout" style="margin-top:10px">
-            <div class="title">已同步最新 offline 报告（75/75 完成 · E1–E5 全齐）</div>
-            <strong>mmlu_temp</strong> 全程 90–92%；峰值 <strong>E3@120 = 92.47%</strong>（其次 E2@100 = 92.38%）。<strong>offline aime24（n=8）</strong> 峰值 <strong>E2@80 = 80.42%</strong>，其次 E5@140（78.75%）、E4@140（76.67%）。<strong>aime25</strong> 峰值 <strong>E2@80 = 62.50%</strong>，step150 最高仍是 E2（59.59%）。GPU0/GPU1 队列均已 DONE。刷新：<code>python3 scripts/sync_4b_eval_dashboard.py</code>。
+            <div class="title">Easy-Boxed 75/75 已齐；S3 offline 已同步 E1/E2/E3@step10</div>
+            <strong>Easy mmlu_temp</strong> 全程 90–92%；峰值 <strong>E3@120 = 92.47%</strong>。<strong>Easy aime24</strong> 峰值 <strong>E2@80 = 80.42%</strong>；<strong>aime25</strong> 峰值 <strong>E2@80 = 62.50%</strong>。<strong>S3@step10</strong>：aime24 E2 74.58% · E1 69.17% · E3 67.50%；aime25 E2 46.25% · E3 45.84% · E1 44.17%。E2 math_500 / E1@20 仍在跑。曲线同色虚线 = S3。
           </div>
           <section class="grid2" style="margin-top:20px">
             <div>
@@ -38,23 +38,23 @@
 
         <section class="detail-sec" id="eval-sec-aime">
           <h2 class="sec-title">数学推理（AIME）</h2>
-          <p class="sec-sub">aime24 / aime25 · evalscope offline · 240 题 × n=8</p>
+          <p class="sec-sub">aime24 / aime25 · Easy-Boxed 实线 / S3 虚线 · n=8</p>
           <section class="grid2" style="margin-top:12px">
             <div>
-              <h2>evalscope offline · aime24（n=8）</h2>
+              <h2>aime24（Easy + S3）</h2>
               <div class="chart-card">
                 <div class="legend" id="legend-evalfull-aime24"></div>
                 <div class="chart-wrap"><canvas id="chart-evalfull-aime24" height="240"></canvas><div class="tooltip" id="tip-evalfull-aime24"></div></div>
               </div>
-              <p class="caption">X: step（缺 report 处断开；≠ 训练验证） · Y: aime24 mean_acc（%，240 题 × n=8）。</p>
+              <p class="caption">X: step（缺 report 处断开；≠ 训练验证） · Y: aime24 mean_acc（%，240 题 × n=8）。同色虚线 = S3。</p>
             </div>
             <div>
-              <h2>aime25（E1–E5 全 step）</h2>
+              <h2>aime25（Easy + S3）</h2>
               <div class="chart-card">
                 <div class="legend" id="legend-evalfull-aime25"></div>
                 <div class="chart-wrap"><canvas id="chart-evalfull-aime25" height="240"></canvas><div class="tooltip" id="tip-evalfull-aime25"></div></div>
               </div>
-              <p class="caption">X: checkpoint step（10–150） · Y: aime25 mean_acc（%，240 题 × n=8）。</p>
+              <p class="caption">X: checkpoint step（10–150） · Y: aime25 mean_acc（%，240 题 × n=8）。同色虚线 = S3。</p>
             </div>
           </section>
         </section>
@@ -68,7 +68,7 @@
               <div class="legend" id="legend-evalfull-math500"></div>
               <div class="chart-wrap"><canvas id="chart-evalfull-math500" height="240"></canvas><div class="tooltip" id="tip-evalfull-math500"></div></div>
             </div>
-            <p class="caption">X: checkpoint step（10–150） · Y: MATH-500 pass@1（%）。当前已有 step50/100/150，其余 step 在空闲 GPU 上补测。</p>
+            <p class="caption">X: checkpoint step（10–150） · Y: MATH-500 pass@1（%）。Easy 已有 step50/100/150；S3 已有 E1/E3@10。同色虚线 = S3。</p>
           </div>
         </section>
 
@@ -88,7 +88,7 @@
         <section class="detail-sec" id="eval-sec-agent">
           <h2 class="sec-title">Agent / 工具调用能力</h2>
           <p class="sec-sub">BFCL-v3 + tau-bench</p>
-          <p class="tertiary">Source: <code>/data/lijunyi/evalscope/outputs/agent2</code>（<code>run_agent2_queue_4b.sh</code>，vLLM <code>qwen3_xml</code>）。BFCL-v3：10 subset × 30、prompt 模式；tau-bench：retail+airline 共 40、user-sim=<code>gpt-5p5-apipro</code>。已评测 step（tau 非空）：10/20/30/40/50/60/70/80/90/100/110/120/130/140/150。协议说明见 <a href="../benchmark/index.html">Benchmark 介绍</a>。</p>
+          <p class="tertiary">Source: <code>evalscope/outputs/agent2</code>（<code>run_agent2_queue_4b.sh</code>，vLLM <code>qwen3_xml</code>）。BFCL-v3：10 subset × 30、prompt 模式；tau-bench：retail+airline 共 40、user-sim=<code>gpt-5p5-apipro</code>。已评测 step（tau 非空）：10/20/30/40/50/60/70/80/90/100/110/120/130/140/150。协议说明见 <a href="../benchmark/index.html">Benchmark 介绍</a>。</p>
           <div class="callout" style="margin-top:10px">
             <div class="title">数学 RL 对 agent 能力几乎无增益</div>
             <strong>BFCL 总体持平</strong>：多数 step 落在 39–48%；例外是 E2@step80 掉到 22.2%（随后 step90 回升至 45.8%）。<strong>多轮 agentic（MULTI_TURN）普遍趴在 4–11%</strong>——这是数学 RL 模型最弱的一环，换算法也救不回来。<strong>tau-bench 区分度最高</strong>：非空 step 均值 E1 62.5% · E2 57.3% · E3 60.2% · E4 58.7% · E5 59.3%；但每点仅 40 条、噪声约 ±8pt，step 间抖动需谨慎解读。
