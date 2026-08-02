@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>综合结论 — 2B / 4B RL 算法对比</title>
+<title>综合结论 — Model Size · Param · MM · Algorithm</title>
 <link rel="stylesheet" href="../common/base.css">
 <link rel="stylesheet" href="conclusion.css">
 </head>
@@ -26,23 +26,34 @@
 </div>
 
 <div class="concl-page">
-  <h1>2B / 4B 综合结论</h1>
+  <h1>综合结论</h1>
   <p class="concl-lede">
-    把 Qwen3.5-2B 与 4B 两条赛道的训练动态与 offline 评测并到一页：哪些结论跨规模成立、哪些会反转、各算法适合什么场景。
-    细节曲线见 <a href="../2b/index.html">2B 训练</a> / <a href="../4b/index.html">4B 训练</a>；算法定义见 <a href="../algo/index.html">算法介绍</a>。
+    按四条实验轴汇总：<strong>Model Size</strong>（2B / 4B）、<strong>Param</strong>（共享超参与算法开关）、
+    <strong>MM</strong>（图文配比）、<strong>Algorithm</strong>（E1–E5）。
+    细节曲线见 <a href="../2b/index.html">2B</a> / <a href="../4b/index.html">4B</a> / <a href="../mm/index.html">多模态</a>；算法定义见 <a href="../algo/index.html">算法介绍</a>。
   </p>
+
+  <div class="axis-strip" aria-label="分析轴">
+    <a class="axis-chip" href="#sec-size"><span class="axis-k">1</span>Model Size</a>
+    <a class="axis-chip" href="#sec-param"><span class="axis-k">2</span>Param</a>
+    <a class="axis-chip" href="#sec-mm"><span class="axis-k">3</span>MM</a>
+    <a class="axis-chip" href="#sec-algo"><span class="axis-k">4</span>Algorithm</a>
+    <a class="axis-chip muted" href="#sec-pick"><span class="axis-k">5</span>怎么选</a>
+  </div>
 
   <div class="concl-layout">
     <nav class="concl-toc" aria-label="目录">
       <p class="toc-heading">目录</p>
       <ol>
         <li><a href="#sec-headline"><span class="toc-num">0</span><span class="toc-title">一句话总览</span></a></li>
-        <li><a href="#sec-cross"><span class="toc-num">1</span><span class="toc-title">跨规模规律</span></a></li>
-        <li><a href="#sec-algo"><span class="toc-num">2</span><span class="toc-title">算法对照表</span></a></li>
-        <li><a href="#sec-train"><span class="toc-num">3</span><span class="toc-title">训练动态</span></a></li>
-        <li><a href="#sec-eval"><span class="toc-num">4</span><span class="toc-title">Offline 评测</span></a></li>
-        <li><a href="#sec-pick"><span class="toc-num">5</span><span class="toc-title">怎么选算法</span></a></li>
-        <li><a href="#sec-caveat"><span class="toc-num">6</span><span class="toc-title">边界与缺口</span></a></li>
+        <li><a href="#sec-size"><span class="toc-num">1</span><span class="toc-title">Model Size</span></a></li>
+        <li><a href="#sec-param"><span class="toc-num">2</span><span class="toc-title">Param</span></a></li>
+        <li><a href="#sec-mm"><span class="toc-num">3</span><span class="toc-title">MM 多模态</span></a></li>
+        <li><a href="#sec-algo"><span class="toc-num">4</span><span class="toc-title">Algorithm</span></a></li>
+        <li><a href="#sec-train"><span class="toc-num">5</span><span class="toc-title">训练动态</span></a></li>
+        <li><a href="#sec-eval"><span class="toc-num">6</span><span class="toc-title">Offline 评测</span></a></li>
+        <li><a href="#sec-pick"><span class="toc-num">7</span><span class="toc-title">怎么选</span></a></li>
+        <li><a href="#sec-caveat"><span class="toc-num">8</span><span class="toc-title">边界与缺口</span></a></li>
       </ol>
     </nav>
 
@@ -50,30 +61,43 @@
 
       <section id="sec-headline">
         <h2 class="sec-title">一句话总览</h2>
-        <p class="sec-sub">Easy-Boxed E1–E5 在 2B/4B 均已跑满 150 步；结论基于训练曲线 + evalscope offline</p>
+        <p class="sec-sub">四轴交叉：规模会改写算法排序；共享超参固定后主要差在 KL / 归一化 / 长度机制；多模态只动图文占比；数学 RL 几乎不抬 agent</p>
         <div class="callout ok">
-          <div class="title">没有「全能冠军」——目标不同，赢家不同</div>
-          <strong>2B</strong>：墙钟/长度看 DAPO(E2)；末段 train-pass / mmlu 峰值看 Dr.GRPO(E3)；定盘 aime25@150 看 RLOO(E4)；mmlu@150 看 REINFORCE++(E5)。
-          <strong>4B</strong>：数学 offline 峰值与定盘均偏向 DAPO(E2)（aime24/25）；mmlu 峰值偏 Dr.GRPO(E3)；DAPO 仍最快但熵走松、偶发梯度尖峰。
-          两规模共同：数学 RL <strong>几乎不抬 agent</strong>（BFCL MULTI_TURN 仍是最弱环）；训练 pass 高 ≠ 必然赢 offline AIME。
+          <div class="title">没有「全能冠军」——按目标选轴，再选算法</div>
+          <strong>Size</strong>：2B 算法排序更散；4B 训练 pass 挤一团，必须看 offline。
+          <strong>Param</strong>：有 KL 更稳、关 KL 更快也更极端；DAPO 的 overlong 是长度主开关。
+          <strong>MM</strong>：固定 GRPO + 2B，只改图文占比；M0 formal 文本强、Geo3K 已有基线；纯图文 M1 light 文本崩得很快。
+          <strong>Algo</strong>：吞吐看 DAPO；2B 定盘数学看 RLOO；通识峰值看 Dr.GRPO / REINFORCE++。
         </div>
-        <div class="verdict-grid">
+        <div class="verdict-grid four">
           <div class="verdict-card">
-            <p class="kicker">Track · 2B</p>
-            <h3>差异更大、算法排序更「散」</h3>
-            <p>末段 train-pass 拉开明显；长度/耗时/熵分化清晰。offline aime25@150：E4 37.5% 领先，E2 仅 30%。适合做算法敏感度对照。</p>
+            <p class="kicker"><span class="tag tag-size">Size</span></p>
+            <h3>2B 敏感 · 4B 评测拉开</h3>
+            <p>规模放大后 train-pass 区分度下降；DAPO 数学从 2B 弱势 → 4B 峰值。</p>
           </div>
           <div class="verdict-card">
-            <p class="kicker">Track · 4B</p>
-            <h3>训练 pass 挤成一团，评测拉开差距</h3>
-            <p>Easy-Boxed 末段 pass 同处 88–91%；但 offline aime 峰值 E2@80 = 80.4% / 62.5%，显著高于其它组。规模放大后「训练曲线像、评测不像」。</p>
+            <p class="kicker"><span class="tag tag-param">Param</span></p>
+            <h3>KL / 长度机制决定风险面</h3>
+            <p>共享 lr / batch / n / 16K；差异集中在 KL、std 归一化、Clip-Higher、Overlong。</p>
+          </div>
+          <div class="verdict-card">
+            <p class="kicker"><span class="tag tag-mm">MM</span></p>
+            <h3>配比是唯一自变量</h3>
+            <p>M0=E1 文本端点；M1 100% 图文换视觉但文本 light 崩；M2/M3 formal 评测待补。</p>
+          </div>
+          <div class="verdict-card">
+            <p class="kicker"><span class="tag tag-algo">Algo</span></p>
+            <h3>目标不同，赢家不同</h3>
+            <p>E2 最快；E4 定盘 2B 数学；E3/E5 通识；E1 作稳健锚点。</p>
           </div>
         </div>
       </section>
 
-      <section id="sec-cross">
-        <h2 class="sec-title">跨规模规律</h2>
-        <p class="sec-sub">成立 vs 反转 —— 读完这节再下钻单赛道</p>
+      <!-- ========== 1. Model Size ========== -->
+      <section id="sec-size">
+        <h2 class="sec-title">1 · Model Size（2B vs 4B）</h2>
+        <p class="sec-sub">同一套 E1–E5 算法定义，只改底座规模 —— 哪些结论跨规模成立、哪些反转</p>
+
         <div class="verdict-grid">
           <div class="verdict-card">
             <p class="kicker"><span class="tag tag-both">两边成立</span></p>
@@ -101,16 +125,193 @@
             <p>2B offline aime25@150 仅 30%（五组偏低）；4B 峰值 aime24/25 都是 E2@80。小模型上「压长度」未必换来数学，大模型上可以。</p>
           </div>
           <div class="verdict-card">
-            <p class="kicker"><span class="tag tag-2b">2B 特有</span> <span class="tag tag-4b">4B 特有</span></p>
+            <p class="kicker"><span class="tag tag-2b">2B</span> <span class="tag tag-4b">4B</span></p>
             <h3>训练 pass 区分度随规模下降</h3>
             <p>2B 末段 pass 算法间差明显；4B 挤在 88–91%。4B 必须看 offline，不能只看 train reward。</p>
           </div>
         </div>
+
+        <table class="concl-table" style="margin-top:18px">
+          <thead>
+            <tr>
+              <th style="width:18%">维度</th>
+              <th style="width:41%">2B（Qwen3.5-2B）</th>
+              <th style="width:41%">4B（Qwen3.5-4B）</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="algo">训练画像</td>
+              <td>差异更大、算法排序更「散」；长度/耗时/熵分化清晰</td>
+              <td>Easy-Boxed 末段 pass 同处 88–91%；「训练曲线像、评测不像」</td>
+            </tr>
+            <tr>
+              <td class="algo">数学 offline</td>
+              <td>aime25@150：E4 37.5% 领先，E2 仅 30%</td>
+              <td>峰值 E2@80 = aime24 80.4% / aime25 62.5%；定盘仍偏 E2</td>
+            </tr>
+            <tr>
+              <td class="algo">通识 MMLU</td>
+              <td>峰值 E3@100 = 82.4%；@150 偏 E4/E5</td>
+              <td>全程 90–92% 窄带；峰值 E3@120 = 92.5%</td>
+            </tr>
+            <tr>
+              <td class="algo">适合做什么</td>
+              <td>算法敏感度对照；扫超参便宜</td>
+              <td>冲 offline 数学峰值；必须扫中段 ckpt</td>
+            </tr>
+          </tbody>
+        </table>
       </section>
 
+      <!-- ========== 2. Param ========== -->
+      <section id="sec-param">
+        <h2 class="sec-title">2 · Param（共享超参与算法开关）</h2>
+        <p class="sec-sub">本轮「固定块」vs「算法可变开关」——结论主要来自开关差异，不是扫参网格</p>
+
+        <div class="callout">
+          <div class="title">共享不变量（2B / 4B / MM 文本侧对齐）</div>
+          非思考 · <span class="mono">max_response_length=16384</span> ·
+          <span class="mono">train_batch_size=32</span> ·
+          <span class="mono">rollout.n=8</span> ·
+          <span class="mono">lr=1e-6</span> ·
+          <span class="mono">total_training_steps=150</span> ·
+          <span class="mono">data.seed=1</span> · FSDP2。
+          赛道之间只改模型规模或数据模态，不改这套共享超参定义。
+        </div>
+
+        <table class="concl-table">
+          <thead>
+            <tr>
+              <th style="width:22%">Param / 开关</th>
+              <th style="width:28%">谁开谁关</th>
+              <th style="width:50%">观察到的效应</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="algo">KL loss</td>
+              <td>开：E1 / E4 / E5<br>关：E2 / E3</td>
+              <td>开 KL → 熵更收、墙钟多一次 ref、曲线更稳。关 KL → 更快，但 4B DAPO 熵走松 + 偶发 grad 尖峰；Dr.GRPO 熵极紧。</td>
+            </tr>
+            <tr>
+              <td class="algo">组内 std 归一化</td>
+              <td>开：E1 GRPO<br>关：E3 Dr.GRPO</td>
+              <td>关掉 std + 固定分母聚合 → 通识峰值常出（mmlu），长度行为随规模反转，必须盯曲线。</td>
+            </tr>
+            <tr>
+              <td class="algo">Overlong shaping</td>
+              <td>主要 E2 DAPO</td>
+              <td>两边都把响应压到最短；是吞吐与长度指纹的主开关。小模型上「短」未必换数学分。</td>
+            </tr>
+            <tr>
+              <td class="algo">Clip-Higher / Dynamic Sampling</td>
+              <td>E2 DAPO</td>
+              <td>保探索 + 丢掉全对/全错组；与关 KL 叠加后 4B 数学峰值最强，也带来熵松风险。</td>
+            </tr>
+            <tr>
+              <td class="algo">Advantage 估计</td>
+              <td>组均值 / LOO / batch 白化</td>
+              <td>RLOO（E4）在 2B 定盘数学最好；REINFORCE++（E5）batch 白化 + mse-KL，通识友好、更新偏稳。</td>
+            </tr>
+            <tr>
+              <td class="algo">数据难度（Easy vs S3）</td>
+              <td>同算法换 train set</td>
+              <td>Pass 尺度不可跨数据直接比。2B S3 offline 数学整体低于 Easy（aime25@150 ≈ 22–26%）。</td>
+            </tr>
+          </tbody>
+        </table>
+        <ul class="bullet-list" style="margin-top:12px">
+          <li><strong>本轮没有做 lr / n / batch 网格。</strong>改 <span class="mono">rollout.n</span>、LR、开 thinking，排序可能整表重写——见边界节。</li>
+          <li><strong>墙钟排序由「要不要 ref」主导：</strong> DAPO &lt; Dr.GRPO ≈ REINFORCE++ &lt; RLOO / GRPO。要扫超参，先用 DAPO 省机时。</li>
+          <li><strong>选 ckpt 比微调单个标量有时更关键：</strong>多组中段峰、末段回落——部署应扫 offline 曲线，不要默认 step150。</li>
+        </ul>
+      </section>
+
+      <!-- ========== 3. MM ========== -->
+      <section id="sec-mm">
+        <h2 class="sec-title">3 · MM（多模态 · 图文配比）</h2>
+        <p class="sec-sub">固定 Qwen3.5-2B + GRPO + 共享超参，唯一自变量 = 训练数据图文占比（M0–M3）</p>
+
+        <div class="callout">
+          <div class="title">这一轴回答的问题</div>
+          ① 视觉推理（Geo3K）随图文占比怎么涨；② 混入图文后，纯文本数学相对 M0(=E1) 被稀释多少。
+          算法、分辨率、底座均锁定——不与 E2–E5 交叉，避免归因混乱。详情 <a href="../mm/index.html">多模态训练</a>。
+        </div>
+
+        <table class="concl-table">
+          <thead>
+            <tr>
+              <th style="width:12%">组</th>
+              <th style="width:14%">图文占比</th>
+              <th style="width:18%">训练状态</th>
+              <th style="width:56%">当前结论</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="algo">M0</td>
+              <td>0%（纯文本）</td>
+              <td>复用 E1@150</td>
+              <td>
+                <strong>正式基线已齐。</strong>
+                Geo3K sample acc <strong>57.3%</strong>（pass@8 83.7%）；
+                MATH-500 <strong>86.4%</strong> · MMLU 78.3% · AIME24/25 35.4% / 32.5%。
+                文本端点 = 算法轴 E1，可直接对齐。
+              </td>
+            </tr>
+            <tr>
+              <td class="algo">M1</td>
+              <td>100% Geo3K</td>
+              <td>150/150 满</td>
+              <td>
+                light 探查：Geo3K @70→@100 = <strong>13.6% → 14.8%</strong>（n=1 / 512 tok，不可与 M0 formal 横比绝对值）。
+                文本 light@70：MATH-500 23.6% / AIME25 6.7% / MMLU≈1% —— <strong>纯图文对文本能力杀伤很大</strong>（口径弱，趋势可信）。
+              </td>
+            </tr>
+            <tr>
+              <td class="algo">M2</td>
+              <td>50% 混合</td>
+              <td>150/150 满</td>
+              <td>训练曲线已同步（mixed reward 可按 source 拆分）；<strong>formal / light 离线评测待补</strong>——配比权衡曲线的关键中间点。</td>
+            </tr>
+            <tr>
+              <td class="algo">M3</td>
+              <td>20% 混合</td>
+              <td>~21/150 进行中</td>
+              <td>更贴近真实 post-training 配比；跑满 + 评测后才谈「用多少图文换多少视觉、掉多少文本」。</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="verdict-grid" style="margin-top:16px">
+          <div class="verdict-card">
+            <p class="kicker"><span class="tag tag-mm">已成立（弱）</span></p>
+            <h3>100% 图文会严重伤文本</h3>
+            <p>M1 light 文本探针断崖式下跌；若要保数学，不要直接上纯 Geo3K 长训，优先等 M2/M3 权衡点。</p>
+          </div>
+          <div class="verdict-card">
+            <p class="kicker"><span class="tag tag-mm">待闭合</span></p>
+            <h3>视觉–文本 Pareto 还没画完</h3>
+            <p>需要 M1–M3 同口径 formal（Geo3K n=8 + evalscope）才能定量回答「20% / 50% 值不值」。</p>
+          </div>
+          <div class="verdict-card">
+            <p class="kicker"><span class="tag tag-both">与算法轴正交</span></p>
+            <h3>MM 不进 E1–E5 排名</h3>
+            <p>多模态线固定 GRPO，结论是数据配比，不是换算法。下一轮若交叉算法，需单独立项。</p>
+          </div>
+          <div class="verdict-card">
+            <p class="kicker"><span class="tag tag-param">下一刀候选</span></p>
+            <h3>配比结论出来后再动别的轴</h3>
+            <p>视觉编码器冻/解冻、分辨率、底座（Qwen3-VL）——等 M2/M3 formal 有信号再开，避免组数爆炸。</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========== 4. Algorithm ========== -->
       <section id="sec-algo">
-        <h2 class="sec-title">算法对照表（E1–E5）</h2>
-        <p class="sec-sub">每行：设定 → 2B 画像 → 4B 画像 → 跨规模一句话</p>
+        <h2 class="sec-title">4 · Algorithm（E1–E5）</h2>
+        <p class="sec-sub">每行：设定 → 2B 画像 → 4B 画像 → 跨规模一句话（文本 Easy-Boxed 主赛道）</p>
         <table class="concl-table">
           <thead>
             <tr>
@@ -125,7 +326,7 @@
               <td class="algo"><span class="dot dot-e1"></span>E1 GRPO</td>
               <td>稳健 baseline；pass ~43%→63%；mmlu@150≈80%；aime25@150≈30%</td>
               <td>pass ~80%→90%；长度涨幅大（5.1k→9.7k）；训练 aime24@150 回落需对照 offline</td>
-              <td>有 KL、可复现的对照锚点；很少抢峰值，也很少翻车</td>
+              <td>有 KL、可复现的对照锚点；很少抢峰值，也很少翻车。MM 的 M0 即本组。</td>
             </tr>
             <tr>
               <td class="algo"><span class="dot dot-e2"></span>E2 DAPO</td>
@@ -159,20 +360,20 @@
       </section>
 
       <section id="sec-train">
-        <h2 class="sec-title">训练动态结论</h2>
+        <h2 class="sec-title">训练动态（跨轴）</h2>
         <p class="sec-sub">pass · 长度 · 熵 · 梯度 · 墙钟</p>
         <ul class="bullet-list">
-          <li><strong>Pass 尺度不可跨数据直接比。</strong> Easy-Boxed 与 S3（<span class="mono">polaris_stage3</span>）pass 带不同；4B S3 约 30–70%，需单独读图。2B S3 五组已满 150；4B S3 仍在推进（E1/E2 满，E3 进行中）。</li>
-          <li><strong>长度是算法指纹。</strong> DAPO 两边都压长度；Dr.GRPO 在 2B「写长」、在 4B「写短」——不要用单一规模的长度故事外推。</li>
+          <li><strong>Pass 尺度不可跨数据直接比。</strong> Easy-Boxed 与 S3（<span class="mono">polaris_stage3</span>）pass 带不同；4B S3 约 30–70%，需单独读图。2B S3 五组已满 150；4B S3 仍在推进。</li>
+          <li><strong>长度是算法指纹，也会被规模改写。</strong> DAPO 两边都压长度；Dr.GRPO 在 2B「写长」、在 4B「写短」。</li>
           <li><strong>熵是风险仪表。</strong> 4B DAPO 全程走松是本轮最醒目的风险；2B/4B 的 Dr.GRPO 都把熵收得很紧。关 KL 时务必盯 entropy + grad_norm。</li>
-          <li><strong>墙钟排序稳定：</strong> DAPO &lt; Dr.GRPO ≈ REINFORCE++ &lt; RLOO / GRPO（后两者多 ref 前向）。要扫超参/多 seed，先用 DAPO 省机时。</li>
-          <li><strong>Rollout↔训练一致性</strong>在有 KL 的组更接近 1；偶发尖峰（如 4B E2 step43/59）未必立刻打崩 pass，但要对照后续 offline。</li>
+          <li><strong>墙钟排序稳定：</strong> DAPO &lt; Dr.GRPO ≈ REINFORCE++ &lt; RLOO / GRPO。要扫超参/多 seed，先用 DAPO 省机时。</li>
+          <li><strong>MM 训练</strong>另看 Geo3K train acc 与按 source 拆开的 mixed reward；≠ offline Geo3K test。</li>
         </ul>
       </section>
 
       <section id="sec-eval">
-        <h2 class="sec-title">Offline 评测结论</h2>
-        <p class="sec-sub">AIME · MATH-500 · MMLU · Agent（BFCL / tau-bench）</p>
+        <h2 class="sec-title">Offline 评测（跨轴）</h2>
+        <p class="sec-sub">AIME · MATH-500 · MMLU · Agent · Geo3K</p>
 
         <div class="callout">
           <div class="title">数学：峰值 checkpoint ≠ 末步；选 ckpt 比选算法有时更关键</div>
@@ -184,44 +385,55 @@
         <ul class="bullet-list">
           <li><strong>MMLU：</strong> 2B 峰值 E3@100 = 82.4%，定盘@150 偏 E4/E5；4B 全程 90–92% 窄带，峰值 E3@120 = 92.5%。通识上 Dr.GRPO / REINFORCE++ 更常出头。</li>
           <li><strong>S3 vs Easy（2B）：</strong> S3 offline 数学整体低于 Easy（aime25@150 约 22–26%）。Stage-3 数据更难，不能拿 Easy 的绝对分去比 S3。</li>
-          <li><strong>Agent：</strong> 4B 结论「数学 RL 对 agent 几乎无增益」在 2B S3 上同样成立——BFCL OVERALL 有区分度，MULTI_TURN 仍弱（2B E1@150 摸到 ~17% 仍是最弱环）。tau 每点仅 40 条，排序只可作弱证据。</li>
+          <li><strong>Agent：</strong> 数学 RL 对 agent 几乎无增益——BFCL MULTI_TURN 仍是最弱环；tau n=40，排序只可作弱证据。</li>
+          <li><strong>MM：</strong> M0 formal 已给出文本+Geo3K 双基线；M1 light 只可看趋势；M2/M3 formal 齐了才能谈配比 Pareto。</li>
           <li><strong>训练验证 ≠ offline：</strong> 尤其 4B E1 训练 aime24@150 走低时，必须以 evalscope 为准再下结论。</li>
         </ul>
       </section>
 
       <section id="sec-pick">
-        <h2 class="sec-title">怎么选算法</h2>
-        <p class="sec-sub">按目标取舍，而不是追单一榜首</p>
+        <h2 class="sec-title">怎么选（按目标 × 轴）</h2>
+        <p class="sec-sub">先锁定规模 / 模态 / 是否动超参，再选算法</p>
         <div class="pick-grid">
           <div class="pick-card">
-            <p class="when">要吞吐 / 扫参</p>
+            <p class="when">Size · 要吞吐 / 扫参</p>
             <h3>优先 DAPO（E2）</h3>
-            <p>两边都最快、长度最短。4B 上数学峰值也最好；2B 上数学偏弱，适合当「便宜探索」而非最终交付。</p>
+            <p>两边都最快、长度最短。4B 上数学峰值也最好；2B 上数学偏弱，适合当「便宜探索」。</p>
           </div>
           <div class="pick-card">
-            <p class="when">要 2B 定盘数学</p>
+            <p class="when">Size · 2B 定盘数学</p>
             <h3>优先 RLOO（E4）</h3>
             <p>offline aime25@150 最高；有 KL、曲线好读。代价是墙钟略慢。</p>
           </div>
           <div class="pick-card">
-            <p class="when">要紧策略 / 通识</p>
-            <h3>看 Dr.GRPO（E3）或 REINFORCE++（E5）</h3>
-            <p>E3：熵最紧、mmlu 峰值常在；盯长度是否按规模反转。E5：2B mmlu@150 最高，更新稳。</p>
+            <p class="when">Param · 要紧策略 / 通识</p>
+            <h3>Dr.GRPO 或 REINFORCE++</h3>
+            <p>关 std / 开 mse-KL 的两条路：E3 熵最紧、mmlu 峰值常在；E5 更新稳、2B mmlu@150 最高。</p>
           </div>
           <div class="pick-card">
-            <p class="when">要稳健对照</p>
+            <p class="when">Param · 要稳健对照</p>
             <h3>保留 GRPO（E1）</h3>
-            <p>组内 std + KL 的经典设定；作 ablation 锚点，而不是冲榜选手。</p>
+            <p>组内 std + KL 的经典设定；作 ablation 锚点，也是 MM 的 M0 端点。</p>
           </div>
           <div class="pick-card">
-            <p class="when">要 agent / 工具调用</p>
+            <p class="when">MM · 要视觉且保文本</p>
+            <h3>别直接上 M1 纯图文</h3>
+            <p>等 M2（50%）/ M3（20%）formal；现阶段证据显示 100% Geo3K 文本崩得快。</p>
+          </div>
+          <div class="pick-card">
+            <p class="when">Algo · 要上线 ckpt</p>
+            <h3>扫中段峰值，别只交 step150</h3>
+            <p>4B E2@80、2B 多组@80–130 常优于末步。用 offline 曲线选点，再用少量 seed 复核。</p>
+          </div>
+          <div class="pick-card">
+            <p class="when">跨轴 · 要 agent / 工具</p>
             <h3>别指望换 RL 算法</h3>
             <p>需换数据或加 agent 轨迹；本轮纯数学 RL 换 E1–E5 救不了 MULTI_TURN。</p>
           </div>
           <div class="pick-card">
-            <p class="when">要上线 ckpt</p>
-            <h3>扫中段峰值，别只交 step150</h3>
-            <p>4B E2@80、2B 多组@80–130 常优于末步。用 offline 曲线选点，再用少量 seed 复核。</p>
+            <p class="when">跨轴 · 下一轮实验</p>
+            <h3>先闭合 MM formal，再开新轴</h3>
+            <p>配比 Pareto → 再考虑冻视觉塔 / 分辨率 / 4B×MM。避免与算法网格同时炸开。</p>
           </div>
         </div>
       </section>
@@ -231,20 +443,22 @@
         <p class="sec-sub">结论适用范围 · 尚未闭合的实验</p>
         <div class="callout warn">
           <div class="title">这些限制会直接改变「谁更好」的排序</div>
-          单 seed · 固定超参 · 非思考 16K · 训练数据 polaris_easy_boxed（及 S3）· 未跑 PPO。换数据难度、开 thinking、改 rollout.n / LR，排序可能变。
+          单 seed · 固定超参 · 非思考 16K · 训练数据 polaris_easy_boxed（及 S3）· 未跑 PPO。
+          换数据难度、开 thinking、改 <span class="mono">rollout.n</span> / LR，排序可能变。
         </div>
         <ul class="bullet-list">
-          <li><strong>4B S3</strong> 尚未五组跑满；S3 上的算法排序暂以 Easy-Boxed + 已有 S3 曲线为限。</li>
-          <li><strong>Agent 评测噪声大</strong>（tau n=40）；BFCL 有区分度但 MULTI_TURN 地板效应明显，不宜细排算法名次。</li>
-          <li><strong>PPO 未纳入</strong>——不能从本轮推出「critic-free 一定优于 PPO」。</li>
-          <li><strong>多模态线</strong>固定 GRPO、只改图文占比，结论见 <a href="../mm/index.html">多模态训练</a>，不并入本页算法排名。</li>
+          <li><strong>Size：</strong> 4B S3 尚未五组跑满；S3 上的算法排序暂以 Easy-Boxed + 已有 S3 曲线为限。</li>
+          <li><strong>Param：</strong> 无 lr / batch / n 网格；「Param」节是开关效应，不是超参最优解。</li>
+          <li><strong>MM：</strong> M1–M3 formal 评测未齐；M1 light 不可与 M0 比绝对值；M3 仍在训练。</li>
+          <li><strong>Algo：</strong> PPO 未纳入——不能推出「critic-free 一定优于 PPO」。Agent 评测噪声大，不宜细排名次。</li>
         </ul>
         <p class="footer-links">
           数据入口：
-          <a href="../2b/index.html">2B 对比 / 评测</a> ·
-          <a href="../4b/index.html">4B 对比 / 评测</a> ·
+          <a href="../2b/index.html">2B</a> ·
+          <a href="../4b/index.html">4B</a> ·
+          <a href="../mm/index.html">多模态</a> ·
           <a href="../algo/index.html">算法介绍</a> ·
-          <a href="../benchmark/index.html">Benchmark 介绍</a>
+          <a href="../benchmark/index.html">Benchmark</a>
         </p>
       </section>
 

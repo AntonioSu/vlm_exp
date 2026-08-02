@@ -1,9 +1,53 @@
-/* 2B/4B 综合结论页 — 复用看板视觉语言，偏阅读/表格 */
+/* 综合结论页 — Model Size · Param · MM · Algorithm */
 
 .concl-page {
   max-width: 1120px;
   margin: 0 auto;
   padding: 36px 24px 96px;
+}
+
+.axis-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 24px;
+}
+
+.axis-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--text);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.axis-chip:hover {
+  border-color: #cbd5e1;
+  background: #f8fafc;
+}
+
+.axis-chip.muted {
+  font-weight: 550;
+  color: var(--text-secondary);
+}
+
+.axis-chip .axis-k {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 5px;
+  background: #f3f4f6;
+  color: var(--text-tertiary);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
 }
 
 .concl-page h1 {
@@ -125,7 +169,18 @@
   margin: 14px 0 0;
 }
 
-@media (max-width: 720px) { .verdict-grid { grid-template-columns: 1fr; } }
+.verdict-grid.four {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+@media (max-width: 960px) {
+  .verdict-grid.four { grid-template-columns: 1fr 1fr; }
+}
+
+@media (max-width: 720px) {
+  .verdict-grid,
+  .verdict-grid.four { grid-template-columns: 1fr; }
+}
 
 .verdict-card {
   border: 1px solid var(--border);
@@ -170,6 +225,10 @@
 .tag-4b { background: #ede9fe; color: #6d28d9; }
 .tag-both { background: #d1fae5; color: #047857; }
 .tag-flip { background: #ffedd5; color: #c2410c; }
+.tag-size { background: #dbeafe; color: #1d4ed8; }
+.tag-param { background: #fef3c7; color: #b45309; }
+.tag-mm { background: #d1fae5; color: #047857; }
+.tag-algo { background: #ede9fe; color: #6d28d9; }
 
 table.concl-table {
   width: 100%;
