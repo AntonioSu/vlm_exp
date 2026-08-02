@@ -6,7 +6,7 @@ so the MM dashboard can show the same mid-step indices as 4B E1 GRPO.
 
   python3 scripts/analysis/gen_mm_train_dashboard_data.py
   python3 scripts/analysis/gen_mm_train_dashboard_data.py \
-    --log-dir /data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/logs/exp2card_mm/m2_mix50_2b \
+    --log-dir ../vlm_exp/logs/exp2card_mm/m2_mix50_2b \
     --output dashboard/mm/js/data-m2-train.js \
     --var-name MM_M2_TRAIN --label 'M2 · 50% 图文' --short-label M2 --color '#059669'
 """
@@ -21,10 +21,25 @@ from datetime import date
 from pathlib import Path
 from typing import Any
 
-VLM_EXP = Path("/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp")
-POLARIS_MM_JS = Path(__file__).resolve().parents[2] / "dashboard" / "mm" / "js"
+# Prefer sibling checkout ../vlm_exp; fall back to POLARIS-local vlm_exp tree.
+_POLARIS_VLM = Path(__file__).resolve().parents[2]
+_SIBLING_VLM = _POLARIS_VLM.parent.parent / "vlm_exp"
+VLM_EXP = _SIBLING_VLM if _SIBLING_VLM.is_dir() else _POLARIS_VLM
+POLARIS_MM_JS = _POLARIS_VLM / "dashboard" / "mm" / "js"
 DEFAULT_LOG_DIR = VLM_EXP / "logs" / "exp2card_mm" / "m1_geo3k100_2b"
 DEFAULT_OUT = POLARIS_MM_JS / "data-m1-train.js"
+
+
+def public_source(path: Path) -> str:
+    """Relative path for dashboard/data files — avoid embedding home/user dirs."""
+    parts = Path(path).resolve().parts
+    if "vlm_exp" in parts:
+        i = parts.index("vlm_exp")
+        return str(Path(*parts[i:]))
+    if "logs" in parts:
+        i = parts.index("logs")
+        return str(Path(*parts[i:]))
+    return Path(path).name
 
 NUM = r"np\.float64\(([\-\d\.eE]+)\)|np\.int32\(([\-\d\.eE]+)\)|([\-\d\.eE]+)"
 
@@ -151,7 +166,7 @@ def parse_logs(
     return {
         "generatedAt": date.today().isoformat(),
         "generatedBy": "scripts/analysis/gen_mm_train_dashboard_data.py",
-        "source": str(log_dir),
+        "source": public_source(log_dir),
         "logFiles": [Path(f).name for f in files],
         "label": label,
         "shortLabel": short_label,

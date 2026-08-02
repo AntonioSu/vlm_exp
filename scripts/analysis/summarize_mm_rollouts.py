@@ -21,11 +21,29 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("rollout_dir", type=Path)
     parser.add_argument("--output", required=True, type=Path, help="CSV output path")
-    parser.add_argument("--default-source", choices=("geo3k", "text"))
+    parser.add_argument(
+        "--default-source",
+        choices=("geo3k", "text", "all"),
+        help="Fallback source label when is_geo3k is absent. Use 'all' for mixed dumps without modality tags.",
+    )
+    parser.add_argument(
+        "--force-default-source",
+        action="store_true",
+        help="Always use --default-source, even when is_geo3k is present (e.g. M3 dump schema gaps).",
+    )
     return parser.parse_args()
 
 
-def source_for(record: dict[str, Any], default: str | None) -> str:
+def source_for(
+    record: dict[str, Any],
+    default: str | None,
+    *,
+    force_default: bool = False,
+) -> str:
+    if force_default:
+        if default is None:
+            raise ValueError("--force-default-source requires --default-source")
+        return default
     if "is_geo3k" in record:
         value = record["is_geo3k"]
         if isinstance(value, str):
@@ -33,7 +51,8 @@ def source_for(record: dict[str, Any], default: str | None) -> str:
         return "geo3k" if value else "text"
     if default is None:
         raise ValueError(
-            "rollout record has no is_geo3k field; use --default-source only for a single-source experiment"
+            "rollout record has no is_geo3k field; use --default-source "
+            "(geo3k|text|all) for dumps without modality tags"
         )
     return default
 
@@ -56,7 +75,11 @@ def main() -> None:
                     continue
                 record = json.loads(line)
                 try:
-                    source = source_for(record, args.default_source)
+                    source = source_for(
+                        record,
+                        args.default_source,
+                        force_default=args.force_default_source,
+                    )
                 except ValueError as exc:
                     raise ValueError(f"{path}:{line_number}: {exc}") from exc
                 groups[(int(record.get("step", path.stem)), source)].append(record)

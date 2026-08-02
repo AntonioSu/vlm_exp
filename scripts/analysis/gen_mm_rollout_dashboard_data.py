@@ -31,6 +31,26 @@ def number(value: str) -> int | float:
     return int(parsed) if parsed.is_integer() else parsed
 
 
+def public_source(path_or_label: str) -> str:
+    """Strip absolute home/user prefixes from paths shown in dashboard data."""
+    if not path_or_label:
+        return path_or_label
+    text = str(path_or_label)
+    if not text.startswith("/"):
+        return text
+    parts = Path(text).parts
+    if "vlm_exp" in parts:
+        i = parts.index("vlm_exp")
+        return str(Path(*parts[i:]))
+    if "logs" in parts:
+        i = parts.index("logs")
+        return str(Path(*parts[i:]))
+    if "evaluation" in parts:
+        i = parts.index("evaluation")
+        return str(Path(*parts[i:]))
+    return Path(text).name
+
+
 def main() -> None:
     args = parse_args()
     summary_path = args.csv.with_suffix(args.csv.suffix + ".summary.json")
@@ -65,8 +85,8 @@ def main() -> None:
         }
 
     data = {
-        "source": args.source_label or str(args.csv),
-        "generatedFrom": sidecar.get("rollout_dir", ""),
+        "source": public_source(args.source_label or str(args.csv)),
+        "generatedFrom": public_source(sidecar.get("rollout_dir", "")),
         "generatedBy": args.generated_by,
         "note": "Training rollout metrics; not Geo3K test-set evaluation.",
         "overall": {

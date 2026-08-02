@@ -11,25 +11,29 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 from datetime import date
 from pathlib import Path
 from typing import Any
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
-# Eval artifacts often live in the sibling /data/lijunyi/vlm_exp tree (gitignored),
+REPO_ROOT = Path(__file__).resolve().parents[2]  # polaris/vlm_exp (git-tracked)
+_WS = REPO_ROOT.parent
+if (_WS / "polaris").is_dir() and (_WS / "vlm_exp").is_dir():
+    WORKSPACE_ROOT = _WS
+else:
+    WORKSPACE_ROOT = _WS.parent if (_WS.parent / "vlm_exp").is_dir() else _WS
+WORKSPACE_ROOT = Path(os.environ.get("WORKSPACE_ROOT", WORKSPACE_ROOT))
+
+# Eval artifacts often live in the sibling vlm_exp tree (gitignored),
 # while this script refreshes the git-tracked dashboard under REPO_ROOT.
-VLM_EXP_DATA = Path("/data/lijunyi/vlm_exp")
+VLM_EXP_DATA = WORKSPACE_ROOT / "vlm_exp"
 EVALSCOPE_MM_CANDIDATES = [
-    Path("/data/lijunyi/evalscope/outputs/exp2card_mm"),
-    Path("/data/juicefs-white/5281-gpu-a100/lijunyi/evalscope/outputs/exp2card_mm"),
+    WORKSPACE_ROOT / "evalscope" / "outputs" / "exp2card_mm",
 ]
 GEO3K_DIR_CANDIDATES = [
     VLM_EXP_DATA / "evaluation" / "geo3k",
     REPO_ROOT / "evaluation" / "geo3k",
-    Path("/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/evaluation/geo3k"),
 ]
-
-
 def evalscope_mm_root() -> Path:
     for root in EVALSCOPE_MM_CANDIDATES:
         if root.exists():
@@ -144,7 +148,7 @@ def discover_m1_light_geo() -> list[tuple[int, dict[str, Any]]]:
             data = load_geo3k(path.name)
             if data:
                 found.append((step, data))
-    # de-dupe by step (prefer first candidate root which is /data/lijunyi)
+    # de-dupe by step (prefer first candidate root which is $WORKSPACE_ROOT)
     by_step: dict[int, dict[str, Any]] = {}
     for step, data in sorted(found):
         by_step.setdefault(step, data)
