@@ -2,6 +2,31 @@
 # Merge and evaluate one completed M1/M2/M3 checkpoint.
 # Usage: CUDA_VISIBLE_DEVICES=0 EVAL_STEP=70 bash scripts/eval/evaluate_mm_checkpoint.sh m1_geo3k100_2b
 set -euo pipefail
+SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+# Resolve workspace root without hardcoding user paths.
+if [[ -z "${WORKSPACE_ROOT:-}" ]]; then
+  if [[ -f "${SCRIPT_DIR}/../../../scripts/workspace_root.sh" ]]; then
+    # polaris/vlm_exp/scripts/<...>/
+    source "${SCRIPT_DIR}/../../../scripts/workspace_root.sh"
+  elif [[ -f "${SCRIPT_DIR}/../../../../polaris/scripts/workspace_root.sh" ]]; then
+    # sibling vlm_exp/scripts/<...>/
+    source "${SCRIPT_DIR}/../../../../polaris/scripts/workspace_root.sh"
+  else
+    _pkg=$(cd "${SCRIPT_DIR}/../.." && pwd)
+    WORKSPACE_ROOT=$(cd "${_pkg}/.." && pwd)
+    # nested polaris/vlm_exp → go up one more if needed
+    if [[ "$(basename "${_pkg}")" == "vlm_exp" && "$(basename "$(dirname "${_pkg}")")" == "polaris" ]]; then
+      WORKSPACE_ROOT=$(cd "${_pkg}/../.." && pwd)
+    fi
+    export WORKSPACE_ROOT
+    unset _pkg
+  fi
+fi
+POLARIS=${POLARIS:-${WORKSPACE_ROOT}/polaris}
+VLM_EXP=${VLM_EXP:-${WORKSPACE_ROOT}/vlm_exp}
+VERL_DIR=${VERL_DIR:-${WORKSPACE_ROOT}/verl-main}
+ROOT=${ROOT:-${WORKSPACE_ROOT}}
+EVALSCOPE=${EVALSCOPE:-${WORKSPACE_ROOT}/evalscope}
 
 if [[ $# -ne 1 ]]; then
   echo "Usage: CUDA_VISIBLE_DEVICES=<gpu> bash $0 <experiment_name>" >&2
@@ -10,10 +35,8 @@ fi
 
 EXP=$1
 export CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES:-0}
-SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 # Prefer the runtime data root (checkpoints / evaluation/); fall back to the
 # script tree when that layout is self-contained.
-DEFAULT_VLM_EXP=/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp
 if [[ -z "${VLM_EXP:-}" ]]; then
   if [[ -d "${DEFAULT_VLM_EXP}/model/exp2card_mm" ]]; then
     VLM_EXP=${DEFAULT_VLM_EXP}

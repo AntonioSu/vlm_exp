@@ -2,9 +2,30 @@
 # Supervise the M0 baseline Geo3K and text evaluations without disturbing
 # currently running jobs. Intended for long unattended runs.
 set -euo pipefail
+SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+# Resolve workspace root without hardcoding user paths.
+if [[ -z "${WORKSPACE_ROOT:-}" ]]; then
+  if [[ -f "${SCRIPT_DIR}/../../../scripts/workspace_root.sh" ]]; then
+    # polaris/vlm_exp/scripts/<...>/
+    source "${SCRIPT_DIR}/../../../scripts/workspace_root.sh"
+  elif [[ -f "${SCRIPT_DIR}/../../../../polaris/scripts/workspace_root.sh" ]]; then
+    # sibling vlm_exp/scripts/<...>/
+    source "${SCRIPT_DIR}/../../../../polaris/scripts/workspace_root.sh"
+  else
+    _pkg=$(cd "${SCRIPT_DIR}/../.." && pwd)
+    WORKSPACE_ROOT=$(cd "${_pkg}/.." && pwd)
+    # nested polaris/vlm_exp → go up one more if needed
+    if [[ "$(basename "${_pkg}")" == "vlm_exp" && "$(basename "$(dirname "${_pkg}")")" == "polaris" ]]; then
+      WORKSPACE_ROOT=$(cd "${_pkg}/../.." && pwd)
+    fi
+    export WORKSPACE_ROOT
+    unset _pkg
+  fi
+fi
+POLARIS=${POLARIS:-${WORKSPACE_ROOT}/polaris}
+VLM_EXP=${VLM_EXP:-${WORKSPACE_ROOT}/vlm_exp}
+VERL_DIR=${VERL_DIR:-${WORKSPACE_ROOT}/verl-main}
 
-VLM_EXP=/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp
-POLARIS=/data/juicefs-white/5281-gpu-a100/lijunyi/polaris
 ENVBIN=/home/jeeves/.conda/envs/verl_qwen35/bin
 MODEL=${POLARIS}/model/exp2card/e1_grpo_2b/merged_150
 LOG_DIR=${VLM_EXP}/logs/exp2card_mm/m0_e1_grpo_2b
@@ -46,7 +67,7 @@ PY
 }
 
 text_complete() {
-  local root=/data/juicefs-white/5281-gpu-a100/lijunyi/evalscope/outputs/exp2card_mm/m0_e1_grpo_2b
+  local root=evalscope/outputs/exp2card_mm/m0_e1_grpo_2b
   [[ -d "${root}" ]] || return 1
   "${ENVBIN}/python" - "${root}" <<'PY'
 from pathlib import Path
@@ -96,7 +117,7 @@ launch_geo() {
     export CUDA_VISIBLE_DEVICES=2
     export HF_HUB_OFFLINE=1
     export TRANSFORMERS_OFFLINE=1
-    export PYTHONPATH=${VLM_EXP}/scripts:/data/juicefs-white/5281-gpu-a100/lijunyi/verl-main:${PYTHONPATH:-}
+    export PYTHONPATH=${VLM_EXP}/scripts:verl-main:${PYTHONPATH:-}
     exec "${ENVBIN}/python" "${VLM_EXP}/scripts/eval/eval_geo3k.py" \
       --model "${MODEL}" \
       --output "${GEO_OUT}" \
