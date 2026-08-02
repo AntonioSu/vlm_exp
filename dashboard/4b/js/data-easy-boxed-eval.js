@@ -65,15 +65,15 @@ const EVAL_EASY_BOXED_FULL_ORDER = ["e1", "e2", "e3", "e4", "e5"];
 // Only exps with ≥1 report appear; null = missing S3 offline report.
 const EVAL_FULL_S3 = {
   e1: {
-    mmlu:   [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
-    aime24: [69.17, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
-    aime25: [44.17, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
+    mmlu:   [90.35, 91.09, null, null, null, null, null, null, null, null, null, null, null, null, null],
+    aime24: [69.17, 56.67, null, null, null, null, null, null, null, null, null, null, null, null, null],
+    aime25: [44.17, 40.00, null, null, null, null, null, null, null, null, null, null, null, null, null],
     math500:[94.58, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
   },
   e2: {
-    mmlu:   [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
-    aime24: [74.58, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
-    aime25: [46.25, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
+    mmlu:   [90.52, 90.85, null, null, null, null, null, null, null, null, null, null, null, null, null],
+    aime24: [74.58, 55.42, null, null, null, null, null, null, null, null, null, null, null, null, null],
+    aime25: [46.25, 38.33, null, null, null, null, null, null, null, null, null, null, null, null, null],
     math500:[95.12, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
   },
   e3: {
@@ -84,7 +84,7 @@ const EVAL_FULL_S3 = {
   },
 };
 // ---- Agent / tool-use benchmarks (evalscope, auto-synced 2026-08-02) ----
-// Source: evalscope/outputs/agent2/<ts>/reports/<exp>_4b_<step>/{bfcl_v3,tau_bench}.json
+// Source: /data/juicefs-white/5281-gpu-a100/lijunyi/evalscope/outputs/agent2/<ts>/reports/<exp>_4b_<step>/{bfcl_v3,tau_bench}.json
 // Coverage: bfcl=75 · tau=75 · steps with any report: 10/20/30/40/50/60/70/80/90/100/110/120/130/140/150
 // BFCL-v3: 10 subset ×30；bfcl=OVERALL（新版无聚合项时用 macro_score）；bfcl_mt=MULTI_TURN。
 // tau-bench: retail+airline×20，user-sim=gpt-5p5-apipro。null = 尚未评测。
