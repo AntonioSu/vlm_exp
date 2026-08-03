@@ -57,6 +57,7 @@
       <a href="index.html" class="active">总览</a>
       <a href="algo/index.html">算法介绍</a>
       <a href="benchmark/index.html">Benchmark 介绍</a>
+      <a href="dataset/index.html">数据集介绍</a>
       <a href="2b/index.html">2B 训练</a>
       <a href="4b/index.html">4B 训练</a>
       <a href="mm/index.html">多模态训练</a>
@@ -100,7 +101,7 @@
       </div>
       <div class="intro-item">
         <h4>看板怎么读</h4>
-        <p>「算法介绍」讲定义与权衡；「Benchmark 介绍」说明 AIME / MMLU / BFCL / tau-bench 怎么判分；「2B / 4B 训练」放训练曲线与评测对比；「综合结论」按 Model Size / Param / MM / Algorithm 四轴汇总；「多模态训练」展示执行状态与评测；「实验日志」按时间线记节点。下方卡片按入口进入。</p>
+        <p>「算法介绍」讲定义与权衡；「Benchmark 介绍」说明 AIME / MMLU / BFCL / tau-bench 怎么判分；「数据集介绍」说明 Easy-Boxed / S1–S3 / mix band 各池从哪来、怎么用；「2B / 4B 训练」放训练曲线与评测对比；「综合结论」按 Model Size / Param / MM / Algorithm 四轴汇总；「多模态训练」展示执行状态与评测；「实验日志」按时间线记节点。下方卡片按入口进入。</p>
       </div>
       <div class="intro-item">
         <h4>数据与复现</h4>
@@ -133,14 +134,25 @@
         </div>
       </a>
 
+      <a class="track-card" href="dataset/index.html">
+        <div class="bar" style="background:var(--e2)"></div>
+        <div class="go">进入 →</div>
+        <div class="kicker">Shared · Datasets</div>
+        <h3>数据集介绍</h3>
+        <p class="desc">Easy-Boxed / S1 / S2 / S3 / mix_2b_band / mix_4b_band：题量、难度、V1/V2 用法与构建方式。</p>
+        <div class="stat-row">
+          <span><b>Easy · S1–S3 · mix band</b></span>
+        </div>
+      </a>
+
       <a class="track-card" href="2b/index.html">
         <div class="bar" style="background:var(--e1)"></div>
         <div class="go">进入 →</div>
         <div class="kicker">Track 1 · Language Model</div>
         <h3>2B 训练监控</h3>
-        <p class="desc">Qwen3.5-2B · 2×A100-80GB · 16K 非思考模式 · E1–E5 五组算法对比，是本轮最先跑完、数据最完整的赛道。</p>
+        <p class="desc">Qwen3.5-2B · 2×A100-80GB · 16K 非思考模式 · E1–E5 五组算法对比；V2 难度池实验进行中。</p>
         <div class="stat-row">
-          <span><b>E1–E5</b> 训练+评测均已完成</span>
+          <span><b>E1–E5</b> Easy-Boxed / S3 完成 · V2 E1 ~99/150</span>
           <span>offline aime24@150 <b>E1 · 38.8%</b></span>
           <span>峰值 aime25 <b>37.5%</b>（E3@100 / E4@150）</span>
         </div>
@@ -151,9 +163,9 @@
         <div class="go">进入 →</div>
         <div class="kicker">Track 2 · Language Model</div>
         <h3>4B 训练监控</h3>
-        <p class="desc">Qwen3.5-4B · 4×A100-80GB · Easy-Boxed 训练+评测已完成；S3 Stage-3 E1–E3 已满 150，E4 RLOO 进行中（75/150）。</p>
+        <p class="desc">Qwen3.5-4B · 4×A100-80GB · Easy-Boxed 完成；S3 E4 进行中；V2 难度池 E1 GRPO 进行中。</p>
         <div class="stat-row">
-          <span><b>E1–E5</b> Easy-Boxed 完成 · S3 E1–E3 150/150 · E4 75/150</span>
+          <span><b>E1–E5</b> Easy-Boxed 完成 · S3 E4 ~75/150 · V2 E1 ~53/150</span>
           <span>峰值 aime24 <b>E2@80 · 80.4%</b></span>
           <span>峰值 aime25 <b>E2@80 · 62.5%</b></span>
         </div>
