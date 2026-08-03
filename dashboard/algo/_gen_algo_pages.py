@@ -32,6 +32,7 @@ HEADER = """<!doctype html>
       <a href="../index.html">总览</a>
       <a href="../algo/index.html" class="active">算法介绍</a>
       <a href="../benchmark/index.html">Benchmark 介绍</a>
+      <a href="../dataset/index.html">数据集介绍</a>
       <a href="../2b/index.html">2B 训练</a>
       <a href="../4b/index.html">4B 训练</a>
       <a href="../mm/index.html">多模态训练</a>
@@ -587,6 +588,7 @@ INDEX = r'''<!doctype html>
       <a href="../index.html">总览</a>
       <a href="../algo/index.html" class="active">算法介绍</a>
       <a href="../benchmark/index.html">Benchmark 介绍</a>
+      <a href="../dataset/index.html">数据集介绍</a>
       <a href="../2b/index.html">2B 训练</a>
       <a href="../4b/index.html">4B 训练</a>
       <a href="../mm/index.html">多模态训练</a>
