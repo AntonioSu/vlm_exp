@@ -3,9 +3,9 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>2B 训练 — Qwen3.5-2B（E1–E5 + S3）</title>
+<title>2B 训练 — Qwen3.5-2B（E1–E5 + S3 + V2）</title>
 <link rel="stylesheet" href="../common/base.css">
-<link rel="stylesheet" href="styles.css?v=20260727165600">
+<link rel="stylesheet" href="styles.css?v=20260803114000">
 </head>
 <body>
 
@@ -16,6 +16,7 @@
       <a href="../index.html">总览</a>
       <a href="../algo/index.html">算法介绍</a>
       <a href="../benchmark/index.html">Benchmark 介绍</a>
+      <a href="../dataset/index.html">数据集介绍</a>
       <a href="../2b/index.html" class="active">2B 训练</a>
       <a href="../4b/index.html">4B 训练</a>
       <a href="../mm/index.html">多模态训练</a>
@@ -26,11 +27,11 @@
 </div>
 
 <div class="page">
-  <h1>2B 训练监控 — Qwen3.5-2B（E1–E5 + S3）</h1>
-  <p class="subtitle">2×A100-80GB · non-thinking · 16K response · Easy-Boxed E1–E5 均已跑满 150/150 步；S3 E1–E5 均已完成 150 步。数据主要由 <code>scripts/monitoring/2b/parse_2b_logs.py</code> 从训练日志生成（E5-S3 的 stdout 日志因续训重启被覆盖丢失，改由 TensorBoard event 经 <code>scripts/monitoring/2b/gen_2b_js.py</code> 重建，数值与其余实验同口径校验一致）。算法定义见 <a href="../algo/index.html">算法介绍</a> · 评测协议见 <a href="../benchmark/index.html">Benchmark 介绍</a>。</p>
+  <h1>2B 训练监控 — Qwen3.5-2B（E1–E5 + S3 + V2）</h1>
+  <p class="subtitle">2×A100-80GB · non-thinking · 16K response · Easy-Boxed / S3 E1–E5 均 150/150；V2（难度池）E1 GRPO 进行中（~99/150）。数据由 <code>scripts/monitoring/2b/parse_2b_logs.py</code> 从 <code>logs/exp2card/e*_2b{,_s3,_v2_s1}/</code> 生成。算法定义见 <a href="../algo/index.html">算法介绍</a> · 数据池见 <a href="../dataset/index.html">数据集介绍</a> · 评测协议见 <a href="../benchmark/index.html">Benchmark 介绍</a>。</p>
 
   <div class="subtabs">
-    <button class="subtab-btn active" data-subtab="compare">对比总览（E1–E5 + S3）</button>
+    <button class="subtab-btn active" data-subtab="compare">对比总览（E1–E5 + S3 + V2）</button>
     <button class="subtab-btn" data-subtab="e1">E1 GRPO</button>
     <button class="subtab-btn" data-subtab="e2">E2 DAPO</button>
     <button class="subtab-btn" data-subtab="e3">E3 Dr.GRPO</button>
@@ -42,19 +43,20 @@
   <div id="panel-container"></div>
 </div>
 
-<script src="js/data-compare.js?v=20260730164700"></script>
+<script src="js/data-compare.js?v=20260803120000"></script>
 <script src="js/data-eval-offline.js?v=20260802120523"></script>
-<script src="js/data-easy-boxed-e1.js?v=20260730035312"></script>
-<script src="js/data-easy-boxed-e2.js?v=20260730035312"></script>
-<script src="js/data-easy-boxed-e3.js?v=20260730035312"></script>
-<script src="js/data-easy-boxed-e4.js?v=20260730035312"></script>
-<script src="js/data-easy-boxed-e5.js?v=20260730035312"></script>
-<script src="js/data-s3-e1.js?v=20260730035312"></script>
-<script src="js/data-s3-e2.js?v=20260730035312"></script>
-<script src="js/data-s3-e3.js?v=20260730035312"></script>
-<script src="js/data-s3-e4.js?v=20260730035312"></script>
-<script src="js/data-s3-e5.js?v=20260730035312"></script>
-<script src="js/charts.js?v=20260802120523"></script>
-<script src="js/tab-loader.js?v=20260801005100"></script>
+<script src="js/data-easy-boxed-e1.js?v=20260803112800"></script>
+<script src="js/data-easy-boxed-e2.js?v=20260803112800"></script>
+<script src="js/data-easy-boxed-e3.js?v=20260803112800"></script>
+<script src="js/data-easy-boxed-e4.js?v=20260803112800"></script>
+<script src="js/data-easy-boxed-e5.js?v=20260803112800"></script>
+<script src="js/data-s3-e1.js?v=20260803112800"></script>
+<script src="js/data-s3-e2.js?v=20260803112800"></script>
+<script src="js/data-s3-e3.js?v=20260803112800"></script>
+<script src="js/data-s3-e4.js?v=20260803112800"></script>
+<script src="js/data-s3-e5.js?v=20260803112800"></script>
+<script src="js/data-v2-e1.js?v=20260803112800"></script>
+<script src="js/charts.js?v=20260803120000"></script>
+<script src="js/tab-loader.js?v=20260803114000"></script>
 </body>
 </html>

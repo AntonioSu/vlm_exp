@@ -255,6 +255,15 @@
   .badge .sdot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
   .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px; }
   td.na { color: var(--text-tertiary); }
+  .hp-table { font-size: 12.5px; }
+  .hp-table th, .hp-table td { padding: 8px 10px; }
+  .hp-table td:first-child { font-weight: 550; color: var(--text); white-space: nowrap; }
+  .hp-table thead th.hp-e1 { color: var(--e1); }
+  .hp-table thead th.hp-e2 { color: var(--e2); }
+  .hp-table thead th.hp-e3 { color: var(--e3); }
+  .hp-table thead th.hp-e4 { color: var(--e4); }
+  .hp-table thead th.hp-e5 { color: var(--e5); }
+  .table-wrap { width: 100%; }
   .memo { list-style: none; padding: 0; margin: 0; }
   .memo li { padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 13.5px; }
   .memo li:last-child { border-bottom: none; }

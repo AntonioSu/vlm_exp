@@ -28,12 +28,14 @@
             <div>
               <h2>step150 mmlu_temp 对比（Easy-Boxed）</h2>
               <div class="chart-card">
+                <div class="legend" id="legend-eval-mmlu150"></div>
                 <div class="chart-wrap"><canvas id="chart-eval-mmlu150" height="200"></canvas><div class="tooltip" id="tip-eval-mmlu150"></div></div>
               </div>
             </div>
             <div>
               <h2>step150 aime25 对比（Easy-Boxed）</h2>
               <div class="chart-card">
+                <div class="legend" id="legend-eval-aime25-150"></div>
                 <div class="chart-wrap"><canvas id="chart-eval-aime25-150" height="200"></canvas><div class="tooltip" id="tip-eval-aime25-150"></div></div>
               </div>
             </div>
@@ -42,12 +44,14 @@
             <div>
               <h2>step150 S3 BFCL-v3 OVERALL</h2>
               <div class="chart-card">
+                <div class="legend" id="legend-agent-bfcl-150"></div>
                 <div class="chart-wrap"><canvas id="chart-agent-bfcl-150" height="200"></canvas><div class="tooltip" id="tip-agent-bfcl-150"></div></div>
               </div>
             </div>
             <div>
               <h2>step150 S3 tau-bench</h2>
               <div class="chart-card">
+                <div class="legend" id="legend-agent-tau-150"></div>
                 <div class="chart-wrap"><canvas id="chart-agent-tau-150" height="200"></canvas><div class="tooltip" id="tip-agent-tau-150"></div></div>
               </div>
             </div>
@@ -64,7 +68,7 @@
                 <div class="legend" id="legend-eval-aime24"></div>
                 <div class="chart-wrap"><canvas id="chart-eval-aime24" height="240"></canvas><div class="tooltip" id="tip-eval-aime24"></div></div>
               </div>
-              <p class="caption">X: checkpoint step（10–150，缺报告断开） · Y: aime24 mean_acc（%，n=8）。同色虚线 = 该算法 S3。</p>
+              <p class="caption">X: checkpoint step（10–150，缺报告断开） · Y: aime24 mean_acc（%，n=8）。异色虚线 = 该算法 S3。</p>
             </div>
             <div>
               <h2>aime25（Easy + S3 E1–E5）</h2>
@@ -72,7 +76,7 @@
                 <div class="legend" id="legend-eval-aime25"></div>
                 <div class="chart-wrap"><canvas id="chart-eval-aime25" height="240"></canvas><div class="tooltip" id="tip-eval-aime25"></div></div>
               </div>
-              <p class="caption">X: checkpoint step（10–150） · Y: aime25 mean_acc（%，n=8）。同色虚线 = 该算法 S3。</p>
+              <p class="caption">X: checkpoint step（10–150） · Y: aime25 mean_acc（%，n=8）。异色虚线 = 该算法 S3。</p>
             </div>
           </section>
         </section>
@@ -86,7 +90,7 @@
               <div class="legend" id="legend-eval-math500"></div>
               <div class="chart-wrap"><canvas id="chart-eval-math500" height="240"></canvas><div class="tooltip" id="tip-eval-math500"></div></div>
             </div>
-            <p class="caption">X: checkpoint step（10–150） · Y: MATH-500 pass@1（%）。同色虚线 = 该算法 S3。</p>
+            <p class="caption">X: checkpoint step（10–150） · Y: MATH-500 pass@1（%）。异色虚线 = 该算法 S3。</p>
           </div>
         </section>
 
@@ -99,7 +103,7 @@
               <div class="legend" id="legend-eval-mmlu"></div>
               <div class="chart-wrap"><canvas id="chart-eval-mmlu" height="240"></canvas><div class="tooltip" id="tip-eval-mmlu"></div></div>
             </div>
-            <p class="caption">X: checkpoint step（10–150） · Y: mmlu_temp acc（%）。同色虚线 = 该算法 S3。</p>
+            <p class="caption">X: checkpoint step（10–150） · Y: mmlu_temp acc（%）。异色虚线 = 该算法 S3。</p>
           </div>
         </section>
 
