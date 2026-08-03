@@ -1,4 +1,4 @@
-// ---- Evaluation results (evalscope offline, auto-synced 2026-08-02) ----
+// ---- Evaluation results (evalscope offline, auto-synced 2026-08-03) ----
 // Source: evalscope/outputs/exp2card/<exp>_4b_<step>/*/reports/<model>/*.json
 // 评测配置: eval_exp4b.sh + verl_qwen35 vLLM 0.24；
 // aime24/aime25 temperature=0.6 top_p=0.95 max_tokens=16384 n=8（30题×n8=240 采样）；
@@ -65,16 +65,16 @@ const EVAL_EASY_BOXED_FULL_ORDER = ["e1", "e2", "e3", "e4", "e5"];
 // Only exps with ≥1 report appear; null = missing S3 offline report.
 const EVAL_FULL_S3 = {
   e1: {
-    mmlu:   [90.35, 91.09, null, null, null, null, null, null, null, null, null, null, null, null, null],
-    aime24: [69.17, 56.67, null, null, null, null, null, null, null, null, null, null, null, null, null],
-    aime25: [44.17, 40.00, null, null, null, null, null, null, null, null, null, null, null, null, null],
-    math500:[94.58, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
+    mmlu:   [90.35, 91.09, 90.84, 91.41, 91.41, null, null, null, null, null, null, null, null, null, null],
+    aime24: [69.17, 56.67, 52.92, 48.33, 47.50, null, null, null, null, null, null, null, null, null, null],
+    aime25: [44.17, 40.00, 40.00, 33.75, 36.25, null, null, null, null, null, null, null, null, null, null],
+    math500:[94.58, 93.17, 92.70, 92.48, null, null, null, null, null, null, null, null, null, null, null],
   },
   e2: {
-    mmlu:   [90.52, 90.85, null, null, null, null, null, null, null, null, null, null, null, null, null],
-    aime24: [74.58, 55.42, null, null, null, null, null, null, null, null, null, null, null, null, null],
-    aime25: [46.25, 38.33, null, null, null, null, null, null, null, null, null, null, null, null, null],
-    math500:[95.12, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
+    mmlu:   [90.52, 90.85, 90.19, 91.25, 90.35, null, null, null, null, null, null, null, null, null, null],
+    aime24: [74.58, 55.42, 56.67, 55.42, 50.42, null, null, null, null, null, null, null, null, null, null],
+    aime25: [46.25, 38.33, 39.17, 37.50, 37.50, null, null, null, null, null, null, null, null, null, null],
+    math500:[95.12, 92.70, 93.30, 92.80, 92.95, null, null, null, null, null, null, null, null, null, null],
   },
   e3: {
     mmlu:   [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
@@ -83,7 +83,7 @@ const EVAL_FULL_S3 = {
     math500:[95.03, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
   },
 };
-// ---- Agent / tool-use benchmarks (evalscope, auto-synced 2026-08-02) ----
+// ---- Agent / tool-use benchmarks (evalscope, auto-synced 2026-08-03) ----
 // Source: /data/juicefs-white/5281-gpu-a100/lijunyi/evalscope/outputs/agent2/<ts>/reports/<exp>_4b_<step>/{bfcl_v3,tau_bench}.json
 // Coverage: bfcl=75 · tau=75 · steps with any report: 10/20/30/40/50/60/70/80/90/100/110/120/130/140/150
 // BFCL-v3: 10 subset ×30；bfcl=OVERALL（新版无聚合项时用 macro_score）；bfcl_mt=MULTI_TURN。
@@ -126,3 +126,46 @@ const AGENT = {
 };
 
 const AGENT_ORDER = ["e1", "e2", "e3", "e4", "e5"];
+
+// ---- Agent / tool-use benchmarks (S3) (evalscope, auto-synced 2026-08-03) ----
+// Source: /data/juicefs-white/5281-gpu-a100/lijunyi/evalscope/outputs/agent2/<ts>/reports/<exp>_4b_s3_<step>/{bfcl_v3,tau_bench}.json
+// Coverage: bfcl=2 · tau=2 · steps with any report: 30
+// BFCL-v3: 10 subset ×30；bfcl=OVERALL（新版无聚合项时用 macro_score）；bfcl_mt=MULTI_TURN。
+// tau-bench: retail+airline×20，user-sim=gpt-5p5-apipro。null = 尚未评测。
+// Refresh: python3 scripts/monitoring/4b/sync_4b_agent_dashboard.py
+// (reuses AGENT_STEPS from the Easy-Boxed Agent block above)
+
+const AGENT_S3 = {
+  e1: {
+    label: "E1 GRPO S3",       color: COLORS.e1,
+    bfcl:   [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
+    bfcl_mt:[null, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
+    tau:    [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
+  },
+  e2: {
+    label: "E2 DAPO S3",       color: COLORS.e2,
+    bfcl:   [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
+    bfcl_mt:[null, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
+    tau:    [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
+  },
+  e3: {
+    label: "E3 Dr.GRPO S3",    color: COLORS.e3,
+    bfcl:   [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
+    bfcl_mt:[null, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
+    tau:    [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
+  },
+  e4: {
+    label: "E4 RLOO S3",       color: COLORS.e4,
+    bfcl:   [null, null, 42.4, null, null, null, null, null, null, null, null, null, null, null, null],
+    bfcl_mt:[null, null, 6.1, null, null, null, null, null, null, null, null, null, null, null, null],
+    tau:    [null, null, 70.0, null, null, null, null, null, null, null, null, null, null, null, null],
+  },
+  e5: {
+    label: "E5 REINFORCE++ S3", color: COLORS.e5,
+    bfcl:   [null, null, 45.3, null, null, null, null, null, null, null, null, null, null, null, null],
+    bfcl_mt:[null, null, 7.2, null, null, null, null, null, null, null, null, null, null, null, null],
+    tau:    [null, null, 60.0, null, null, null, null, null, null, null, null, null, null, null, null],
+  },
+};
+
+const AGENT_S3_ORDER = ["e1", "e2", "e3", "e4", "e5"];

@@ -225,11 +225,11 @@ function drawBarChart(canvasId, tipId, { categories, data, colors, valueSuffix =
 
 function render() {
   renderLegend(document.getElementById("legend-pass"), [
-    { name: "E1 GRPO", data: EXP.e1.pass, color: COLORS.e1 },
-    { name: "E2 DAPO", data: EXP.e2.pass, color: COLORS.e2 },
-    { name: "E3 Dr.GRPO", data: EXP.e3.pass, color: COLORS.e3 },
-    { name: "E4 RLOO", data: EXP.e4.pass, color: COLORS.e4 },
-    { name: "E5 REINFORCE++", data: EXP.e5.pass, color: COLORS.e5 },
+    { name: "E1 GRPO", data: movingAvg(EXP.e1.pass, 5), color: COLORS.e1 },
+    { name: "E2 DAPO", data: movingAvg(EXP.e2.pass, 5), color: COLORS.e2 },
+    { name: "E3 Dr.GRPO", data: movingAvg(EXP.e3.pass, 5), color: COLORS.e3 },
+    { name: "E4 RLOO", data: movingAvg(EXP.e4.pass, 5), color: COLORS.e4 },
+    { name: "E5 REINFORCE++", data: movingAvg(EXP.e5.pass, 5), color: COLORS.e5 },
   ], (visible) => drawLineChart("chart-pass", "tip-pass", {
     categories: STEP_CATS,
     series: visible,
@@ -725,7 +725,11 @@ function renderExpPanel(key) {
       const tipId = `tip-${key}-agent-${suffix}`;
       const legendEl = document.getElementById(`legend-${key}-agent-${suffix}`);
       if (!document.getElementById(canvasId) || !ag[metric]) return;
+      const s3ag = (typeof AGENT_S3 !== "undefined") ? AGENT_S3[key] : null;
       const items = [{ name: ag.label || key.toUpperCase(), data: ag[metric], color: ag.color || COLORS[key] }];
+      if (s3ag && s3ag[metric] && s3ag[metric].some((v) => v != null)) {
+        items.push(s3Series(s3ag.label || `${ag.label || key.toUpperCase()} S3`, s3ag[metric], ag.color || COLORS[key]));
+      }
       const draw = (visible) => {
         const [yMin, yMax] = yPad(visible, loPad, hiPad, floor, ceil);
         drawLineChart(canvasId, tipId, {
@@ -794,7 +798,17 @@ function renderEvalPanel() {
 
   // ---- Agent / 工具调用能力（BFCL-v3 + tau-bench）：每个 index 一条曲线 ----
   if (typeof AGENT !== "undefined" && document.getElementById("chart-agent-bfcl")) {
-    const items = (dataKey) => AGENT_ORDER.map(k => ({ name: AGENT[k].label, data: AGENT[k][dataKey], color: AGENT[k].color }));
+    const items = (dataKey) => {
+      const rows = [];
+      AGENT_ORDER.forEach((k) => {
+        rows.push({ name: AGENT[k].label, data: AGENT[k][dataKey], color: AGENT[k].color });
+        const s3ag = (typeof AGENT_S3 !== "undefined") ? AGENT_S3[k] : null;
+        if (s3ag && s3ag[dataKey] && s3ag[dataKey].some((v) => v != null)) {
+          rows.push(s3Series(s3ag.label || `${AGENT[k].label} S3`, s3ag[dataKey], AGENT[k].color));
+        }
+      });
+      return rows;
+    };
     const yPad = (series, loPad, hiPad, floor, ceil) => {
       const vals = series.flatMap((s) => (s.data || []).filter((v) => v != null));
       if (!vals.length) return [floor, ceil];
