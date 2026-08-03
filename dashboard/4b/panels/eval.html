@@ -18,18 +18,20 @@
           <p class="tertiary">Source: <code>evalscope</code>（<code>run_queue_4b.sh</code> + <code>eval_exp4b.sh</code>，verl_qwen35 vLLM 0.24 serving）。评测配置：aime25 <code>temperature=0.6, top_p=0.95, max_tokens=16384, n=8</code>；mmlu_temp <code>n=2</code>；<code>enable_thinking=False</code>。权重路径 <code>model/exp2card/&lt;exp&gt;/merged_&lt;step&gt;</code>。S3 offline 报告目录 <code>outputs/exp2card/&lt;exp&gt;_4b_s3_&lt;step&gt;{,_manual}</code>。刷新：<code>python3 scripts/monitoring/4b/sync_4b_eval_dashboard.py</code>。</p>
           <div class="callout" style="margin-top:10px">
             <div class="title">Easy-Boxed 75/75 已齐；S3 offline 已同步 E1/E2/E3@step10</div>
-            <strong>Easy mmlu_temp</strong> 全程 90–92%；峰值 <strong>E3@120 = 92.47%</strong>。<strong>Easy aime24</strong> 峰值 <strong>E2@80 = 80.42%</strong>；<strong>aime25</strong> 峰值 <strong>E2@80 = 62.50%</strong>。<strong>S3@step10</strong>：aime24 E2 74.58% · E1 69.17% · E3 67.50%；aime25 E2 46.25% · E3 45.84% · E1 44.17%。E2 math_500 / E1@20 仍在跑。曲线同色虚线 = S3。
+            <strong>Easy mmlu_temp</strong> 全程 90–92%；峰值 <strong>E3@120 = 92.47%</strong>。<strong>Easy aime24</strong> 峰值 <strong>E2@80 = 80.42%</strong>；<strong>aime25</strong> 峰值 <strong>E2@80 = 62.50%</strong>。<strong>S3@step10</strong>：aime24 E2 74.58% · E1 69.17% · E3 67.50%；aime25 E2 46.25% · E3 45.84% · E1 44.17%。E2 math_500 / E1@20 仍在跑。曲线异色虚线 = S3。
           </div>
           <section class="grid2" style="margin-top:20px">
             <div>
               <h2>step150 mmlu_temp 对比</h2>
               <div class="chart-card">
+                <div class="legend" id="legend-eval-mmlu150"></div>
                 <div class="chart-wrap"><canvas id="chart-eval-mmlu150" height="200"></canvas><div class="tooltip" id="tip-eval-mmlu150"></div></div>
               </div>
             </div>
             <div>
               <h2>step150 aime25 对比</h2>
               <div class="chart-card">
+                <div class="legend" id="legend-eval-aime25-150"></div>
                 <div class="chart-wrap"><canvas id="chart-eval-aime25-150" height="200"></canvas><div class="tooltip" id="tip-eval-aime25-150"></div></div>
               </div>
             </div>
@@ -46,7 +48,7 @@
                 <div class="legend" id="legend-evalfull-aime24"></div>
                 <div class="chart-wrap"><canvas id="chart-evalfull-aime24" height="240"></canvas><div class="tooltip" id="tip-evalfull-aime24"></div></div>
               </div>
-              <p class="caption">X: step（缺 report 处断开；≠ 训练验证） · Y: aime24 mean_acc（%，240 题 × n=8）。同色虚线 = S3。</p>
+              <p class="caption">X: step（缺 report 处断开；≠ 训练验证） · Y: aime24 mean_acc（%，240 题 × n=8）。异色虚线 = S3。</p>
             </div>
             <div>
               <h2>aime25（Easy + S3）</h2>
@@ -54,7 +56,7 @@
                 <div class="legend" id="legend-evalfull-aime25"></div>
                 <div class="chart-wrap"><canvas id="chart-evalfull-aime25" height="240"></canvas><div class="tooltip" id="tip-evalfull-aime25"></div></div>
               </div>
-              <p class="caption">X: checkpoint step（10–150） · Y: aime25 mean_acc（%，240 题 × n=8）。同色虚线 = S3。</p>
+              <p class="caption">X: checkpoint step（10–150） · Y: aime25 mean_acc（%，240 题 × n=8）。异色虚线 = S3。</p>
             </div>
           </section>
         </section>
@@ -68,7 +70,7 @@
               <div class="legend" id="legend-evalfull-math500"></div>
               <div class="chart-wrap"><canvas id="chart-evalfull-math500" height="240"></canvas><div class="tooltip" id="tip-evalfull-math500"></div></div>
             </div>
-            <p class="caption">X: checkpoint step（10–150） · Y: MATH-500 pass@1（%）。Easy 已有 step50/100/150；S3 已有 E1/E3@10。同色虚线 = S3。</p>
+            <p class="caption">X: checkpoint step（10–150） · Y: MATH-500 pass@1（%）。Easy 已有 step50/100/150；S3 已有 E1/E3@10。异色虚线 = S3。</p>
           </div>
         </section>
 

@@ -48,19 +48,19 @@
           <section class="grid2" style="margin-top:16px">
             <div>
               <h2>平均响应长度（tokens）</h2>
-              <div class="chart-card"><div class="chart-wrap"><canvas id="chart-e3-len" height="200"></canvas><div class="tooltip" id="tip-e3-len"></div></div></div>
+              <div class="chart-card"><div class="legend" id="legend-e3-len"></div><div class="chart-wrap"><canvas id="chart-e3-len" height="200"></canvas><div class="tooltip" id="tip-e3-len"></div></div></div>
               <p class="caption">虚线 = 16K cap。</p>
             </div>
             <div>
               <h2>截断率 clip@16K（%）</h2>
-              <div class="chart-card"><div class="chart-wrap"><canvas id="chart-e3-trunc" height="200"></canvas><div class="tooltip" id="tip-e3-trunc"></div></div></div>
+              <div class="chart-card"><div class="legend" id="legend-e3-trunc"></div><div class="chart-wrap"><canvas id="chart-e3-trunc" height="200"></canvas><div class="tooltip" id="tip-e3-trunc"></div></div></div>
               <p class="caption"><code>response_length/clip_ratio</code>（≠ pg_clipfrac）。</p>
             </div>
           </section>
           <section class="grid2" style="margin-top:16px">
             <div>
               <h2>平均输入长度（tokens）</h2>
-              <div class="chart-card"><div class="chart-wrap"><canvas id="chart-e3-promptlen" height="200"></canvas><div class="tooltip" id="tip-e3-promptlen"></div></div></div>
+              <div class="chart-card"><div class="legend" id="legend-e3-promptlen"></div><div class="chart-wrap"><canvas id="chart-e3-promptlen" height="200"></canvas><div class="tooltip" id="tip-e3-promptlen"></div></div></div>
             </div>
             <div></div>
           </section>
@@ -75,7 +75,7 @@
           <section class="grid2" style="margin-top:16px">
             <div>
               <h2>策略熵 entropy</h2>
-              <div class="chart-card"><div class="chart-wrap"><canvas id="chart-e3-ent" height="200"></canvas><div class="tooltip" id="tip-e3-ent"></div></div></div>
+              <div class="chart-card"><div class="legend" id="legend-e3-ent"></div><div class="chart-wrap"><canvas id="chart-e3-ent" height="200"></canvas><div class="tooltip" id="tip-e3-ent"></div></div></div>
             </div>
             <div>
               <h2>说明</h2>
@@ -91,16 +91,16 @@
           <h2 class="sec-title">稳定性</h2>
           <p class="sec-sub">grad_norm · ppo_kl · pg_clipfrac · rollout↔训练一致性</p>
           <section class="grid2" style="margin-top:12px">
-            <div><h2>梯度范数 grad_norm</h2><div class="chart-card"><div class="chart-wrap"><canvas id="chart-e3-grad" height="200"></canvas><div class="tooltip" id="tip-e3-grad"></div></div></div></div>
-            <div><h2>rollout↔训练概率偏离度（(1−corr)×1e4）</h2><div class="chart-card"><div class="chart-wrap"><canvas id="chart-e3-corr" height="200"></canvas><div class="tooltip" id="tip-e3-corr"></div></div></div></div>
+            <div><h2>梯度范数 grad_norm</h2><div class="chart-card"><div class="legend" id="legend-e3-grad"></div><div class="chart-wrap"><canvas id="chart-e3-grad" height="200"></canvas><div class="tooltip" id="tip-e3-grad"></div></div></div></div>
+            <div><h2>rollout↔训练概率偏离度（(1−corr)×1e4）</h2><div class="chart-card"><div class="legend" id="legend-e3-corr"></div><div class="chart-wrap"><canvas id="chart-e3-corr" height="200"></canvas><div class="tooltip" id="tip-e3-corr"></div></div></div></div>
           </section>
           <section class="grid2" style="margin-top:16px">
-            <div><h2>策略更新位移 ppo_kl（×1e5）</h2><div class="chart-card"><div class="chart-wrap"><canvas id="chart-e3-ppokl" height="200"></canvas><div class="tooltip" id="tip-e3-ppokl"></div></div></div></div>
-            <div><h2>PPO 裁剪比例 pg_clipfrac（%）</h2><div class="chart-card"><div class="chart-wrap"><canvas id="chart-e3-clip" height="200"></canvas><div class="tooltip" id="tip-e3-clip"></div></div></div></div>
+            <div><h2>策略更新位移 ppo_kl（×1e5）</h2><div class="chart-card"><div class="legend" id="legend-e3-ppokl"></div><div class="chart-wrap"><canvas id="chart-e3-ppokl" height="200"></canvas><div class="tooltip" id="tip-e3-ppokl"></div></div></div></div>
+            <div><h2>PPO 裁剪比例 pg_clipfrac（%）</h2><div class="chart-card"><div class="legend" id="legend-e3-clip"></div><div class="chart-wrap"><canvas id="chart-e3-clip" height="200"></canvas><div class="tooltip" id="tip-e3-clip"></div></div></div></div>
           </section>
           <section style="margin-top:16px">
             <h2>rollout_corr/kl（×1e4）</h2>
-            <div class="chart-card"><div class="chart-wrap"><canvas id="chart-e3-rollkl" height="200"></canvas><div class="tooltip" id="tip-e3-rollkl"></div></div></div>
+            <div class="chart-card"><div class="legend" id="legend-e3-rollkl"></div><div class="chart-wrap"><canvas id="chart-e3-rollkl" height="200"></canvas><div class="tooltip" id="tip-e3-rollkl"></div></div></div>
             <p class="caption">与皮尔逊偏离度互补的一致性指标。</p>
           </section>
         </section>
@@ -111,12 +111,12 @@
           <section class="grid2">
             <div>
               <h2>MFU（actor，%）</h2>
-              <div class="chart-card"><div class="chart-wrap"><canvas id="chart-e3-mfu" height="200"></canvas><div class="tooltip" id="tip-e3-mfu"></div></div></div>
+              <div class="chart-card"><div class="legend" id="legend-e3-mfu"></div><div class="chart-wrap"><canvas id="chart-e3-mfu" height="200"></canvas><div class="tooltip" id="tip-e3-mfu"></div></div></div>
               <p class="caption"><code>perf/mfu/actor</code>，随序列长度波动。</p>
             </div>
             <div>
               <h2>吞吐 throughput（tokens/s）</h2>
-              <div class="chart-card"><div class="chart-wrap"><canvas id="chart-e3-thru" height="200"></canvas><div class="tooltip" id="tip-e3-thru"></div></div></div>
+              <div class="chart-card"><div class="legend" id="legend-e3-thru"></div><div class="chart-wrap"><canvas id="chart-e3-thru" height="200"></canvas><div class="tooltip" id="tip-e3-thru"></div></div></div>
               <p class="caption"><code>perf/throughput</code>（采样+训练）。</p>
             </div>
           </section>
@@ -143,7 +143,7 @@
           </div>
           <section style="margin-top:12px">
             <h2>单步耗时（分钟）</h2>
-            <div class="chart-card"><div class="chart-wrap"><canvas id="chart-e3-stepmin" height="200"></canvas><div class="tooltip" id="tip-e3-stepmin"></div></div></div>
+            <div class="chart-card"><div class="legend" id="legend-e3-stepmin"></div><div class="chart-wrap"><canvas id="chart-e3-stepmin" height="200"></canvas><div class="tooltip" id="tip-e3-stepmin"></div></div></div>
             <p class="caption"><code>timing_s/step</code>/60；均值约 12.5 min/step。</p>
           </section>
           <section class="grid2" style="margin-top:12px">
@@ -158,6 +158,7 @@
             <div>
               <h2>整步耗时 timing_s/step（秒）</h2>
               <div class="chart-card">
+                <div class="legend" id="legend-e3-timing-step"></div>
                 <div class="chart-wrap"><canvas id="chart-e3-timing-step" height="240"></canvas><div class="tooltip" id="tip-e3-timing-step"></div></div>
               </div>
               <p class="caption">均值约 750s；与总训练约 31.2h 一致。</p>
@@ -174,6 +175,7 @@
             <div>
               <h2>平均耗时占比（秒）</h2>
               <div class="chart-card">
+                <div class="legend" id="legend-e3-timing-mean"></div>
                 <div class="chart-wrap"><canvas id="chart-e3-timing-mean" height="200"></canvas><div class="tooltip" id="tip-e3-timing-mean"></div></div>
               </div>
               <p class="caption">gen ≈ 55%，update_actor ≈ 35%（本组无 ref）。</p>
@@ -186,7 +188,7 @@
           <p class="sec-sub">evalscope offline · Easy-Boxed 实线 / S3 虚线 · mmlu_temp / aime24 / aime25（n=8）</p>
           <p class="tertiary">与训练日志验证不同：<code>eval_exp4b.sh</code> + vLLM serving；E3 三项全 step 已齐。</p>
           <section class="grid2" style="margin-top:10px">
-            <div><h2>mmlu_temp（%）</h2><div class="chart-card"><div class="chart-wrap"><canvas id="chart-e3-eval-mmlu" height="200"></canvas><div class="tooltip" id="tip-e3-eval-mmlu"></div></div></div></div>
+            <div><h2>mmlu_temp（%）</h2><div class="chart-card"><div class="legend" id="legend-e3-eval-mmlu"></div><div class="chart-wrap"><canvas id="chart-e3-eval-mmlu" height="200"></canvas><div class="tooltip" id="tip-e3-eval-mmlu"></div></div></div></div>
             <div>
               <h2>aime24 / aime25（%）</h2>
               <div class="chart-card">

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>4B 训练 — Qwen3.5-4B（E1–E5 + S3）</title>
+<title>4B 训练 — Qwen3.5-4B（E1–E5 + S3 + V2）</title>
 <link rel="stylesheet" href="../common/base.css">
 <link rel="stylesheet" href="../2b/styles.css?v=20260727163000">
 </head>
@@ -16,6 +16,7 @@
       <a href="../index.html">总览</a>
       <a href="../algo/index.html">算法介绍</a>
       <a href="../benchmark/index.html">Benchmark 介绍</a>
+      <a href="../dataset/index.html">数据集介绍</a>
       <a href="../2b/index.html">2B 训练</a>
       <a href="../4b/index.html" class="active">4B 训练</a>
       <a href="../mm/index.html">多模态训练</a>
@@ -26,11 +27,11 @@
 </div>
 
 <div class="page">
-  <h1>4B 训练监控 — Qwen3.5-4B（E1–E5 + S3）</h1>
-  <p class="subtitle">4×A100-80GB · TP=4 · 关闭 offload · non-thinking · 16K response · Easy-Boxed E1–E5 均已跑满 150/150 步；S3 E1–E3 已完成 150 步，S3 E4 RLOO 进行中（75/150）。训练曲线由 <code>scripts/monitoring/4b/parse_4b_logs.py</code> 从 <code>logs/exp2card/e*_4b{,_s3}/</code> 生成。算法定义见 <a href="../algo/index.html">算法介绍</a> · 评测协议见 <a href="../benchmark/index.html">Benchmark 介绍</a>。</p>
+  <h1>4B 训练监控 — Qwen3.5-4B（E1–E5 + S3 + V2）</h1>
+  <p class="subtitle">4×A100-80GB · TP=4 · 关闭 offload · non-thinking · 16K response · Easy-Boxed E1–E5 150/150；S3 E1–E3 150、E4 进行中；V2（难度池）E1 GRPO 进行中（~53/150）。训练曲线由 <code>scripts/monitoring/4b/parse_4b_logs.py</code> 从 <code>logs/exp2card/e*_4b{,_s3,_v2_s1}/</code> 生成。算法定义见 <a href="../algo/index.html">算法介绍</a> · 数据池见 <a href="../dataset/index.html">数据集介绍</a> · 评测协议见 <a href="../benchmark/index.html">Benchmark 介绍</a>。</p>
 
   <div class="subtabs">
-    <button class="subtab-btn active" data-subtab="compare">对比总览（E1–E5 + S3）</button>
+    <button class="subtab-btn active" data-subtab="compare">对比总览（E1–E5 + S3 + V2）</button>
     <button class="subtab-btn" data-subtab="e1">E1 GRPO</button>
     <button class="subtab-btn" data-subtab="e2">E2 DAPO</button>
     <button class="subtab-btn" data-subtab="e3">E3 Dr.GRPO</button>
@@ -42,18 +43,19 @@
   <div id="panel-container"></div>
 </div>
 
-<script src="js/data-compare.js?v=20260803110304"></script>
+<script src="js/data-compare.js?v=20260803120000"></script>
 <script src="js/data-easy-boxed-eval.js?v=20260803111141"></script>
-<script src="js/data-easy-boxed-e1.js?v=20260803110304"></script>
-<script src="js/data-easy-boxed-e2.js?v=20260803110304"></script>
-<script src="js/data-easy-boxed-e3.js?v=20260803110304"></script>
-<script src="js/data-easy-boxed-e4.js?v=20260803110304"></script>
-<script src="js/data-easy-boxed-e5.js?v=20260803110304"></script>
-<script src="js/data-s3-e1.js?v=20260803110304"></script>
-<script src="js/data-s3-e2.js?v=20260803110304"></script>
-<script src="js/data-s3-e3.js?v=20260803110304"></script>
-<script src="js/data-s3-e4.js?v=20260803110304"></script>
-<script src="js/charts.js?v=20260802173445"></script>
-<script src="js/tab-loader.js?v=20260801130100"></script>
+<script src="js/data-easy-boxed-e1.js?v=20260803112800"></script>
+<script src="js/data-easy-boxed-e2.js?v=20260803112800"></script>
+<script src="js/data-easy-boxed-e3.js?v=20260803112800"></script>
+<script src="js/data-easy-boxed-e4.js?v=20260803112800"></script>
+<script src="js/data-easy-boxed-e5.js?v=20260803112800"></script>
+<script src="js/data-s3-e1.js?v=20260803112800"></script>
+<script src="js/data-s3-e2.js?v=20260803112800"></script>
+<script src="js/data-s3-e3.js?v=20260803112800"></script>
+<script src="js/data-s3-e4.js?v=20260803112800"></script>
+<script src="js/data-v2-e1.js?v=20260803112800"></script>
+<script src="js/charts.js?v=20260803120000"></script>
+<script src="js/tab-loader.js?v=20260803112800"></script>
 </body>
 </html>

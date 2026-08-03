@@ -1,4 +1,4 @@
-    <p class="tertiary">Easy-Boxed（e1_grpo_4b）与 S3（e1_grpo_4b_s3，150/150 已完成）对比。虚线/teal = S3 曲线。Source: logs/exp2card/…/train_*.log · 刷新：<code>parse_4b_logs.py && gen_4b_js.py</code>。</p>
+    <p class="tertiary">Easy-Boxed（e1_grpo_4b）· S3（e1_grpo_4b_s3，150/150）· V2（e1_grpo_4b_v2_s1，进行中）。虚线=S3，短虚线=V2。Source: logs/exp2card/…/train_*.log · 刷新：<code>parse_4b_logs.py && gen_4b_js.py</code>。</p>
 
     <div class="detail-layout">
       <nav class="detail-toc" aria-label="目录" id="e1-toc">
@@ -49,19 +49,19 @@
           <section class="grid2" style="margin-top:16px">
             <div>
               <h2>平均响应长度（tokens）</h2>
-              <div class="chart-card"><div class="chart-wrap"><canvas id="chart-e1-len" height="200"></canvas><div class="tooltip" id="tip-e1-len"></div></div></div>
+              <div class="chart-card"><div class="legend" id="legend-e1-len"></div><div class="chart-wrap"><canvas id="chart-e1-len" height="200"></canvas><div class="tooltip" id="tip-e1-len"></div></div></div>
               <p class="caption">虚线 = 16K cap。</p>
             </div>
             <div>
               <h2>截断率 clip@16K（%）</h2>
-              <div class="chart-card"><div class="chart-wrap"><canvas id="chart-e1-trunc" height="200"></canvas><div class="tooltip" id="tip-e1-trunc"></div></div></div>
+              <div class="chart-card"><div class="legend" id="legend-e1-trunc"></div><div class="chart-wrap"><canvas id="chart-e1-trunc" height="200"></canvas><div class="tooltip" id="tip-e1-trunc"></div></div></div>
               <p class="caption"><code>response_length/clip_ratio</code>（≠ pg_clipfrac）。</p>
             </div>
           </section>
           <section class="grid2" style="margin-top:16px">
             <div>
               <h2>平均输入长度（tokens）</h2>
-              <div class="chart-card"><div class="chart-wrap"><canvas id="chart-e1-promptlen" height="200"></canvas><div class="tooltip" id="tip-e1-promptlen"></div></div></div>
+              <div class="chart-card"><div class="legend" id="legend-e1-promptlen"></div><div class="chart-wrap"><canvas id="chart-e1-promptlen" height="200"></canvas><div class="tooltip" id="tip-e1-promptlen"></div></div></div>
             </div>
             <div></div>
           </section>
@@ -76,11 +76,11 @@
           <section class="grid2" style="margin-top:16px">
             <div>
               <h2>策略熵 entropy</h2>
-              <div class="chart-card"><div class="chart-wrap"><canvas id="chart-e1-ent" height="200"></canvas><div class="tooltip" id="tip-e1-ent"></div></div></div>
+              <div class="chart-card"><div class="legend" id="legend-e1-ent"></div><div class="chart-wrap"><canvas id="chart-e1-ent" height="200"></canvas><div class="tooltip" id="tip-e1-ent"></div></div></div>
             </div>
             <div>
               <h2>KL 散度 loss（×100，对参考模型）</h2>
-              <div class="chart-card"><div class="chart-wrap"><canvas id="chart-e1-klloss" height="200"></canvas><div class="tooltip" id="tip-e1-klloss"></div></div></div>
+              <div class="chart-card"><div class="legend" id="legend-e1-klloss"></div><div class="chart-wrap"><canvas id="chart-e1-klloss" height="200"></canvas><div class="tooltip" id="tip-e1-klloss"></div></div></div>
               <p class="caption"><code>actor/kl_loss</code>×100；≠ ppo_kl。</p>
             </div>
           </section>
@@ -94,16 +94,16 @@
             lr=1e-6 下每步更新很小：ppo_kl ~1e-5、pg_clipfrac 极低；rollout(vLLM) 与训练(FSDP) 概率皮尔逊相关始终接近 1——重要性采样前提成立。
           </div>
           <section class="grid2" style="margin-top:12px">
-            <div><h2>梯度范数 grad_norm</h2><div class="chart-card"><div class="chart-wrap"><canvas id="chart-e1-grad" height="200"></canvas><div class="tooltip" id="tip-e1-grad"></div></div></div></div>
-            <div><h2>rollout↔训练概率偏离度（(1−corr)×1e4）</h2><div class="chart-card"><div class="chart-wrap"><canvas id="chart-e1-corr" height="200"></canvas><div class="tooltip" id="tip-e1-corr"></div></div></div></div>
+            <div><h2>梯度范数 grad_norm</h2><div class="chart-card"><div class="legend" id="legend-e1-grad"></div><div class="chart-wrap"><canvas id="chart-e1-grad" height="200"></canvas><div class="tooltip" id="tip-e1-grad"></div></div></div></div>
+            <div><h2>rollout↔训练概率偏离度（(1−corr)×1e4）</h2><div class="chart-card"><div class="legend" id="legend-e1-corr"></div><div class="chart-wrap"><canvas id="chart-e1-corr" height="200"></canvas><div class="tooltip" id="tip-e1-corr"></div></div></div></div>
           </section>
           <section class="grid2" style="margin-top:16px">
-            <div><h2>策略更新位移 ppo_kl（×1e5）</h2><div class="chart-card"><div class="chart-wrap"><canvas id="chart-e1-ppokl" height="200"></canvas><div class="tooltip" id="tip-e1-ppokl"></div></div></div></div>
-            <div><h2>PPO 裁剪比例 pg_clipfrac（%）</h2><div class="chart-card"><div class="chart-wrap"><canvas id="chart-e1-clip" height="200"></canvas><div class="tooltip" id="tip-e1-clip"></div></div></div></div>
+            <div><h2>策略更新位移 ppo_kl（×1e5）</h2><div class="chart-card"><div class="legend" id="legend-e1-ppokl"></div><div class="chart-wrap"><canvas id="chart-e1-ppokl" height="200"></canvas><div class="tooltip" id="tip-e1-ppokl"></div></div></div></div>
+            <div><h2>PPO 裁剪比例 pg_clipfrac（%）</h2><div class="chart-card"><div class="legend" id="legend-e1-clip"></div><div class="chart-wrap"><canvas id="chart-e1-clip" height="200"></canvas><div class="tooltip" id="tip-e1-clip"></div></div></div></div>
           </section>
           <section style="margin-top:16px">
             <h2>rollout_corr/kl（×1e4）</h2>
-            <div class="chart-card"><div class="chart-wrap"><canvas id="chart-e1-rollkl" height="200"></canvas><div class="tooltip" id="tip-e1-rollkl"></div></div></div>
+            <div class="chart-card"><div class="legend" id="legend-e1-rollkl"></div><div class="chart-wrap"><canvas id="chart-e1-rollkl" height="200"></canvas><div class="tooltip" id="tip-e1-rollkl"></div></div></div>
             <p class="caption">与皮尔逊偏离度互补的一致性指标。</p>
           </section>
         </section>
@@ -114,12 +114,12 @@
           <section class="grid2">
             <div>
               <h2>MFU（actor，%）</h2>
-              <div class="chart-card"><div class="chart-wrap"><canvas id="chart-e1-mfu" height="200"></canvas><div class="tooltip" id="tip-e1-mfu"></div></div></div>
+              <div class="chart-card"><div class="legend" id="legend-e1-mfu"></div><div class="chart-wrap"><canvas id="chart-e1-mfu" height="200"></canvas><div class="tooltip" id="tip-e1-mfu"></div></div></div>
               <p class="caption"><code>perf/mfu/actor</code>，随序列长度波动。</p>
             </div>
             <div>
               <h2>吞吐 throughput（tokens/s）</h2>
-              <div class="chart-card"><div class="chart-wrap"><canvas id="chart-e1-thru" height="200"></canvas><div class="tooltip" id="tip-e1-thru"></div></div></div>
+              <div class="chart-card"><div class="legend" id="legend-e1-thru"></div><div class="chart-wrap"><canvas id="chart-e1-thru" height="200"></canvas><div class="tooltip" id="tip-e1-thru"></div></div></div>
               <p class="caption"><code>perf/throughput</code>（采样+训练）。</p>
             </div>
           </section>
@@ -146,7 +146,7 @@
           </div>
           <section style="margin-top:12px">
             <h2>单步耗时（分钟）</h2>
-            <div class="chart-card"><div class="chart-wrap"><canvas id="chart-e1-stepmin" height="200"></canvas><div class="tooltip" id="tip-e1-stepmin"></div></div></div>
+            <div class="chart-card"><div class="legend" id="legend-e1-stepmin"></div><div class="chart-wrap"><canvas id="chart-e1-stepmin" height="200"></canvas><div class="tooltip" id="tip-e1-stepmin"></div></div></div>
             <p class="caption"><code>timing_s/step</code>/60；均值约 14.7 min/step。</p>
           </section>
           <section class="grid2" style="margin-top:12px">
@@ -161,6 +161,7 @@
             <div>
               <h2>整步耗时 timing_s/step（秒）</h2>
               <div class="chart-card">
+                <div class="legend" id="legend-e1-timing-step"></div>
                 <div class="chart-wrap"><canvas id="chart-e1-timing-step" height="240"></canvas><div class="tooltip" id="tip-e1-timing-step"></div></div>
               </div>
               <p class="caption">均值约 883s；与总训练 37.2h 一致。</p>
@@ -177,6 +178,7 @@
             <div>
               <h2>平均耗时占比（秒）</h2>
               <div class="chart-card">
+                <div class="legend" id="legend-e1-timing-mean"></div>
                 <div class="chart-wrap"><canvas id="chart-e1-timing-mean" height="200"></canvas><div class="tooltip" id="tip-e1-timing-mean"></div></div>
               </div>
               <p class="caption">gen ≈ 51%，update_actor ≈ 30%，ref+old_log_prob ≈ 17%。</p>
@@ -189,7 +191,7 @@
           <p class="sec-sub">evalscope offline · Easy-Boxed 实线 / S3 虚线 · mmlu_temp / aime24 / aime25（n=8）</p>
           <p class="tertiary">与训练日志验证不同：<code>eval_exp4b.sh</code> + vLLM serving；Easy 三项全 step 已齐；S3 已同步 step10（aime24/25/math_500）。</p>
           <section class="grid2" style="margin-top:10px">
-            <div><h2>mmlu_temp（%）</h2><div class="chart-card"><div class="chart-wrap"><canvas id="chart-e1-eval-mmlu" height="200"></canvas><div class="tooltip" id="tip-e1-eval-mmlu"></div></div></div></div>
+            <div><h2>mmlu_temp（%）</h2><div class="chart-card"><div class="legend" id="legend-e1-eval-mmlu"></div><div class="chart-wrap"><canvas id="chart-e1-eval-mmlu" height="200"></canvas><div class="tooltip" id="tip-e1-eval-mmlu"></div></div></div></div>
             <div>
               <h2>aime24 / aime25（%）</h2>
               <div class="chart-card">

@@ -40,7 +40,7 @@
 
   async function loadPanel(tab) {
     if (!cache[tab]) {
-      const resp = await fetch("panels/" + tab + ".html?v=20260801130100");
+      const resp = await fetch("panels/" + tab + ".html?v=20260803120000");
       cache[tab] = await resp.text();
     }
     container.innerHTML = cache[tab];
