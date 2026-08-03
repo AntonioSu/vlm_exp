@@ -6,17 +6,107 @@
     text: "#111827",
     neutral: "#6b7280",
     m0: "#2563eb",
-    m1: "#d97706",
-    m2: "#059669",
-    m3: "#0891b2",
+    m1: "#d97706", // amber — matches train data
+    m2: "#059669", // green
+    m3: "#0891b2", // cyan
   };
-  const GEN_COLORS = { m1: "#dc2626", m2: "#f97316", m3: "#a855f7" };
-  const TRUNC_COLORS = { m1: "#dc2626", m2: "#ea580c", m3: "#c026d3" };
+  // gen / trunc must not collide with train colors on shared charts
+  const GEN_COLORS = { m1: "#dc2626", m2: "#7c3aed", m3: "#e11d48" };
+  const TRUNC_COLORS = { m1: "#9f1239", m2: "#c026d3", m3: "#4338ca" };
+  const SERIES_COLOR_FALLBACK = [
+    "#2563eb", "#d97706", "#059669", "#9333ea", "#db2777",
+    "#65a30d", "#e11d48", "#0891b2", "#c026d3", "#ea580c",
+    "#334155", "#ca8a04", "#7c2d12", "#0e7490", "#4c1d95",
+  ];
+  function dedupeSeriesColors(series) {
+    const used = new Set();
+    let fi = 0;
+    return series.map((s) => {
+      let c = (s.color || "").toLowerCase();
+      if (!c || used.has(c)) {
+        while (fi < SERIES_COLOR_FALLBACK.length && used.has(SERIES_COLOR_FALLBACK[fi].toLowerCase())) fi++;
+        c = (SERIES_COLOR_FALLBACK[fi++] || "#111827").toLowerCase();
+        return { ...s, color: c };
+      }
+      used.add(c);
+      return s;
+    });
+  }
+  function dedupeBarColors(colors) {
+    const used = new Set();
+    let fi = 0;
+    return (colors || []).map((raw) => {
+      let c = (raw || "").toLowerCase();
+      if (!c || used.has(c)) {
+        while (fi < SERIES_COLOR_FALLBACK.length && used.has(SERIES_COLOR_FALLBACK[fi].toLowerCase())) fi++;
+        c = (SERIES_COLOR_FALLBACK[fi++] || "#111827").toLowerCase();
+      }
+      used.add(c);
+      return c;
+    });
+  }
+
+  function renderLegend(el, series, draw) {
+    series = dedupeSeriesColors(series || []);
+    if (!el) { draw(series.slice()); return; }
+    const hidden = new Set();
+    const itemsHtml = series.map((s) => {
+      const swatch = s.dash
+        ? `<span class="dot dash" style="border-color:${s.color}"></span>`
+        : `<span class="dot" style="background:${s.color}"></span>`;
+      return `<span class="legend-item">${swatch}${s.name}</span>`;
+    }).join("");
+    el.innerHTML = `<span class="legend-toggle-all"></span>${itemsHtml}`;
+    const toggleAllBtn = el.querySelector(".legend-toggle-all");
+    const itemSpans = el.querySelectorAll(".legend-item");
+    const syncToggleAllLabel = () => {
+      toggleAllBtn.textContent = hidden.size >= series.length ? "显示全部" : "隐藏全部";
+    };
+    itemSpans.forEach((span, i) => {
+      span.addEventListener("click", () => {
+        const name = series[i].name;
+        if (hidden.has(name)) hidden.delete(name); else hidden.add(name);
+        span.classList.toggle("legend-off", hidden.has(name));
+        syncToggleAllLabel();
+        draw(series.filter((s) => !hidden.has(s.name)));
+      });
+    });
+    toggleAllBtn.addEventListener("click", () => {
+      const shouldHideAll = hidden.size < series.length;
+      hidden.clear();
+      itemSpans.forEach((span, i) => {
+        if (shouldHideAll) hidden.add(series[i].name);
+        span.classList.toggle("legend-off", shouldHideAll);
+      });
+      syncToggleAllLabel();
+      draw(series.filter((s) => !hidden.has(s.name)));
+    });
+    syncToggleAllLabel();
+    draw(series.slice());
+  }
+
+  function bindSeriesLegend(legendId, items, draw) {
+    const el = document.getElementById(legendId);
+    if (el) renderLegend(el, items, draw);
+    else draw(items);
+  }
+
+  function bindBarLegend(legendId, categories, data, colors, drawFilteredData) {
+    const items = categories.map((name, i) => ({
+      name,
+      color: (colors && colors[i]) || COLORS.neutral,
+    }));
+    bindSeriesLegend(legendId, items, (visible) => {
+      const keep = new Set(visible.map((s) => s.name));
+      drawFilteredData(data.map((v, i) => (keep.has(categories[i]) ? v : null)));
+    });
+  }
 
   function drawBarChart(canvasId, tipId, { categories, data, colors, valueSuffix = "", height = 220 }) {
     const canvas = document.getElementById(canvasId);
     const tip = tipId ? document.getElementById(tipId) : null;
     if (!canvas) return;
+    colors = dedupeBarColors(colors);
     const dpr = window.devicePixelRatio || 1;
     const cssWidth = canvas.parentElement.clientWidth || 320;
     canvas.style.height = height + "px";
@@ -98,6 +188,7 @@
     const canvas = document.getElementById(canvasId);
     const tip = tipId ? document.getElementById(tipId) : null;
     if (!canvas) return;
+    series = dedupeSeriesColors(series || []);
     const dpr = window.devicePixelRatio || 1;
     const cssWidth = canvas.parentElement.clientWidth || 320;
     canvas.style.height = height + "px";
@@ -297,30 +388,17 @@
 
     const cats = groups.map((g) => g.shortLabel);
     const colors = groups.map((g) => g.color);
-    drawBarChart("chart-mm-geo3k", "tip-mm-geo3k", {
-      categories: cats,
-      data: groups.map((g) => metricValue(g, "geo3kAcc")),
-      colors,
-      valueSuffix: "%",
-    });
-    drawBarChart("chart-mm-math500", "tip-mm-math500", {
-      categories: cats,
-      data: groups.map((g) => metricValue(g, "math500")),
-      colors,
-      valueSuffix: "%",
-    });
-    drawBarChart("chart-mm-mmlu", "tip-mm-mmlu", {
-      categories: cats,
-      data: groups.map((g) => metricValue(g, "mmlu")),
-      colors,
-      valueSuffix: "%",
-    });
-    drawBarChart("chart-mm-aime", "tip-mm-aime", {
-      categories: cats,
-      data: groups.map((g) => metricValue(g, "aime25")),
-      colors,
-      valueSuffix: "%",
-    });
+    const bindMmBar = (id, metric) => {
+      bindBarLegend(id.replace("chart-", "legend-"), cats, groups.map((g) => metricValue(g, metric)), colors, (data) => {
+        drawBarChart(id, id.replace("chart-", "tip-"), {
+          categories: cats, data, colors, valueSuffix: "%",
+        });
+      });
+    };
+    bindMmBar("chart-mm-geo3k", "geo3kAcc");
+    bindMmBar("chart-mm-math500", "math500");
+    bindMmBar("chart-mm-mmlu", "mmlu");
+    bindMmBar("chart-mm-aime", "aime25");
 
     // Mid-step offline curves: only draw when a series has ≥2 points; otherwise show checkpoint cards.
     const fullSteps = evalData.fullSteps || [];
@@ -367,44 +445,18 @@
     if (curvesEl) curvesEl.style.display = canDrawCurves ? "block" : "none";
 
     if (canDrawCurves && fullSteps.length) {
-      const legend = document.getElementById("mm-eval-mid-legend");
-      if (legend) {
-        legend.innerHTML = geoSeries.map((s) =>
-          `<span style="margin-right:14px"><span style="color:${s.color}">●</span> ${s.name}</span>`
-        ).join("");
-      }
-      drawLineChart("chart-mm-full-geo3k", "tip-mm-full-geo3k", {
-        categories: fullSteps,
-        series: geoSeries,
-        valueSuffix: "%",
-        height: 240,
-        yMin: 0,
-        yMax: 100,
-      });
-      drawLineChart("chart-mm-full-math500", "tip-mm-full-math500", {
-        categories: fullSteps,
-        series: fullSeries("math500"),
-        valueSuffix: "%",
-        height: 240,
-        yMin: 0,
-        yMax: 100,
-      });
-      drawLineChart("chart-mm-full-mmlu", "tip-mm-full-mmlu", {
-        categories: fullSteps,
-        series: fullSeries("mmlu"),
-        valueSuffix: "%",
-        height: 220,
-        yMin: 0,
-        yMax: 100,
-      });
-      drawLineChart("chart-mm-full-aime25", "tip-mm-full-aime25", {
-        categories: fullSteps,
-        series: fullSeries("aime25"),
-        valueSuffix: "%",
-        height: 220,
-        yMin: 0,
-        yMax: 100,
-      });
+      const bindFull = (id, series, height = 240) => {
+        bindSeriesLegend(id.replace("chart-", "legend-"), series, (visible) => {
+          drawLineChart(id, id.replace("chart-", "tip-"), {
+            categories: fullSteps, series: visible,
+            valueSuffix: "%", height, yMin: 0, yMax: 100,
+          });
+        });
+      };
+      bindFull("chart-mm-full-geo3k", geoSeries, 240);
+      bindFull("chart-mm-full-math500", fullSeries("math500"), 240);
+      bindFull("chart-mm-full-mmlu", fullSeries("mmlu"), 220);
+      bindFull("chart-mm-full-aime25", fullSeries("aime25"), 220);
     }
 
     const midBody = document.getElementById("mm-eval-mid-body");
@@ -500,7 +552,7 @@
       seriesChars.push({ name: "M2 Geo3K chars", data: padTo(m2geo.chars, n), color: COLORS.m2, dash: [6, 4] });
     }
     if (m2text) {
-      seriesScore.push({ name: "M2 text score", data: padTo(m2text.score, n), color: "#9333ea", dash: [2, 3] });
+      seriesScore.push({ name: "M2 text score", data: padTo(m2text.score, n), color: "#c026d3", dash: [2, 3] });
     }
     if (m3all) {
       seriesAcc.push({ name: "M3 mixed acc", data: padTo(m3all.acc, n), color: COLORS.m3, dash: [2, 3] });
@@ -508,23 +560,21 @@
       seriesChars.push({ name: "M3 chars", data: padTo(m3all.chars, n), color: COLORS.m3, dash: [2, 3] });
     }
 
-    drawLineChart("chart-mm-roll-acc", "tip-mm-roll-acc", {
-      categories: cats,
-      series: seriesAcc,
-      valueSuffix: "%",
-      height: 260,
-      yMin: 0,
-      yMax: 100,
+    bindSeriesLegend("legend-mm-roll-acc", seriesAcc, (visible) => {
+      drawLineChart("chart-mm-roll-acc", "tip-mm-roll-acc", {
+        categories: cats, series: visible,
+        valueSuffix: "%", height: 260, yMin: 0, yMax: 100,
+      });
     });
-    drawLineChart("chart-mm-roll-score", "tip-mm-roll-score", {
-      categories: cats,
-      series: seriesScore,
-      height: 220,
+    bindSeriesLegend("legend-mm-roll-score", seriesScore, (visible) => {
+      drawLineChart("chart-mm-roll-score", "tip-mm-roll-score", {
+        categories: cats, series: visible, height: 220,
+      });
     });
-    drawLineChart("chart-mm-roll-chars", "tip-mm-roll-chars", {
-      categories: cats,
-      series: seriesChars,
-      height: 220,
+    bindSeriesLegend("legend-mm-roll-chars", seriesChars, (visible) => {
+      drawLineChart("chart-mm-roll-chars", "tip-mm-roll-chars", {
+        categories: cats, series: visible, height: 220,
+      });
     });
   }
 
@@ -566,77 +616,49 @@
       dash,
     }));
 
+    const bindLine = (id, series, opts = {}) => {
+      bindSeriesLegend(id.replace("chart-", "legend-"), series, (visible) => {
+        drawLineChart(id, id.replace("chart-", "tip-"), {
+          categories: cats, series: visible, ...opts,
+        });
+      });
+    };
+
     // ---- time cost ----
-    drawLineChart("chart-mm-stepmin", "tip-mm-stepmin", {
-      categories: cats,
-      series: seriesOf((t) => t.stepMin),
-      valueSuffix: " min",
-      height: 220,
-    });
-    drawLineChart("chart-mm-timing", "tip-mm-timing", {
-      categories: cats,
-      series: runs.flatMap(({ t, dash, key }) => ([
-        { name: `${t.shortLabel} gen`, data: padTo(t.timing?.gen || [], n), color: GEN_COLORS[key] || "#dc2626", dash },
-        { name: `${t.shortLabel} update_actor`, data: padTo(t.timing?.update_actor || [], n), color: t.color, dash },
-      ])),
-      valueSuffix: "s",
-      height: 240,
-    });
-    drawBarChart("chart-mm-timing-mean", "tip-mm-timing-mean", {
-      categories: runs.flatMap(({ t }) => [`${t.shortLabel} gen`, `${t.shortLabel} actor`]),
-      data: runs.flatMap(({ t }) => [t.timingMean?.gen ?? null, t.timingMean?.update_actor ?? null]),
-      colors: runs.flatMap(({ t, key }) => [GEN_COLORS[key] || "#dc2626", t.color]),
-      valueSuffix: "s",
-      height: 220,
-    });
+    bindLine("chart-mm-stepmin", seriesOf((t) => t.stepMin), { valueSuffix: " min", height: 220 });
+    bindLine("chart-mm-timing", runs.flatMap(({ t, dash, key }) => ([
+      { name: `${t.shortLabel} gen`, data: padTo(t.timing?.gen || [], n), color: GEN_COLORS[key] || "#dc2626", dash },
+      { name: `${t.shortLabel} update_actor`, data: padTo(t.timing?.update_actor || [], n), color: t.color, dash },
+    ])), { valueSuffix: "s", height: 240 });
+    {
+      const meanCats = runs.flatMap(({ t }) => [`${t.shortLabel} gen`, `${t.shortLabel} actor`]);
+      const meanData = runs.flatMap(({ t }) => [t.timingMean?.gen ?? null, t.timingMean?.update_actor ?? null]);
+      const meanColors = runs.flatMap(({ t, key }) => [GEN_COLORS[key] || "#dc2626", t.color]);
+      bindBarLegend("legend-mm-timing-mean", meanCats, meanData, meanColors, (data) => {
+        drawBarChart("chart-mm-timing-mean", "tip-mm-timing-mean", {
+          categories: meanCats, data, colors: meanColors,
+          valueSuffix: "s", height: 220,
+        });
+      });
+    }
 
     // ---- stability ----
-    drawLineChart("chart-mm-grad", "tip-mm-grad", {
-      categories: cats,
-      series: seriesOf((t) => t.grad),
-      height: 200,
-    });
-    drawLineChart("chart-mm-ent", "tip-mm-ent", {
-      categories: cats,
-      series: seriesOf((t) => t.ent),
-      height: 200,
-    });
-    drawLineChart("chart-mm-ppokl", "tip-mm-ppokl", {
-      categories: cats,
-      series: seriesOf((t) => t.ppokl),
+    bindLine("chart-mm-grad", seriesOf((t) => t.grad), { height: 200 });
+    bindLine("chart-mm-ent", seriesOf((t) => t.ent), { height: 200 });
+    bindLine("chart-mm-ppokl", seriesOf((t) => t.ppokl), {
       height: 200,
       referenceLines: [{ value: 0, label: "0", color: COLORS.neutral }],
     });
-    drawLineChart("chart-mm-clip", "tip-mm-clip", {
-      categories: cats,
-      series: runs.flatMap(({ t, dash, key }) => ([
-        { name: `${t.shortLabel} clipfrac`, data: padTo(t.clip || [], n), color: t.color, dash },
-        { name: `${t.shortLabel} trunc@16K`, data: padTo(t.trunc || [], n), color: TRUNC_COLORS[key] || "#dc2626", dash: dash || [2, 3] },
-      ])),
-      valueSuffix: "%",
-      height: 200,
-    });
-    drawLineChart("chart-mm-corr", "tip-mm-corr", {
-      categories: cats,
-      series: seriesOf((t) => t.pearsonDev),
-      height: 200,
-    });
+    bindLine("chart-mm-clip", runs.flatMap(({ t, dash, key }) => ([
+      { name: `${t.shortLabel} clipfrac`, data: padTo(t.clip || [], n), color: t.color, dash },
+      { name: `${t.shortLabel} trunc@16K`, data: padTo(t.trunc || [], n), color: TRUNC_COLORS[key] || "#dc2626", dash: dash || [2, 3] },
+    ])), { valueSuffix: "%", height: 200 });
+    bindLine("chart-mm-corr", seriesOf((t) => t.pearsonDev), { height: 200 });
 
     // ---- efficiency ----
-    drawLineChart("chart-mm-mfu", "tip-mm-mfu", {
-      categories: cats,
-      series: seriesOf((t) => t.mfu),
-      valueSuffix: "%",
-      height: 200,
-    });
-    drawLineChart("chart-mm-thru", "tip-mm-thru", {
-      categories: cats,
-      series: seriesOf((t) => t.throughput),
-      height: 200,
-    });
-    drawLineChart("chart-mm-len", "tip-mm-len", {
-      categories: cats,
-      series: seriesOf((t) => t.len),
+    bindLine("chart-mm-mfu", seriesOf((t) => t.mfu), { valueSuffix: "%", height: 200 });
+    bindLine("chart-mm-thru", seriesOf((t) => t.throughput), { height: 200 });
+    bindLine("chart-mm-len", seriesOf((t) => t.len), {
       height: 200,
       referenceLines: [{ value: 16384, label: "16K cap", color: "#dc2626" }],
     });

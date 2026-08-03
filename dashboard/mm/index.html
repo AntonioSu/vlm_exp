@@ -36,6 +36,7 @@
       <a href="../index.html">总览</a>
       <a href="../algo/index.html">算法介绍</a>
       <a href="../benchmark/index.html">Benchmark 介绍</a>
+      <a href="../dataset/index.html">数据集介绍</a>
       <a href="../2b/index.html">2B 训练</a>
       <a href="../4b/index.html">4B 训练</a>
       <a href="../mm/index.html" class="active">多模态训练</a>
@@ -187,14 +188,16 @@
       <div>
         <h2>Geo3K sample accuracy（%）</h2>
         <div class="chart-card">
-          <div class="chart-wrap"><canvas id="chart-mm-geo3k" height="220"></canvas><div class="tooltip" id="tip-mm-geo3k"></div></div>
+                <div class="legend" id="legend-mm-geo3k"></div>
+                <div class="chart-wrap"><canvas id="chart-mm-geo3k" height="220"></canvas><div class="tooltip" id="tip-mm-geo3k"></div></div>
         </div>
         <p class="caption">视觉主判据。M0 formal n=8；M1 light n=1。</p>
       </div>
       <div>
         <h2>MATH-500（%）</h2>
         <div class="chart-card">
-          <div class="chart-wrap"><canvas id="chart-mm-math500" height="220"></canvas><div class="tooltip" id="tip-mm-math500"></div></div>
+                <div class="legend" id="legend-mm-math500"></div>
+                <div class="chart-wrap"><canvas id="chart-mm-math500" height="220"></canvas><div class="tooltip" id="tip-mm-math500"></div></div>
         </div>
         <p class="caption">文本保持主判据。M1 为 light max_tokens=512。</p>
       </div>
@@ -204,14 +207,16 @@
       <div>
         <h2>MMLU（%）</h2>
         <div class="chart-card">
-          <div class="chart-wrap"><canvas id="chart-mm-mmlu" height="220"></canvas><div class="tooltip" id="tip-mm-mmlu"></div></div>
+                <div class="legend" id="legend-mm-mmlu"></div>
+                <div class="chart-wrap"><canvas id="chart-mm-mmlu" height="220"></canvas><div class="tooltip" id="tip-mm-mmlu"></div></div>
         </div>
         <p class="caption">M0 来自 mmlu report；M1 light max_tokens=16，数值仅作探查。</p>
       </div>
       <div>
         <h2>AIME25（%）</h2>
         <div class="chart-card">
-          <div class="chart-wrap"><canvas id="chart-mm-aime" height="220"></canvas><div class="tooltip" id="tip-mm-aime"></div></div>
+                <div class="legend" id="legend-mm-aime"></div>
+                <div class="chart-wrap"><canvas id="chart-mm-aime" height="220"></canvas><div class="tooltip" id="tip-mm-aime"></div></div>
         </div>
         <p class="caption">M2/M3 空柱表示尚无评测产物。</p>
       </div>
@@ -229,13 +234,15 @@
           <div>
             <h2>Geo3K sample acc · mid steps（%）</h2>
             <div class="chart-card">
-              <div class="chart-wrap"><canvas id="chart-mm-full-geo3k" height="240"></canvas><div class="tooltip" id="tip-mm-full-geo3k"></div></div>
+                <div class="legend" id="legend-mm-full-geo3k"></div>
+                <div class="chart-wrap"><canvas id="chart-mm-full-geo3k" height="240"></canvas><div class="tooltip" id="tip-mm-full-geo3k"></div></div>
             </div>
           </div>
           <div>
             <h2>MATH-500 · mid steps（%）</h2>
             <div class="chart-card">
-              <div class="chart-wrap"><canvas id="chart-mm-full-math500" height="240"></canvas><div class="tooltip" id="tip-mm-full-math500"></div></div>
+                <div class="legend" id="legend-mm-full-math500"></div>
+                <div class="chart-wrap"><canvas id="chart-mm-full-math500" height="240"></canvas><div class="tooltip" id="tip-mm-full-math500"></div></div>
             </div>
           </div>
         </section>
@@ -243,13 +250,15 @@
           <div>
             <h2>MMLU · mid steps（%）</h2>
             <div class="chart-card">
-              <div class="chart-wrap"><canvas id="chart-mm-full-mmlu" height="220"></canvas><div class="tooltip" id="tip-mm-full-mmlu"></div></div>
+                <div class="legend" id="legend-mm-full-mmlu"></div>
+                <div class="chart-wrap"><canvas id="chart-mm-full-mmlu" height="220"></canvas><div class="tooltip" id="tip-mm-full-mmlu"></div></div>
             </div>
           </div>
           <div>
             <h2>AIME25 · mid steps（%）</h2>
             <div class="chart-card">
-              <div class="chart-wrap"><canvas id="chart-mm-full-aime25" height="220"></canvas><div class="tooltip" id="tip-mm-full-aime25"></div></div>
+                <div class="legend" id="legend-mm-full-aime25"></div>
+                <div class="chart-wrap"><canvas id="chart-mm-full-aime25" height="220"></canvas><div class="tooltip" id="tip-mm-full-aime25"></div></div>
             </div>
           </div>
         </section>
@@ -291,7 +300,8 @@
     <section style="margin-top:18px">
       <h2>学习曲线 · Geo3K train accuracy（%）</h2>
       <div class="chart-card">
-        <div class="chart-wrap"><canvas id="chart-mm-roll-acc" height="260"></canvas><div class="tooltip" id="tip-mm-roll-acc"></div></div>
+                <div class="legend" id="legend-mm-roll-acc"></div>
+                <div class="chart-wrap"><canvas id="chart-mm-roll-acc" height="260"></canvas><div class="tooltip" id="tip-mm-roll-acc"></div></div>
       </div>
       <p class="caption">来自 rollout dump；M1 实线 / M2 虚线 / M3 点虚线。M3 为 mixed overall（dump 无 modality tag）。≠ offline Geo3K test。</p>
     </section>
@@ -299,14 +309,16 @@
       <div>
         <h2>mean score（rollout）</h2>
         <div class="chart-card">
-          <div class="chart-wrap"><canvas id="chart-mm-roll-score" height="220"></canvas><div class="tooltip" id="tip-mm-roll-score"></div></div>
+                <div class="legend" id="legend-mm-roll-score"></div>
+                <div class="chart-wrap"><canvas id="chart-mm-roll-score" height="220"></canvas><div class="tooltip" id="tip-mm-roll-score"></div></div>
         </div>
         <p class="caption">M2 另含 text 分支（紫虚线）；M3 为 mixed overall。</p>
       </div>
       <div>
         <h2>response_length（train log，tokens）</h2>
         <div class="chart-card">
-          <div class="chart-wrap"><canvas id="chart-mm-len" height="200"></canvas><div class="tooltip" id="tip-mm-len"></div></div>
+                <div class="legend" id="legend-mm-len"></div>
+                <div class="chart-wrap"><canvas id="chart-mm-len" height="200"></canvas><div class="tooltip" id="tip-mm-len"></div></div>
         </div>
         <p class="caption">红虚线 = 16K cap；M1 实线 / M2 虚线 / M3 点虚线。</p>
       </div>
@@ -319,20 +331,23 @@
         <div>
           <h2>单步墙钟（分钟）</h2>
           <div class="chart-card">
-            <div class="chart-wrap"><canvas id="chart-mm-stepmin" height="220"></canvas><div class="tooltip" id="tip-mm-stepmin"></div></div>
+                <div class="legend" id="legend-mm-stepmin"></div>
+                <div class="chart-wrap"><canvas id="chart-mm-stepmin" height="220"></canvas><div class="tooltip" id="tip-mm-stepmin"></div></div>
           </div>
         </div>
         <div>
           <h2>平均 stage 占比（秒）</h2>
           <div class="chart-card">
-            <div class="chart-wrap"><canvas id="chart-mm-timing-mean" height="220"></canvas><div class="tooltip" id="tip-mm-timing-mean"></div></div>
+                <div class="legend" id="legend-mm-timing-mean"></div>
+                <div class="chart-wrap"><canvas id="chart-mm-timing-mean" height="220"></canvas><div class="tooltip" id="tip-mm-timing-mean"></div></div>
           </div>
         </div>
       </section>
       <section style="margin-top:16px">
         <h2>主要 stage 曲线（秒）</h2>
         <div class="chart-card">
-          <div class="chart-wrap"><canvas id="chart-mm-timing" height="240"></canvas><div class="tooltip" id="tip-mm-timing"></div></div>
+                <div class="legend" id="legend-mm-timing"></div>
+                <div class="chart-wrap"><canvas id="chart-mm-timing" height="240"></canvas><div class="tooltip" id="tip-mm-timing"></div></div>
         </div>
         <p class="caption">主要对比 gen / update_actor。柱图为 M1/M2/M3 阶段均值。</p>
       </section>
@@ -345,13 +360,15 @@
         <div>
           <h2>grad_norm</h2>
           <div class="chart-card">
-            <div class="chart-wrap"><canvas id="chart-mm-grad" height="200"></canvas><div class="tooltip" id="tip-mm-grad"></div></div>
+                <div class="legend" id="legend-mm-grad"></div>
+                <div class="chart-wrap"><canvas id="chart-mm-grad" height="200"></canvas><div class="tooltip" id="tip-mm-grad"></div></div>
           </div>
         </div>
         <div>
           <h2>entropy</h2>
           <div class="chart-card">
-            <div class="chart-wrap"><canvas id="chart-mm-ent" height="200"></canvas><div class="tooltip" id="tip-mm-ent"></div></div>
+                <div class="legend" id="legend-mm-ent"></div>
+                <div class="chart-wrap"><canvas id="chart-mm-ent" height="200"></canvas><div class="tooltip" id="tip-mm-ent"></div></div>
           </div>
         </div>
       </section>
@@ -359,20 +376,23 @@
         <div>
           <h2>ppo_kl（×1e5）</h2>
           <div class="chart-card">
-            <div class="chart-wrap"><canvas id="chart-mm-ppokl" height="200"></canvas><div class="tooltip" id="tip-mm-ppokl"></div></div>
+                <div class="legend" id="legend-mm-ppokl"></div>
+                <div class="chart-wrap"><canvas id="chart-mm-ppokl" height="200"></canvas><div class="tooltip" id="tip-mm-ppokl"></div></div>
           </div>
         </div>
         <div>
           <h2>pg_clipfrac / trunc@16K（%）</h2>
           <div class="chart-card">
-            <div class="chart-wrap"><canvas id="chart-mm-clip" height="200"></canvas><div class="tooltip" id="tip-mm-clip"></div></div>
+                <div class="legend" id="legend-mm-clip"></div>
+                <div class="chart-wrap"><canvas id="chart-mm-clip" height="200"></canvas><div class="tooltip" id="tip-mm-clip"></div></div>
           </div>
         </div>
       </section>
       <section style="margin-top:16px">
         <h2>rollout↔训练偏离度（1−corr）×1e4</h2>
         <div class="chart-card">
-          <div class="chart-wrap"><canvas id="chart-mm-corr" height="200"></canvas><div class="tooltip" id="tip-mm-corr"></div></div>
+                <div class="legend" id="legend-mm-corr"></div>
+                <div class="chart-wrap"><canvas id="chart-mm-corr" height="200"></canvas><div class="tooltip" id="tip-mm-corr"></div></div>
         </div>
       </section>
     </section>
@@ -383,14 +403,16 @@
         <div>
           <h2>MFU actor（%）</h2>
           <div class="chart-card">
-            <div class="chart-wrap"><canvas id="chart-mm-mfu" height="200"></canvas><div class="tooltip" id="tip-mm-mfu"></div></div>
+                <div class="legend" id="legend-mm-mfu"></div>
+                <div class="chart-wrap"><canvas id="chart-mm-mfu" height="200"></canvas><div class="tooltip" id="tip-mm-mfu"></div></div>
           </div>
           <p class="caption">MM + enforce_eager 下 MFU 通常低于文本 E1。</p>
         </div>
         <div>
           <h2>throughput（tokens/s）</h2>
           <div class="chart-card">
-            <div class="chart-wrap"><canvas id="chart-mm-thru" height="200"></canvas><div class="tooltip" id="tip-mm-thru"></div></div>
+                <div class="legend" id="legend-mm-thru"></div>
+                <div class="chart-wrap"><canvas id="chart-mm-thru" height="200"></canvas><div class="tooltip" id="tip-mm-thru"></div></div>
           </div>
         </div>
       </section>
@@ -399,7 +421,8 @@
     <section style="margin-top:20px">
       <h2>mean output chars（rollout dump）</h2>
       <div class="chart-card">
-        <div class="chart-wrap"><canvas id="chart-mm-roll-chars" height="220"></canvas><div class="tooltip" id="tip-mm-roll-chars"></div></div>
+                <div class="legend" id="legend-mm-roll-chars"></div>
+                <div class="chart-wrap"><canvas id="chart-mm-roll-chars" height="220"></canvas><div class="tooltip" id="tip-mm-roll-chars"></div></div>
       </div>
     </section>
 
@@ -438,7 +461,7 @@
 <script src="js/data-m1-rollouts.js?v=20260802183000"></script>
 <script src="js/data-m2-rollouts.js?v=20260802183000"></script>
 <script src="js/data-m3-rollouts.js?v=20260802183000"></script>
-<script src="js/charts-eval.js?v=20260802183000"></script>
+<script src="js/charts-eval.js?v=20260803120000"></script>
 <script>
   const tabBtns = document.querySelectorAll(".tab-btn");
   const panels = {
