@@ -1,10 +1,10 @@
-  <p class="tertiary">Sources: logs/exp2card/e*_2b{,_s3,_v2_s1}（<code>parse_2b_logs.py</code> + <code>gen_2b_js.py</code>）。Easy-Boxed / S3 五组均 150/150；V2 目前 E1 GRPO 进行中（~99/150）。pass rate = (critic/score/mean + 1)/2（shaped 下不用 rewards）。</p>
+  <p class="tertiary">Sources: logs/exp2card/e*_2b{,_s3,_v2_s1}（<code>parse_2b_logs.py</code> + <code>gen_2b_js.py</code>）。Easy-Boxed / S3 五组均 150/150；V2 E1 GRPO 续训中（~250/300），E2 尚无 step。pass rate = (critic/score/mean + 1)/2（shaped 下不用 rewards）。</p>
   <div class="detail-layout">
     <nav class="detail-toc" aria-label="目录" id="compare-toc">
       <p class="toc-heading">目录</p>
       <ol class="toc-list">
         <li><a href="#cmp-sec-overview"><span class="toc-num">0</span><span class="toc-title">概览</span></a></li>
-        <li><a href="#cmp-sec-hp"><span class="toc-num">1</span><span class="toc-title">超参</span></a></li>
+        <li><a href="#cmp-sec-hp"><span class="toc-num">1</span><span class="toc-title">超参 · 数据 · 继承</span></a></li>
         <li><a href="#cmp-sec-eb-pass"><span class="toc-num">2</span><span class="toc-title">EB · Pass</span></a></li>
         <li><a href="#cmp-sec-eb-len"><span class="toc-num">3</span><span class="toc-title">EB · 长度 / 熵</span></a></li>
         <li><a href="#cmp-sec-eb-grad"><span class="toc-num">4</span><span class="toc-title">EB · Grad / 耗时</span></a></li>
@@ -20,15 +20,17 @@
       <section class="detail-sec" id="cmp-sec-overview">
         <h2 class="sec-title">概览</h2>
         <div class="callout">
-          <div class="title">Easy-Boxed / S3 五组已满 150；V2 E1 GRPO 进行中（~99/150）</div>
+          <div class="title">Easy-Boxed / S3 五组已满 150；V2 E1 GRPO 续训 ~250/300，E2 尚无 step</div>
           V1 两块（Easy-Boxed / S3）保持原结论。V2 改三项：难度池 <code>mix_2b_band</code>、全算法统一 overlong shaped、KL/ref 关掉（见 <code>scripts/train/experiments_v2/</code>）。下方三块各自独立图。
         </div>
       </section>
 
       <section class="detail-sec" id="cmp-sec-hp">
         <h2 class="sec-title">超参（各训练）</h2>
-        <p class="sec-sub">lr / batch / KL / entropy，外加读曲线常用的共享采样与长度项；算法定义见 <a href="../algo/index.html">算法介绍</a>。脚本：<code>scripts/train/experiments_2b/</code> · <code>scripts/train/experiments_v2/</code></p>
+        <p class="sec-sub">共享训练超参 + 各家族的<strong>数据</strong>与<strong>继承关系</strong>；算法定义见 <a href="../algo/index.html">算法介绍</a> · 数据池见 <a href="../dataset/index.html">数据集介绍</a>。脚本：<code>experiments_2b/</code> · <code>experiments_v2/</code> · <code>experiments_dapo_easy_{24,32}k/</code> · <code>experiments_dapo_s1_24k/</code> · <code>experiments_extend/</code></p>
 
+        <h3 class="cpt">V1 vs V2 共享块</h3>
+        <p class="cpt-p">Easy / S3 共用 V1 配置块（只换 <code>STAGE</code> 数据）；V2 独立配置块。Easy-24K / Easy-32K / S1-24K / Ext 继承 V1 E2，见下「家族」表。</p>
         <div class="table-wrap" style="margin-top:10px; overflow-x:auto">
           <table class="hp-table">
             <thead>
@@ -39,6 +41,16 @@
               </tr>
             </thead>
             <tbody>
+              <tr>
+                <td>train data</td>
+                <td>Easy：<span class="mono">polaris_easy_boxed</span>（13688）<br>S3：<span class="mono">qwen3-4b-s3</span>（24652）</td>
+                <td><span class="mono">mix_2b_band</span>（6471）<br>easy∪s3 · pass∈[0.2,0.8]</td>
+              </tr>
+              <tr>
+                <td>start / resume</td>
+                <td>base 冷启动 · 各 EXP 独立目录</td>
+                <td>base 冷启动 · <span class="mono">resume_mode=auto</span>（E1 已续到 ~300）</td>
+              </tr>
               <tr>
                 <td>lr</td>
                 <td class="mono">1e-6</td>
@@ -75,9 +87,14 @@
                 <td class="mono">16384</td>
               </tr>
               <tr>
+                <td>overlong</td>
+                <td>仅 E2 DAPO shaped；其余 hard −1</td>
+                <td>全算法 shaped（<span class="mono">OVERLONG_MODE=shaped</span>）</td>
+              </tr>
+              <tr>
                 <td>total_training_steps</td>
                 <td class="mono">150</td>
-                <td class="mono">150</td>
+                <td><span class="mono">150</span>（E1 续训目标 300）</td>
               </tr>
               <tr>
                 <td>entropy_coeff</td>
@@ -94,7 +111,7 @@
         </div>
 
         <h3 class="cpt">V1 KL（E1–E5）</h3>
-        <p class="cpt-p">V1 唯一按算法分叉的训练超参是 KL；V2 起全部关掉。</p>
+        <p class="cpt-p">V1 唯一按算法分叉的训练超参是 KL；V2 / Easy-24K / Easy-32K / S1-24K / Ext 中 E2 系一律关 KL。</p>
         <div class="table-wrap" style="margin-top:10px; overflow-x:auto">
           <table class="hp-table">
             <thead>
@@ -118,6 +135,146 @@
               </tr>
             </tbody>
           </table>
+        </div>
+
+        <h3 class="cpt">各训练家族 · 数据与继承</h3>
+        <p class="cpt-p">「继承」= 配置从哪条实验拷贝；「相对基线」= 唯一/主要自变量。数据路径均相对 <span class="mono">parquet/</span>。</p>
+        <div class="table-wrap" style="margin-top:10px; overflow-x:auto">
+          <table class="hp-table hp-family">
+            <thead>
+              <tr>
+                <th>家族</th>
+                <th>EXP</th>
+                <th>算法</th>
+                <th>数据</th>
+                <th>继承 / 起点</th>
+                <th>相对基线改动</th>
+                <th>steps</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Easy-Boxed</td>
+                <td class="mono">e{1–5}_*_2b</td>
+                <td>E1–E5</td>
+                <td><span class="mono">stage1/polaris_easy_boxed.parquet</span><br>13688</td>
+                <td>base 冷启动<br><span class="mono">experiments_2b/</span></td>
+                <td>V1 主实验（算法是唯一自变量）</td>
+                <td class="mono">150</td>
+              </tr>
+              <tr>
+                <td>S3</td>
+                <td class="mono">e{1–5}_*_2b_s3</td>
+                <td>E1–E5</td>
+                <td><span class="mono">stage3/qwen3-4b-s3.parquet</span><br>24652</td>
+                <td>extends Easy 配置块<br>只换 <span class="mono">STAGE=s3</span></td>
+                <td>同超参 · 换数据池</td>
+                <td class="mono">150</td>
+              </tr>
+              <tr>
+                <td>V2</td>
+                <td class="mono">e{1–5}_*_2b_v2_s1</td>
+                <td>E1–E5</td>
+                <td><span class="mono">difficulty/mix_2b_band.parquet</span><br>6471 · band [0.2,0.8]</td>
+                <td>算法定义继承 V1<br>配置块独立 <span class="mono">experiments_v2/</span></td>
+                <td>数据 + BS48/mini8 + KL=none + 全 shaped</td>
+                <td><span class="mono">150</span>（E1→300）</td>
+              </tr>
+              <tr>
+                <td>Easy-24K</td>
+                <td class="mono">e2_dapo_2b_easy_24k</td>
+                <td class="hp-e2">E2 DAPO</td>
+                <td><span class="mono">stage1/polaris_easy_boxed.parquet</span><br>同 Easy</td>
+                <td>extends V1 E2 配置<br>base 冷启动（新目录，不接 @150）</td>
+                <td>只改 <span class="mono">max_response_length=24576</span></td>
+                <td class="mono">150</td>
+              </tr>
+              <tr>
+                <td>Easy-32K</td>
+                <td class="mono">e2_dapo_2b_easy_32k</td>
+                <td class="hp-e2">E2 DAPO</td>
+                <td><span class="mono">stage1/polaris_easy_boxed.parquet</span><br>同 Easy</td>
+                <td>extends V1 E2 配置<br>base 冷启动（新目录，不接 @150）</td>
+                <td>只改 <span class="mono">max_response_length=32768</span></td>
+                <td class="mono">150</td>
+              </tr>
+              <tr>
+                <td>S1-24K</td>
+                <td class="mono">e2_dapo_2b_s1_24k</td>
+                <td class="hp-e2">E2 DAPO</td>
+                <td><span class="mono">stage1/qwen3-4b-s1.parquet</span><br>29946</td>
+                <td>extends V1 E2 配置<br>base 冷启动（新目录，不接 @150）</td>
+                <td>换 S1 数据 + <span class="mono">max_response_length=24576</span></td>
+                <td class="mono">150</td>
+              </tr>
+              <tr>
+                <td>Ext · easy-cont</td>
+                <td class="mono">e2_dapo_2b_easy_cont150</td>
+                <td class="hp-e2">E2 DAPO</td>
+                <td><span class="mono">stage1/polaris_easy_boxed.parquet</span><br>同 Easy</td>
+                <td>extends <span class="mono">e2_dapo_2b@150</span><br>拷权重 + 保留 <span class="mono">data.pt</span></td>
+                <td>同数据续训；其余超参锁死</td>
+                <td class="mono">151→300</td>
+              </tr>
+              <tr>
+                <td>Ext · S1-switch</td>
+                <td class="mono">e2_dapo_2b_s1_from_easy150</td>
+                <td class="hp-e2">E2 DAPO</td>
+                <td><span class="mono">stage1/qwen3-4b-s1.parquet</span><br>29946</td>
+                <td>extends <span class="mono">e2_dapo_2b@150</span><br>拷权重 · <strong>重置</strong> <span class="mono">data.pt</span></td>
+                <td>换 S1 续训；其余超参锁死</td>
+                <td class="mono">151→300</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3 class="cpt">继承关系（extend）</h3>
+        <p class="cpt-p">实线 = 权重/配置直接继承；虚线 = 平行对照（同配置块或同算法定义，独立冷启动）。</p>
+        <div class="hp-lineage" aria-label="实验继承关系">
+          <div class="hp-lineage-root">Qwen3.5-2B base</div>
+          <ul class="hp-lineage-tree">
+            <li>
+              <span class="hp-node">V1 Easy-Boxed E1–E5</span>
+              <span class="hp-meta mono">polaris_easy_boxed · 16K · 150</span>
+              <ul>
+                <li class="hp-branch-solid">
+                  <span class="hp-node hp-e2">E2 DAPO @150</span>
+                  <span class="hp-meta mono">e2_dapo_2b</span>
+                  <ul>
+                    <li class="hp-branch-solid">
+                      <span class="hp-node">Ext easy-cont</span>
+                      <span class="hp-meta">同 easy 数据 · 151→300 · 保留 data.pt</span>
+                    </li>
+                    <li class="hp-branch-solid">
+                      <span class="hp-node">Ext S1-switch</span>
+                      <span class="hp-meta">换 s1 · 151→300 · 重置 data.pt</span>
+                    </li>
+                  </ul>
+                </li>
+                <li class="hp-branch-dash">
+                  <span class="hp-node">Easy-24K E2</span>
+                  <span class="hp-meta">同 easy · RESP_LEN=24576 · base 冷启动</span>
+                </li>
+                <li class="hp-branch-dash">
+                  <span class="hp-node">Easy-32K E2</span>
+                  <span class="hp-meta">同 easy · RESP_LEN=32768 · base 冷启动</span>
+                </li>
+                <li class="hp-branch-dash">
+                  <span class="hp-node">S1-24K E2</span>
+                  <span class="hp-meta">换 s1 · RESP_LEN=24576 · base 冷启动</span>
+                </li>
+              </ul>
+            </li>
+            <li class="hp-branch-dash">
+              <span class="hp-node">V1 S3 E1–E5</span>
+              <span class="hp-meta mono">qwen3-4b-s3 · 同 V1 超参 · 只换 STAGE</span>
+            </li>
+            <li class="hp-branch-dash">
+              <span class="hp-node">V2 E1–E5</span>
+              <span class="hp-meta mono">mix_2b_band · BS48 · KL=none · shaped</span>
+            </li>
+          </ul>
         </div>
       </section>
 
@@ -206,7 +363,7 @@
       </section>
 
       <h2 class="sec-title" style="margin-top:28px">V2（难度池 · shaped · no-KL）</h2>
-      <p class="tertiary">数据源：<code>logs/exp2card/e*_2b_v2_s1/</code>（<code>scripts/train/experiments_v2/run_exp_v2.sh</code>）。当前仅 E1 GRPO 有日志（~99/150）；后续算法跑起来会自动出现。</p>
+      <p class="tertiary">数据源：<code>logs/exp2card/e*_2b_v2_s1/</code>（<code>scripts/train/experiments_v2/run_exp_v2.sh</code>）。E1 GRPO 已从 150 续到 ~250/300（对比图用完整步数轴）；E2 DAPO 目录已建、尚无 step，出日志后会自动出现。</p>
       <section class="detail-sec" id="cmp-sec-v2-pass">
         <h2>V2 Pass rate（%，逐 step）</h2>
         <div class="chart-card">

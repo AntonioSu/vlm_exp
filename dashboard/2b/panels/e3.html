@@ -54,13 +54,11 @@
               <h2>平均输入长度（tokens）</h2>
               <div class="chart-card"><div class="legend" id="legend-e3-promptlen"></div><div class="chart-wrap"><canvas id="chart-e3-promptlen" height="200"></canvas><div class="tooltip" id="tip-e3-promptlen"></div></div></div>
             </div>
-            <div></div>
+            <div>
+              <h2>整体损失 actor/loss</h2>
+              <div class="chart-card"><div class="legend" id="legend-e3-loss"></div><div class="chart-wrap"><canvas id="chart-e3-loss" height="220"></canvas><div class="tooltip" id="tip-e3-loss"></div></div></div>
+            </div>
           </section>
-          <h2 style="margin-top:16px">整体损失 actor/loss</h2>
-          <div class="chart-card">
-            <div class="legend" id="legend-e3-loss"></div>
-            <div class="chart-wrap"><canvas id="chart-e3-loss" height="220"></canvas><div class="tooltip" id="tip-e3-loss"></div></div>
-          </div>
           <section class="grid2" style="margin-top:16px">
             <div>
               <h2>策略熵 entropy</h2>
@@ -171,16 +169,25 @@
           <section class="grid2" style="margin-top:10px">
             <div><h2>mmlu_temp（%）</h2><div class="chart-card"><div class="legend" id="legend-e3-eval-mmlu"></div><div class="chart-wrap"><canvas id="chart-e3-eval-mmlu" height="200"></canvas><div class="tooltip" id="tip-e3-eval-mmlu"></div></div></div></div>
             <div>
-              <h2>aime24 / aime25（%）</h2>
-              <div class="chart-card">
-                <div class="legend" id="legend-e3-eval-aime"></div>
-                <div class="chart-wrap"><canvas id="chart-e3-eval-aime" height="200"></canvas><div class="tooltip" id="tip-e3-eval-aime"></div></div>
-              </div>
+              <h2>math_500（%）</h2>
+              <div class="chart-card"><div class="legend" id="legend-e3-eval-math500"></div><div class="chart-wrap"><canvas id="chart-e3-eval-math500" height="200"></canvas><div class="tooltip" id="tip-e3-eval-math500"></div></div></div>
             </div>
           </section>
-          <section style="margin-top:12px">
-            <h2>math_500（%）</h2>
-            <div class="chart-card"><div class="legend" id="legend-e3-eval-math500"></div><div class="chart-wrap"><canvas id="chart-e3-eval-math500" height="200"></canvas><div class="tooltip" id="tip-e3-eval-math500"></div></div></div>
+          <section class="grid2" style="margin-top:12px">
+            <div>
+              <h2>aime24（%）</h2>
+              <div class="chart-card">
+                <div class="legend" id="legend-e3-eval-aime24"></div>
+                <div class="chart-wrap"><canvas id="chart-e3-eval-aime24" height="200"></canvas><div class="tooltip" id="tip-e3-eval-aime24"></div></div>
+              </div>
+            </div>
+            <div>
+              <h2>aime25（%）</h2>
+              <div class="chart-card">
+                <div class="legend" id="legend-e3-eval-aime25"></div>
+                <div class="chart-wrap"><canvas id="chart-e3-eval-aime25" height="200"></canvas><div class="tooltip" id="tip-e3-eval-aime25"></div></div>
+              </div>
+            </div>
           </section>
         </section>
 

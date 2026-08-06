@@ -1,4 +1,4 @@
-// S3 overlay: dashed. Detail charts use COLORS.s3 (lime); multi-exp Easy+S3
+// S3 overlay: dashed. Detail charts use S3_ALT[key]; multi-exp Easy+S3
 // overlays should pass S3_ALT[k] so they do not match the Easy curve.
 function s3Series(name, data, color) {
   return { name, data, color: color || COLORS.s3, dash: [6, 4] };
@@ -9,31 +9,102 @@ function v2Series(name, data, color) {
   return { name, data, color: color || COLORS.v2, dash: [2, 3] };
 }
 
+// Easy-24K overlay: dotted (DAPO length ablation, max_response_length=24576).
+function e24kSeries(name, data, color) {
+  return { name, data, color: color || COLORS.e24k || "#7c3aed", dash: [1, 3] };
+}
+
+// Easy-32K overlay: dash-dot-dot (DAPO length ablation, max_response_length=32768).
+function e32kSeries(name, data, color) {
+  return { name, data, color: color || COLORS.e32k || "#6366f1", dash: [3, 1, 1, 1] };
+}
+
+// S1-24K overlay: dash-dot-dash (DAPO × S1 × 24K cold-start, max_response_length=24576).
+function s124kSeries(name, data, color) {
+  return { name, data, color: color || COLORS.s124k || "#0284c7", dash: [5, 2, 1, 2] };
+}
+
+// Ext easy-cont overlay: dash-dot (DAPO easy@150 → 300, same data).
+function extEasySeries(name, data, color) {
+  return { name, data, color: color || COLORS.extEasy || "#0e7490", dash: [4, 2, 1, 2] };
+}
+
+// Ext S1-switch overlay: long dash (DAPO easy@150 → switch S1 → 300).
+function extS1Series(name, data, color) {
+  return { name, data, color: color || COLORS.extS1 || "#be123c", dash: [8, 3] };
+}
+
+function makeStepCats(n) {
+  const out = [];
+  for (let s = 1; s <= n; s++) out.push(s === 1 || s % 10 === 0 ? String(s) : "");
+  return out;
+}
+
 // Distinct S3 tint when Easy+S3 of the same exp share one chart (avoid same hue).
 const S3_ALT = {
-  e1: "#0891b2", // cyan  vs e1 blue
-  e2: "#9a3412", // rust  vs e2 amber
-  e3: "#a3e635", // lime  vs e3 emerald
+  e1: "#0891b2", // cyan    vs e1 blue
+  e2: "#16a34a", // green   vs e2 amber (was dark rust)
+  e3: "#84cc16", // lime    vs e3 emerald
   e4: "#c026d3", // fuchsia vs e4 purple
-  e5: "#0e7490", // teal  vs e5 pink
+  e5: "#0d9488", // teal    vs e5 pink
 };
+
+// Distinct V2 tint vs Easy + S3 on the same chart.
+const V2_ALT = {
+  e1: "#ea580c", // orange  vs blue + cyan
+  e2: "#e11d48", // rose    vs amber + green
+  e3: "#ea580c", // orange  vs emerald + lime
+  e4: "#ea580c", // orange  vs purple + fuchsia
+  e5: "#2563eb", // blue    vs pink + teal
+};
+
+// Realign offline-eval series onto a longer step axis (e.g. Easy/S3 10–150 → V2 10–300).
+function alignEvalSeries(vals, fromSteps, toSteps) {
+  if (!toSteps || !toSteps.length) return vals || [];
+  if (!vals || !fromSteps) return toSteps.map(() => null);
+  if (fromSteps.length === toSteps.length && fromSteps.every((s, i) => String(s) === String(toSteps[i]))) {
+    return vals;
+  }
+  const map = Object.create(null);
+  fromSteps.forEach((s, i) => { map[String(s)] = vals[i]; });
+  return toSteps.map((s) => (map[String(s)] !== undefined ? map[String(s)] : null));
+}
+
+// Distinct Easy-24K tint vs Easy + S3 + V2 on the same chart.
+const E24K_ALT = {
+  e2: "#7c3aed", // violet  vs amber + green + rose
+};
+
+// Distinct Easy-32K tint vs Easy-24K / Ext on the same chart.
+const E32K_ALT = {
+  e2: "#6366f1", // indigo  vs violet + teal + crimson
+};
+
+// Distinct S1-24K tint vs Easy-24K/32K / Ext on the same chart.
+const S124K_ALT = {
+  e2: "#0284c7", // sky     vs violet + indigo + teal + crimson
+};
+
+// Distinct Ext tints on E2 (easy-cont / S1-switch from easy@150).
+const EXT_EASY_ALT = { e2: "#0e7490" }; // teal
+const EXT_S1_ALT = { e2: "#be123c" };   // crimson
 
 // Fixed stage palette — never reuse e.color (collides with e2/e3/e5 on some pages).
 const STAGE_COLORS = {
-  gen: "#0f172a",
+  gen: "#0d9488",          // teal (was near-black #0f172a)
   update_actor: "#2563eb",
   ref: "#dc2626",
   old_log_prob: "#d97706",
   update_weights: "#9333ea",
   adv: "#db2777",
-  reward: "#6b7280",
+  reward: "#94a3b8",
 };
 
 // Fallback pool for runtime collision repair inside one chart.
 const SERIES_COLOR_FALLBACK = [
   "#2563eb", "#d97706", "#059669", "#9333ea", "#db2777",
   "#65a30d", "#e11d48", "#0891b2", "#c026d3", "#ea580c",
-  "#334155", "#ca8a04", "#7c2d12", "#0e7490", "#4c1d95",
+  "#6366f1", "#ca8a04", "#f97316", "#0e7490", "#7c3aed",
 ];
 
 // Guarantee every series in one chart has a unique color (exact hex match).
@@ -477,6 +548,7 @@ function render() {
   // ---- V2（难度池 + 统一 shaped overlong + KL=none；有日志的实验自动出现）----
   const v2PassLegend = document.getElementById("legend-v2-pass");
   if (!v2PassLegend) return;
+  const v2Cats = (typeof V2_STEP_CATS !== "undefined") ? V2_STEP_CATS : STEP_CATS;
   const v2Pass = [];
   if (EXP.v2_e1 && EXP.v2_e1.pass) v2Pass.push({ name: "V2 E1 GRPO", data: EXP.v2_e1.pass, color: COLORS.e1 });
   if (EXP.v2_e2 && EXP.v2_e2.pass) v2Pass.push({ name: "V2 E2 DAPO", data: EXP.v2_e2.pass, color: COLORS.e2 });
@@ -485,7 +557,7 @@ function render() {
   if (EXP.v2_e5 && EXP.v2_e5.pass) v2Pass.push({ name: "V2 E5 REINFORCE++", data: EXP.v2_e5.pass, color: COLORS.e5 });
   if (v2Pass.length) {
     renderLegend(v2PassLegend, v2Pass, (visible) => drawLineChart("chart-v2-pass", "tip-v2-pass", {
-      categories: STEP_CATS,
+      categories: v2Cats,
       series: visible,
       yMin: 0, yMax: 90, valueSuffix: "%", height: 280,
     }));
@@ -498,7 +570,7 @@ function render() {
   if (typeof V2_E5_LEN !== "undefined") v2Len.push({ name: "V2 E5 REINFORCE++", data: V2_E5_LEN, color: COLORS.e5 });
   if (v2Len.length && document.getElementById("legend-v2-len")) {
     renderLegend(document.getElementById("legend-v2-len"), v2Len, (visible) => drawLineChart("chart-v2-len", "tip-v2-len", {
-      categories: STEP_CATS,
+      categories: v2Cats,
       series: visible,
       valueSuffix: " tok", height: 240,
       referenceLines: [{ value: 16384, label: "16K cap", tone: "danger" }],
@@ -512,7 +584,7 @@ function render() {
   if (typeof V2_E5_ENTROPY !== "undefined") v2Ent.push({ name: "V2 E5 REINFORCE++", data: V2_E5_ENTROPY, color: COLORS.e5 });
   if (v2Ent.length && document.getElementById("legend-v2-ent")) {
     renderLegend(document.getElementById("legend-v2-ent"), v2Ent, (visible) => drawLineChart("chart-v2-ent", "tip-v2-ent", {
-      categories: STEP_CATS,
+      categories: v2Cats,
       series: visible,
       height: 240,
     }));
@@ -525,7 +597,7 @@ function render() {
   if (typeof V2_E5_GRAD !== "undefined") v2Grad.push({ name: "V2 E5 REINFORCE++", data: V2_E5_GRAD, color: COLORS.e5 });
   if (v2Grad.length && document.getElementById("legend-v2-grad")) {
     renderLegend(document.getElementById("legend-v2-grad"), v2Grad, (visible) => drawLineChart("chart-v2-grad", "tip-v2-grad", {
-      categories: STEP_CATS,
+      categories: v2Cats,
       series: visible,
       height: 220,
     }));
@@ -574,9 +646,40 @@ function fillExpStats(key, e) {
 
 function renderExpPanel(key) {
   const e = EXP[key];
+  if (!e) return;
   const s3Key = "s3_" + key;
   const s = EXP[s3Key] || null;
   const v = EXP["v2_" + key] || null;
+  const e24 = EXP["e24k_" + key] || null;
+  const e32 = EXP["e32k_" + key] || null;
+  const s124 = EXP["s124k_" + key] || null;
+  const extEasy = EXP["ext_easy_" + key] || null;
+  const extS1 = EXP["ext_s1_" + key] || null;
+  const s3c = S3_ALT[key] || COLORS.s3;
+  const v2c = V2_ALT[key] || COLORS.v2;
+  const e24c = E24K_ALT[key] || COLORS.e24k || "#7c3aed";
+  const e32c = E32K_ALT[key] || COLORS.e32k || "#6366f1";
+  const s124c = S124K_ALT[key] || COLORS.s124k || "#0284c7";
+  const extEc = EXT_EASY_ALT[key] || COLORS.extEasy || "#0e7490";
+  const extSc = EXT_S1_ALT[key] || COLORS.extS1 || "#be123c";
+  const axisN = Math.max(
+    (e.pass || []).length,
+    s ? (s.pass || []).length : 0,
+    v ? (v.pass || []).length : 0,
+    e24 ? (e24.pass || []).length : 0,
+    e32 ? (e32.pass || []).length : 0,
+    s124 ? (s124.pass || []).length : 0,
+    extEasy ? (extEasy.pass || []).length : 0,
+    extS1 ? (extS1.pass || []).length : 0,
+  );
+  const cats = makeStepCats(axisN);
+  const s3o = (name, data) => s3Series(name, data, s3c);
+  const v2o = (name, data) => v2Series(name, data, v2c);
+  const e24o = (name, data) => e24kSeries(name, data, e24c);
+  const e32o = (name, data) => e32kSeries(name, data, e32c);
+  const s124o = (name, data) => s124kSeries(name, data, s124c);
+  const extEo = (name, data) => extEasySeries(name, data, extEc);
+  const extSo = (name, data) => extS1Series(name, data, extSc);
   fillExpStats(key, e);
 
   const passLegend = document.getElementById(`legend-${key}-pass`);
@@ -584,25 +687,40 @@ function renderExpPanel(key) {
   const allPass = e.pass.filter(x => x != null);
   if (s) allPass.push(...s.pass.filter(x => x != null));
   if (v) allPass.push(...v.pass.filter(x => x != null));
+  if (e24) allPass.push(...e24.pass.filter(x => x != null));
+  if (e32) allPass.push(...e32.pass.filter(x => x != null));
+  if (s124) allPass.push(...s124.pass.filter(x => x != null));
+  if (extEasy) allPass.push(...extEasy.pass.filter(x => x != null));
+  if (extS1) allPass.push(...extS1.pass.filter(x => x != null));
   const passMax = Math.max(...allPass);
   const passYMax = Math.min(100, Math.ceil((passMax + 10) / 10) * 10);
   if (passLegend) {
     const items = [
       { name: "Easy-Boxed", data: passMA, color: e.color },
     ];
-    if (s) items.push(s3Series("S3", movingAvg(s.pass, 5)));
-    if (v) items.push(v2Series("V2", movingAvg(v.pass, 5)));
+    if (s) items.push(s3o("S3", movingAvg(s.pass, 5)));
+    if (v) items.push(v2o("V2", movingAvg(v.pass, 5)));
+    if (e24) items.push(e24o("Easy-24K", movingAvg(e24.pass, 5)));
+    if (e32) items.push(e32o("Easy-32K", movingAvg(e32.pass, 5)));
+    if (s124) items.push(s124o("S1-24K", movingAvg(s124.pass, 5)));
+    if (extEasy) items.push(extEo("Ext easy-cont", movingAvg(extEasy.pass, 5)));
+    if (extS1) items.push(extSo("Ext S1-switch", movingAvg(extS1.pass, 5)));
     renderLegend(passLegend, items, (visible) => drawLineChart(`chart-${key}-pass`, `tip-${key}-pass`, {
-      categories: e.cats,
+      categories: cats,
       series: visible,
       yMin: 0, yMax: passYMax, valueSuffix: "%", height: 240,
     }));
   } else {
     const items = [{ name: "Easy-Boxed pass", data: e.pass, color: e.color }];
-    if (s) items.push(s3Series("S3 pass", s.pass));
-    if (v) items.push(v2Series("V2 pass", v.pass));
+    if (s) items.push(s3o("S3 pass", s.pass));
+    if (v) items.push(v2o("V2 pass", v.pass));
+    if (e24) items.push(e24o("Easy-24K pass", e24.pass));
+    if (e32) items.push(e32o("Easy-32K pass", e32.pass));
+    if (s124) items.push(s124o("S1-24K pass", s124.pass));
+    if (extEasy) items.push(extEo("Ext easy-cont pass", extEasy.pass));
+    if (extS1) items.push(extSo("Ext S1-switch pass", extS1.pass));
     drawLineChart(`chart-${key}-pass`, `tip-${key}-pass`, {
-      categories: e.cats, series: items,
+      categories: cats, series: items,
       yMin: 0, yMax: passYMax, valueSuffix: "%", height: 200,
     });
   }
@@ -610,20 +728,30 @@ function renderExpPanel(key) {
   if (e.rolloutAcc && e.rolloutAcc.length && document.getElementById(`chart-${key}-racc`)) {
     const raccMA = movingAvg(e.rolloutAcc, 5);
     const raccItems = [{ name: "Easy-Boxed", data: raccMA, color: e.color }];
-    if (s && s.rolloutAcc) raccItems.push(s3Series("S3", movingAvg(s.rolloutAcc, 5)));
-    if (v && v.rolloutAcc) raccItems.push(v2Series("V2", movingAvg(v.rolloutAcc, 5)));
+    if (s && s.rolloutAcc) raccItems.push(s3o("S3", movingAvg(s.rolloutAcc, 5)));
+    if (v && v.rolloutAcc) raccItems.push(v2o("V2", movingAvg(v.rolloutAcc, 5)));
+    if (e24 && e24.rolloutAcc) raccItems.push(e24o("Easy-24K", movingAvg(e24.rolloutAcc, 5)));
+    if (e32 && e32.rolloutAcc) raccItems.push(e32o("Easy-32K", movingAvg(e32.rolloutAcc, 5)));
+    if (s124 && s124.rolloutAcc) raccItems.push(s124o("S1-24K", movingAvg(s124.rolloutAcc, 5)));
+    if (extEasy && extEasy.rolloutAcc) raccItems.push(extEo("Ext easy-cont", movingAvg(extEasy.rolloutAcc, 5)));
+    if (extS1 && extS1.rolloutAcc) raccItems.push(extSo("Ext S1-switch", movingAvg(extS1.rolloutAcc, 5)));
     const allRacc = e.rolloutAcc.filter(v => v != null);
     if (s && s.rolloutAcc) allRacc.push(...s.rolloutAcc.filter(v => v != null));
+    if (e24 && e24.rolloutAcc) allRacc.push(...e24.rolloutAcc.filter(v => v != null));
+    if (e32 && e32.rolloutAcc) allRacc.push(...e32.rolloutAcc.filter(v => v != null));
+    if (s124 && s124.rolloutAcc) allRacc.push(...s124.rolloutAcc.filter(v => v != null));
+    if (extEasy && extEasy.rolloutAcc) allRacc.push(...extEasy.rolloutAcc.filter(v => v != null));
+    if (extS1 && extS1.rolloutAcc) allRacc.push(...extS1.rolloutAcc.filter(v => v != null));
     const raccYMax = Math.min(100, Math.ceil((Math.max(...allRacc) + 10) / 10) * 10);
     const raccLegend = document.getElementById(`legend-${key}-racc`);
     if (raccLegend) {
       renderLegend(raccLegend, raccItems, (visible) => drawLineChart(`chart-${key}-racc`, `tip-${key}-racc`, {
-        categories: e.cats, series: visible,
+        categories: cats, series: visible,
         yMin: 0, yMax: raccYMax, valueSuffix: "%", height: 240,
       }));
     } else {
       drawLineChart(`chart-${key}-racc`, `tip-${key}-racc`, {
-        categories: e.cats, series: raccItems,
+        categories: cats, series: raccItems,
         yMin: 0, yMax: raccYMax, valueSuffix: "%", height: 240,
       });
     }
@@ -631,40 +759,58 @@ function renderExpPanel(key) {
 
   {
     const items = [{ name: "Easy-Boxed", data: e.len, color: e.color }];
-    if (s) items.push(s3Series("S3", s.len));
-    if (v) items.push(v2Series("V2", v.len));
+    if (s) items.push(s3o("S3", s.len));
+    if (v) items.push(v2o("V2", v.len));
+    if (e24) items.push(e24o("Easy-24K", e24.len));
+    if (e32) items.push(e32o("Easy-32K", e32.len));
+    if (s124) items.push(s124o("S1-24K", s124.len));
+    if (extEasy) items.push(extEo("Ext easy-cont", extEasy.len));
+    if (extS1) items.push(extSo("Ext S1-switch", extS1.len));
+    const lenRefs = [{ value: 16384, label: "16K cap", tone: "danger" }];
+    if (e24 || s124) lenRefs.push({ value: 24576, label: "24K cap", tone: "neutral" });
+    if (e32) lenRefs.push({ value: 32768, label: "32K cap", tone: "neutral" });
     const lenLegend = document.getElementById(`legend-${key}-len`);
     if (lenLegend) {
       renderLegend(lenLegend, items, (visible) => drawLineChart(`chart-${key}-len`, `tip-${key}-len`, {
-        categories: e.cats, series: visible,
+        categories: cats, series: visible,
         valueSuffix: " tok", height: 200,
-        referenceLines: [{ value: 16384, label: "16K cap", tone: "danger" }],
+        referenceLines: lenRefs,
       }));
     } else {
       drawLineChart(`chart-${key}-len`, `tip-${key}-len`, {
-        categories: e.cats, series: items,
+        categories: cats, series: items,
         valueSuffix: " tok", height: 200,
-        referenceLines: [{ value: 16384, label: "16K cap", tone: "danger" }],
+        referenceLines: lenRefs,
       });
     }
   }
 
   if (e.trunc && document.getElementById(`chart-${key}-trunc`)) {
     const items = [{ name: "Easy-Boxed clip@16K", data: e.trunc, color: e.color }];
-    if (s && s.trunc) items.push(s3Series("S3 clip@16K", s.trunc));
-    if (v && v.trunc) items.push(v2Series("V2 clip@16K", v.trunc));
+    if (s && s.trunc) items.push(s3o("S3 clip@16K", s.trunc));
+    if (v && v.trunc) items.push(v2o("V2 clip@16K", v.trunc));
+    if (e24 && e24.trunc) items.push(e24o("Easy-24K clip@24K", e24.trunc));
+    if (e32 && e32.trunc) items.push(e32o("Easy-32K clip@32K", e32.trunc));
+    if (s124 && s124.trunc) items.push(s124o("S1-24K clip@24K", s124.trunc));
+    if (extEasy && extEasy.trunc) items.push(extEo("Ext easy-cont clip@16K", extEasy.trunc));
+    if (extS1 && extS1.trunc) items.push(extSo("Ext S1-switch clip@16K", extS1.trunc));
     bindSeriesLegend(`legend-${key}-trunc`, items, (visible) => drawLineChart(`chart-${key}-trunc`, `tip-${key}-trunc`, {
-      categories: e.cats, series: visible,
+      categories: cats, series: visible,
       valueSuffix: "%", height: 200, yMin: 0,
     }));
   }
 
   if (e.promptLen && document.getElementById(`chart-${key}-promptlen`)) {
     const items = [{ name: "Easy-Boxed", data: e.promptLen, color: e.color }];
-    if (s && s.promptLen) items.push(s3Series("S3", s.promptLen));
-    if (v && v.promptLen) items.push(v2Series("V2", v.promptLen));
+    if (s && s.promptLen) items.push(s3o("S3", s.promptLen));
+    if (v && v.promptLen) items.push(v2o("V2", v.promptLen));
+    if (e24 && e24.promptLen) items.push(e24o("Easy-24K", e24.promptLen));
+    if (e32 && e32.promptLen) items.push(e32o("Easy-32K", e32.promptLen));
+    if (s124 && s124.promptLen) items.push(s124o("S1-24K", s124.promptLen));
+    if (extEasy && extEasy.promptLen) items.push(extEo("Ext easy-cont", extEasy.promptLen));
+    if (extS1 && extS1.promptLen) items.push(extSo("Ext S1-switch", extS1.promptLen));
     bindSeriesLegend(`legend-${key}-promptlen`, items, (visible) => drawLineChart(`chart-${key}-promptlen`, `tip-${key}-promptlen`, {
-      categories: e.cats, series: visible,
+      categories: cats, series: visible,
       valueSuffix: " tok", height: 200,
     }));
   }
@@ -674,58 +820,83 @@ function renderExpPanel(key) {
     const items = [
       { name: "Easy-Boxed loss", data: e.loss, color: e.color },
     ];
-    if (s) items.push(s3Series("S3 loss", s.loss));
-    if (v) items.push(v2Series("V2 loss", v.loss));
+    if (s) items.push(s3o("S3 loss", s.loss));
+    if (v) items.push(v2o("V2 loss", v.loss));
+    if (e24) items.push(e24o("Easy-24K loss", e24.loss));
+    if (e32) items.push(e32o("Easy-32K loss", e32.loss));
+    if (s124) items.push(s124o("S1-24K loss", s124.loss));
+    if (extEasy) items.push(extEo("Ext easy-cont loss", extEasy.loss));
+    if (extS1) items.push(extSo("Ext S1-switch loss", extS1.loss));
     if (lossLegend) {
       renderLegend(lossLegend, items, (visible) => drawLineChart(`chart-${key}-loss`, `tip-${key}-loss`, {
-        categories: e.cats, series: visible, height: 220,
+        categories: cats, series: visible, height: 220,
       }));
     } else {
       drawLineChart(`chart-${key}-loss`, `tip-${key}-loss`, {
-        categories: e.cats, series: items, height: 200,
+        categories: cats, series: items, height: 200,
       });
     }
   }
 
   {
     const items = [{ name: "Easy-Boxed entropy", data: e.ent, color: e.color }];
-    if (s) items.push(s3Series("S3 entropy", s.ent));
-    if (v) items.push(v2Series("V2 entropy", v.ent));
+    if (s) items.push(s3o("S3 entropy", s.ent));
+    if (v) items.push(v2o("V2 entropy", v.ent));
+    if (e24) items.push(e24o("Easy-24K entropy", e24.ent));
+    if (e32) items.push(e32o("Easy-32K entropy", e32.ent));
+    if (s124) items.push(s124o("S1-24K entropy", s124.ent));
+    if (extEasy) items.push(extEo("Ext easy-cont entropy", extEasy.ent));
+    if (extS1) items.push(extSo("Ext S1-switch entropy", extS1.ent));
     bindSeriesLegend(`legend-${key}-ent`, items, (visible) => drawLineChart(`chart-${key}-ent`, `tip-${key}-ent`, {
-      categories: e.cats, series: visible, height: 200,
+      categories: cats, series: visible, height: 200,
     }));
   }
 
   if (e.klLoss && e.klLoss.some((x) => x != null) && document.getElementById(`chart-${key}-klloss`)) {
     const items = [{ name: "Easy-Boxed kl_loss ×100", data: e.klLoss, color: e.color }];
-    if (s && s.klLoss && s.klLoss.some(x => x != null)) items.push(s3Series("S3 kl_loss ×100", s.klLoss));
-    if (v && v.klLoss && v.klLoss.some(x => x != null)) items.push(v2Series("V2 kl_loss ×100", v.klLoss));
+    if (s && s.klLoss && s.klLoss.some(x => x != null)) items.push(s3o("S3 kl_loss ×100", s.klLoss));
+    if (v && v.klLoss && v.klLoss.some(x => x != null)) items.push(v2o("V2 kl_loss ×100", v.klLoss));
+    if (e24 && e24.klLoss && e24.klLoss.some(x => x != null)) items.push(e24o("Easy-24K kl_loss ×100", e24.klLoss));
+    if (e32 && e32.klLoss && e32.klLoss.some(x => x != null)) items.push(e32o("Easy-32K kl_loss ×100", e32.klLoss));
+    if (s124 && s124.klLoss && s124.klLoss.some(x => x != null)) items.push(s124o("S1-24K kl_loss ×100", s124.klLoss));
+    if (extEasy && extEasy.klLoss && extEasy.klLoss.some(x => x != null)) items.push(extEo("Ext easy-cont kl_loss ×100", extEasy.klLoss));
+    if (extS1 && extS1.klLoss && extS1.klLoss.some(x => x != null)) items.push(extSo("Ext S1-switch kl_loss ×100", extS1.klLoss));
     bindSeriesLegend(`legend-${key}-klloss`, items, (visible) => drawLineChart(`chart-${key}-klloss`, `tip-${key}-klloss`, {
-      categories: e.cats, series: visible, height: 200, yMin: 0,
+      categories: cats, series: visible, height: 200, yMin: 0,
     }));
   }
 
   {
     const items = [{ name: "Easy-Boxed grad_norm", data: e.grad, color: e.color }];
-    if (s) items.push(s3Series("S3 grad_norm", s.grad));
-    if (v) items.push(v2Series("V2 grad_norm", v.grad));
+    if (s) items.push(s3o("S3 grad_norm", s.grad));
+    if (v) items.push(v2o("V2 grad_norm", v.grad));
+    if (e24) items.push(e24o("Easy-24K grad_norm", e24.grad));
+    if (e32) items.push(e32o("Easy-32K grad_norm", e32.grad));
+    if (s124) items.push(s124o("S1-24K grad_norm", s124.grad));
+    if (extEasy) items.push(extEo("Ext easy-cont grad_norm", extEasy.grad));
+    if (extS1) items.push(extSo("Ext S1-switch grad_norm", extS1.grad));
     const gradLegend = document.getElementById(`legend-${key}-grad`);
     if (gradLegend) {
       renderLegend(gradLegend, items, (visible) => drawLineChart(`chart-${key}-grad`, `tip-${key}-grad`, {
-        categories: e.cats, series: visible, height: 200,
+        categories: cats, series: visible, height: 200,
       }));
     } else {
       drawLineChart(`chart-${key}-grad`, `tip-${key}-grad`, {
-        categories: e.cats, series: items, height: 200,
+        categories: cats, series: items, height: 200,
       });
     }
   }
   {
     const items = [{ name: "Easy-Boxed ppo_kl ×1e5", data: e.ppokl, color: e.color }];
-    if (s) items.push(s3Series("S3 ppo_kl ×1e5", s.ppokl));
-    if (v) items.push(v2Series("V2 ppo_kl ×1e5", v.ppokl));
+    if (s) items.push(s3o("S3 ppo_kl ×1e5", s.ppokl));
+    if (v) items.push(v2o("V2 ppo_kl ×1e5", v.ppokl));
+    if (e24) items.push(e24o("Easy-24K ppo_kl ×1e5", e24.ppokl));
+    if (e32) items.push(e32o("Easy-32K ppo_kl ×1e5", e32.ppokl));
+    if (s124) items.push(s124o("S1-24K ppo_kl ×1e5", s124.ppokl));
+    if (extEasy) items.push(extEo("Ext easy-cont ppo_kl ×1e5", extEasy.ppokl));
+    if (extS1) items.push(extSo("Ext S1-switch ppo_kl ×1e5", extS1.ppokl));
     bindSeriesLegend(`legend-${key}-ppokl`, items, (visible) => drawLineChart(`chart-${key}-ppokl`, `tip-${key}-ppokl`, {
-      categories: e.cats, series: visible, height: 200,
+      categories: cats, series: visible, height: 200,
       referenceLines: [{ value: 0, label: "0", tone: "neutral" }],
     }));
   }
@@ -733,63 +904,98 @@ function renderExpPanel(key) {
     const clipItems = [{ name: "Easy-Boxed clipfrac", data: e.clip, color: e.color }];
     // amber (not danger red) — avoids collision with E5 pink clipfrac
     if (e.clipLower) clipItems.push({ name: "Easy-Boxed clipfrac_lower", data: e.clipLower, color: "#c2410c" });
-    if (s) clipItems.push(s3Series("S3 clipfrac", s.clip));
-    if (v) clipItems.push(v2Series("V2 clipfrac", v.clip));
+    if (s) clipItems.push(s3o("S3 clipfrac", s.clip));
+    if (v) clipItems.push(v2o("V2 clipfrac", v.clip));
+    if (e24) clipItems.push(e24o("Easy-24K clipfrac", e24.clip));
+    if (e32) clipItems.push(e32o("Easy-32K clipfrac", e32.clip));
+    if (s124) clipItems.push(s124o("S1-24K clipfrac", s124.clip));
+    if (extEasy) clipItems.push(extEo("Ext easy-cont clipfrac", extEasy.clip));
+    if (extS1) clipItems.push(extSo("Ext S1-switch clipfrac", extS1.clip));
     if (s && s.clipLower) clipItems.push({ name: "S3 clipfrac_lower", data: s.clipLower, color: "#c026d3", dash: [6, 4] });
     if (v && v.clipLower) clipItems.push({ name: "V2 clipfrac_lower", data: v.clipLower, color: "#0284c7", dash: [2, 3] });
+    if (e24 && e24.clipLower) clipItems.push({ name: "Easy-24K clipfrac_lower", data: e24.clipLower, color: "#a21caf", dash: [1, 3] });
+    if (e32 && e32.clipLower) clipItems.push({ name: "Easy-32K clipfrac_lower", data: e32.clipLower, color: "#4338ca", dash: [3, 1, 1, 1] });
+    if (s124 && s124.clipLower) clipItems.push({ name: "S1-24K clipfrac_lower", data: s124.clipLower, color: "#0369a1", dash: [5, 2, 1, 2] });
+    if (extEasy && extEasy.clipLower) clipItems.push({ name: "Ext easy-cont clipfrac_lower", data: extEasy.clipLower, color: "#155e75", dash: [4, 2, 1, 2] });
+    if (extS1 && extS1.clipLower) clipItems.push({ name: "Ext S1-switch clipfrac_lower", data: extS1.clipLower, color: "#9f1239", dash: [8, 3] });
     bindSeriesLegend(`legend-${key}-clip`, clipItems, (visible) => drawLineChart(`chart-${key}-clip`, `tip-${key}-clip`, {
-      categories: e.cats, series: visible,
+      categories: cats, series: visible,
       valueSuffix: "%", height: 200, yMin: 0,
     }));
   }
   {
     const items = [{ name: "Easy-Boxed (1−corr)×1e4", data: e.pearsonDev, color: e.color }];
-    if (s) items.push(s3Series("S3 (1−corr)×1e4", s.pearsonDev));
-    if (v) items.push(v2Series("V2 (1−corr)×1e4", v.pearsonDev));
+    if (s) items.push(s3o("S3 (1−corr)×1e4", s.pearsonDev));
+    if (v) items.push(v2o("V2 (1−corr)×1e4", v.pearsonDev));
+    if (e24) items.push(e24o("Easy-24K (1−corr)×1e4", e24.pearsonDev));
+    if (e32) items.push(e32o("Easy-32K (1−corr)×1e4", e32.pearsonDev));
+    if (s124) items.push(s124o("S1-24K (1−corr)×1e4", s124.pearsonDev));
+    if (extEasy) items.push(extEo("Ext easy-cont (1−corr)×1e4", extEasy.pearsonDev));
+    if (extS1) items.push(extSo("Ext S1-switch (1−corr)×1e4", extS1.pearsonDev));
     const corrLegend = document.getElementById(`legend-${key}-corr`);
     if (corrLegend) {
       renderLegend(corrLegend, items, (visible) => drawLineChart(`chart-${key}-corr`, `tip-${key}-corr`, {
-        categories: e.cats, series: visible, height: 200, yMin: 0,
+        categories: cats, series: visible, height: 200, yMin: 0,
       }));
     } else {
       drawLineChart(`chart-${key}-corr`, `tip-${key}-corr`, {
-        categories: e.cats, series: items, height: 200, yMin: 0,
+        categories: cats, series: items, height: 200, yMin: 0,
       });
     }
   }
 
   if (e.rolloutKl && document.getElementById(`chart-${key}-rollkl`)) {
     const items = [{ name: "Easy-Boxed rollout_kl ×1e4", data: e.rolloutKl, color: e.color }];
-    if (s && s.rolloutKl) items.push(s3Series("S3 rollout_kl ×1e4", s.rolloutKl));
-    if (v && v.rolloutKl) items.push(v2Series("V2 rollout_kl ×1e4", v.rolloutKl));
+    if (s && s.rolloutKl) items.push(s3o("S3 rollout_kl ×1e4", s.rolloutKl));
+    if (v && v.rolloutKl) items.push(v2o("V2 rollout_kl ×1e4", v.rolloutKl));
+    if (e24 && e24.rolloutKl) items.push(e24o("Easy-24K rollout_kl ×1e4", e24.rolloutKl));
+    if (e32 && e32.rolloutKl) items.push(e32o("Easy-32K rollout_kl ×1e4", e32.rolloutKl));
+    if (s124 && s124.rolloutKl) items.push(s124o("S1-24K rollout_kl ×1e4", s124.rolloutKl));
+    if (extEasy && extEasy.rolloutKl) items.push(extEo("Ext easy-cont rollout_kl ×1e4", extEasy.rolloutKl));
+    if (extS1 && extS1.rolloutKl) items.push(extSo("Ext S1-switch rollout_kl ×1e4", extS1.rolloutKl));
     bindSeriesLegend(`legend-${key}-rollkl`, items, (visible) => drawLineChart(`chart-${key}-rollkl`, `tip-${key}-rollkl`, {
-      categories: e.cats, series: visible, height: 200, yMin: 0,
+      categories: cats, series: visible, height: 200, yMin: 0,
     }));
   }
   if (e.stepMin && document.getElementById(`chart-${key}-stepmin`)) {
     const items = [{ name: "Easy-Boxed", data: e.stepMin, color: e.color }];
-    if (s && s.stepMin) items.push(s3Series("S3", s.stepMin));
-    if (v && v.stepMin) items.push(v2Series("V2", v.stepMin));
+    if (s && s.stepMin) items.push(s3o("S3", s.stepMin));
+    if (v && v.stepMin) items.push(v2o("V2", v.stepMin));
+    if (e24 && e24.stepMin) items.push(e24o("Easy-24K", e24.stepMin));
+    if (e32 && e32.stepMin) items.push(e32o("Easy-32K", e32.stepMin));
+    if (s124 && s124.stepMin) items.push(s124o("S1-24K", s124.stepMin));
+    if (extEasy && extEasy.stepMin) items.push(extEo("Ext easy-cont", extEasy.stepMin));
+    if (extS1 && extS1.stepMin) items.push(extSo("Ext S1-switch", extS1.stepMin));
     bindSeriesLegend(`legend-${key}-stepmin`, items, (visible) => drawLineChart(`chart-${key}-stepmin`, `tip-${key}-stepmin`, {
-      categories: e.cats, series: visible,
+      categories: cats, series: visible,
       valueSuffix: " min", height: 200, yMin: 0,
     }));
   }
   if (e.mfu && document.getElementById(`chart-${key}-mfu`)) {
     const items = [{ name: "Easy-Boxed MFU", data: e.mfu, color: e.color }];
-    if (s && s.mfu) items.push(s3Series("S3 MFU", s.mfu));
-    if (v && v.mfu) items.push(v2Series("V2 MFU", v.mfu));
+    if (s && s.mfu) items.push(s3o("S3 MFU", s.mfu));
+    if (v && v.mfu) items.push(v2o("V2 MFU", v.mfu));
+    if (e24 && e24.mfu) items.push(e24o("Easy-24K MFU", e24.mfu));
+    if (e32 && e32.mfu) items.push(e32o("Easy-32K MFU", e32.mfu));
+    if (s124 && s124.mfu) items.push(s124o("S1-24K MFU", s124.mfu));
+    if (extEasy && extEasy.mfu) items.push(extEo("Ext easy-cont MFU", extEasy.mfu));
+    if (extS1 && extS1.mfu) items.push(extSo("Ext S1-switch MFU", extS1.mfu));
     bindSeriesLegend(`legend-${key}-mfu`, items, (visible) => drawLineChart(`chart-${key}-mfu`, `tip-${key}-mfu`, {
-      categories: e.cats, series: visible,
+      categories: cats, series: visible,
       valueSuffix: "%", height: 200,
     }));
   }
   if (e.throughput && document.getElementById(`chart-${key}-thru`)) {
     const items = [{ name: "Easy-Boxed throughput", data: e.throughput, color: e.color }];
-    if (s && s.throughput) items.push(s3Series("S3 throughput", s.throughput));
-    if (v && v.throughput) items.push(v2Series("V2 throughput", v.throughput));
+    if (s && s.throughput) items.push(s3o("S3 throughput", s.throughput));
+    if (v && v.throughput) items.push(v2o("V2 throughput", v.throughput));
+    if (e24 && e24.throughput) items.push(e24o("Easy-24K throughput", e24.throughput));
+    if (e32 && e32.throughput) items.push(e32o("Easy-32K throughput", e32.throughput));
+    if (s124 && s124.throughput) items.push(s124o("S1-24K throughput", s124.throughput));
+    if (extEasy && extEasy.throughput) items.push(extEo("Ext easy-cont throughput", extEasy.throughput));
+    if (extS1 && extS1.throughput) items.push(extSo("Ext S1-switch throughput", extS1.throughput));
     bindSeriesLegend(`legend-${key}-thru`, items, (visible) => drawLineChart(`chart-${key}-thru`, `tip-${key}-thru`, {
-      categories: e.cats, series: visible,
+      categories: cats, series: visible,
       valueSuffix: " tok/s", height: 200,
     }));
   }
@@ -859,17 +1065,22 @@ function renderExpPanel(key) {
         { name: "old_log_prob", data: t.old_log_prob, color: STAGE_COLORS.old_log_prob },
       ].filter((s) => hasVals(s.data));
       renderLegend(majorLegend, majorItems, (visible) => drawLineChart(`chart-${key}-timing`, `tip-${key}-timing`, {
-        categories: e.cats,
+        categories: cats,
         series: visible,
         valueSuffix: " s", height: 240, yMin: 0,
       }));
     }
     if (document.getElementById(`chart-${key}-timing-step`)) {
       const items = [{ name: "Easy-Boxed step", data: t.step, color: e.color }];
-      if (s && s.timing) items.push(s3Series("S3 step", s.timing.step));
-      if (v && v.timing) items.push(v2Series("V2 step", v.timing.step));
+      if (s && s.timing) items.push(s3o("S3 step", s.timing.step));
+      if (v && v.timing) items.push(v2o("V2 step", v.timing.step));
+      if (e24 && e24.timing) items.push(e24o("Easy-24K step", e24.timing.step));
+      if (e32 && e32.timing) items.push(e32o("Easy-32K step", e32.timing.step));
+      if (s124 && s124.timing) items.push(s124o("S1-24K step", s124.timing.step));
+      if (extEasy && extEasy.timing) items.push(extEo("Ext easy-cont step", extEasy.timing.step));
+      if (extS1 && extS1.timing) items.push(extSo("Ext S1-switch step", extS1.timing.step));
       bindSeriesLegend(`legend-${key}-timing-step`, items, (visible) => drawLineChart(`chart-${key}-timing-step`, `tip-${key}-timing-step`, {
-        categories: e.cats, series: visible,
+        categories: cats, series: visible,
         valueSuffix: " s", height: 240, yMin: 0,
       }));
     }
@@ -880,7 +1091,7 @@ function renderExpPanel(key) {
         { name: "adv", data: t.adv, color: STAGE_COLORS.adv },
         { name: "reward", data: t.reward, color: STAGE_COLORS.reward },
       ], (visible) => drawLineChart(`chart-${key}-timing-minor`, `tip-${key}-timing-minor`, {
-        categories: e.cats,
+        categories: cats,
         series: visible,
         valueSuffix: " s", height: 200, yMin: 0,
       }));
@@ -898,7 +1109,7 @@ function renderExpPanel(key) {
     }
   }
 
-  // ---- Evalscope 评测结果（2B: EVAL_EASY_BOXED 三 checkpoint；若有 EVAL_EASY_BOXED_FULL 则用 dense）----
+  // ---- Evalscope 评测结果（2B: EVAL_EASY_BOXED 三 checkpoint；若有 EVAL_EASY_BOXED_FULL 则用 dense；V2 可扩到 10–300）----
   const evalEl = document.getElementById(`chart-${key}-eval-mmlu`);
   if (evalEl) {
     let steps = null, ev = null;
@@ -908,14 +1119,29 @@ function renderExpPanel(key) {
       steps = EVAL_EASY_BOXED_STEPS; ev = EVAL_EASY_BOXED[key];
     }
     const s3ev = (typeof EVAL_FULL_S3 !== "undefined" && EVAL_FULL_S3[key]) ? EVAL_FULL_S3[key] : null;
+    const v2ev = (typeof EVAL_FULL_V2 !== "undefined" && EVAL_FULL_V2[key]) ? EVAL_FULL_V2[key] : null;
     if (ev && steps) {
-      const mmluItems = [{ name: "Easy-Boxed", data: ev.mmlu, color: ev.color }];
-      if (s3ev) mmluItems.push(s3Series("S3", s3ev.mmlu));
+      const baseSteps = steps;
+      const plotSteps = (v2ev && typeof EVAL_V2_STEPS !== "undefined") ? EVAL_V2_STEPS : baseSteps;
+      const easyMmlu = alignEvalSeries(ev.mmlu, baseSteps, plotSteps);
+      const easyAime24 = alignEvalSeries(ev.aime24, baseSteps, plotSteps);
+      const easyAime25 = alignEvalSeries(ev.aime25, baseSteps, plotSteps);
+      const easyMath = alignEvalSeries(ev.math500, baseSteps, plotSteps);
+      const s3Mmlu = s3ev ? alignEvalSeries(s3ev.mmlu, baseSteps, plotSteps) : null;
+      const s3Aime24 = s3ev ? alignEvalSeries(s3ev.aime24, baseSteps, plotSteps) : null;
+      const s3Aime25 = s3ev ? alignEvalSeries(s3ev.aime25, baseSteps, plotSteps) : null;
+      const s3Math = s3ev ? alignEvalSeries(s3ev.math500, baseSteps, plotSteps) : null;
+
+      const mmluItems = [{ name: "Easy-Boxed", data: easyMmlu, color: ev.color }];
+      if (s3Mmlu) mmluItems.push(s3o("S3", s3Mmlu));
+      if (v2ev && v2ev.mmlu && v2ev.mmlu.some((v) => v != null)) {
+        mmluItems.push(v2o("V2", v2ev.mmlu));
+      }
       const mmluLegendEl = document.getElementById(`legend-${key}-eval-mmlu`);
       const drawMmlu = (visible) => {
         const [yMin, yMax] = yRangeFromSeries(visible);
         drawLineChart(`chart-${key}-eval-mmlu`, `tip-${key}-eval-mmlu`, {
-          categories: steps, series: visible,
+          categories: plotSteps, series: visible,
           valueSuffix: "%", yMin, yMax, height: 200,
         });
       };
@@ -924,35 +1150,47 @@ function renderExpPanel(key) {
       } else {
         drawMmlu(mmluItems);
       }
-      const aimeLegendEl = document.getElementById(`legend-${key}-eval-aime`);
-      if (aimeLegendEl) {
-        // aime24 uses blue (not danger red) so it never collides with E5 pink aime25
-        const aimeItems = [
-          { name: s3ev ? "aime24 (Easy-Boxed)" : "aime24", data: ev.aime24, color: COLORS.e1 },
-          { name: s3ev ? "aime25 (Easy-Boxed)" : "aime25", data: ev.aime25, color: ev.color === COLORS.e1 ? COLORS.e5 : ev.color },
+      const bindAimeMetric = (metric, easyData, s3Data, color) => {
+        const legendEl = document.getElementById(`legend-${key}-eval-${metric}`);
+        if (!legendEl) return;
+        const hasOverlay = !!(s3ev || v2ev);
+        const items = [
+          { name: hasOverlay ? "Easy-Boxed" : metric, data: easyData, color },
         ];
-        if (s3ev) {
-          aimeItems.push({ name: "aime24 (S3)", data: s3ev.aime24, color: "#c026d3", dash: [6, 4] });
-          aimeItems.push(s3Series("aime25 (S3)", s3ev.aime25, COLORS.s3));
+        if (s3ev && s3Data) {
+          items.push(metric === "aime24"
+            ? { name: "S3", data: s3Data, color: "#c026d3", dash: [6, 4] }
+            : s3Series("S3", s3Data, COLORS.s3));
         }
-        renderLegend(aimeLegendEl, aimeItems, (visible) => {
+        if (v2ev && v2ev[metric] && v2ev[metric].some((v) => v != null)) {
+          items.push(metric === "aime24"
+            ? v2o("V2", v2ev[metric])
+            : { name: "V2", data: v2ev[metric], color: "#c2410c", dash: [2, 3] });
+        }
+        renderLegend(legendEl, items, (visible) => {
           const [yMin, yMax] = yRangeFromSeries(visible);
-          drawLineChart(`chart-${key}-eval-aime`, `tip-${key}-eval-aime`, {
-            categories: steps,
+          drawLineChart(`chart-${key}-eval-${metric}`, `tip-${key}-eval-${metric}`, {
+            categories: plotSteps,
             series: visible,
             valueSuffix: "%", yMin, yMax, height: 200,
           });
         });
-      }
+      };
+      // aime24 uses blue; aime25 uses experiment color (E1 → e5 pink so it stays distinct)
+      bindAimeMetric("aime24", easyAime24, s3Aime24, COLORS.e1);
+      bindAimeMetric("aime25", easyAime25, s3Aime25, ev.color === COLORS.e1 ? COLORS.e5 : ev.color);
       const mathEl = document.getElementById(`chart-${key}-eval-math500`);
-      if (mathEl && ev.math500) {
-        const mathItems = [{ name: "Easy-Boxed", data: ev.math500, color: ev.color }];
-        if (s3ev && s3ev.math500) mathItems.push(s3Series("S3", s3ev.math500));
+      if (mathEl && (ev.math500 || (v2ev && v2ev.math500))) {
+        const mathItems = [{ name: "Easy-Boxed", data: easyMath, color: ev.color }];
+        if (s3Math && s3Math.some((v) => v != null)) mathItems.push(s3o("S3", s3Math));
+        if (v2ev && v2ev.math500 && v2ev.math500.some((v) => v != null)) {
+          mathItems.push(v2o("V2", v2ev.math500));
+        }
         const mathLegendEl = document.getElementById(`legend-${key}-eval-math500`);
         const drawMath = (visible) => {
           const [yMin, yMax] = yRangeFromSeries(visible);
           drawLineChart(`chart-${key}-eval-math500`, `tip-${key}-eval-math500`, {
-            categories: steps, series: visible,
+            categories: plotSteps, series: visible,
             valueSuffix: "%", yMin, yMax, height: 200,
           });
         };
@@ -965,21 +1203,38 @@ function renderExpPanel(key) {
     }
   }
 
-  // ---- Agent / 工具调用（本实验 S3：BFCL-v3 + tau-bench）----
+  // ---- Agent / 工具调用（本实验 Easy/S3/V2：BFCL-v3 + tau-bench）----
   const agentEl = document.getElementById(`chart-${key}-agent-bfcl`);
-  if (agentEl && (typeof AGENT_EASY !== "undefined" || typeof AGENT_S3 !== "undefined")) {
-    const agSteps = (typeof AGENT_S3_STEPS !== "undefined") ? AGENT_S3_STEPS : (typeof AGENT_EASY_STEPS !== "undefined" ? AGENT_EASY_STEPS : EVAL_EASY_BOXED_FULL_STEPS);
+  if (agentEl && (typeof AGENT_EASY !== "undefined" || typeof AGENT_S3 !== "undefined" || typeof AGENT_V2 !== "undefined")) {
+    const baseAgSteps = (typeof AGENT_S3_STEPS !== "undefined")
+      ? AGENT_S3_STEPS
+      : (typeof AGENT_EASY_STEPS !== "undefined" ? AGENT_EASY_STEPS : EVAL_EASY_BOXED_FULL_STEPS);
     const easy = (typeof AGENT_EASY !== "undefined") ? AGENT_EASY[key] : null;
     const s3 = (typeof AGENT_S3 !== "undefined") ? AGENT_S3[key] : null;
+    const v2ag = (typeof AGENT_V2 !== "undefined") ? AGENT_V2[key] : null;
+    const hasV2Ag = v2ag && ["bfcl", "bfcl_mt", "tau"].some((m) => v2ag[m] && v2ag[m].some((v) => v != null));
+    const agSteps = (hasV2Ag && typeof AGENT_V2_STEPS !== "undefined") ? AGENT_V2_STEPS : baseAgSteps;
     const drawAgent = (metric, suffix, floor, ceil) => {
       const legendEl = document.getElementById(`legend-${key}-agent-${suffix}`);
       if (!document.getElementById(`chart-${key}-agent-${suffix}`)) return;
       const items = [];
       if (easy && easy[metric] && easy[metric].some((v) => v != null)) {
-        items.push({ name: easy.label || `${key.toUpperCase()} Easy`, data: easy[metric], color: easy.color || COLORS[key] });
+        items.push({
+          name: easy.label || `${key.toUpperCase()} Easy`,
+          data: alignEvalSeries(easy[metric], baseAgSteps, agSteps),
+          color: easy.color || COLORS[key],
+        });
       }
       if (s3 && s3[metric] && s3[metric].some((v) => v != null)) {
-        items.push({ name: s3.label || `${key.toUpperCase()} S3`, data: s3[metric], color: S3_ALT[key] || COLORS.s3, dash: [6, 4] });
+        items.push({
+          name: s3.label || `${key.toUpperCase()} S3`,
+          data: alignEvalSeries(s3[metric], baseAgSteps, agSteps),
+          color: S3_ALT[key] || COLORS.s3,
+          dash: [6, 4],
+        });
+      }
+      if (v2ag && v2ag[metric] && v2ag[metric].some((v) => v != null)) {
+        items.push(v2o(v2ag.label || `${key.toUpperCase()} V2`, v2ag[metric]));
       }
       if (!items.length) return;
       const draw = (visible) => {
@@ -1016,23 +1271,46 @@ function agentS3AtStep150(metricKey) {
 }
 
 function renderEvalPanel() {
-  const steps = (typeof EVAL_EASY_BOXED_FULL_STEPS !== "undefined") ? EVAL_EASY_BOXED_FULL_STEPS : EVAL_EASY_BOXED_STEPS;
+  const baseSteps = (typeof EVAL_EASY_BOXED_FULL_STEPS !== "undefined") ? EVAL_EASY_BOXED_FULL_STEPS : EVAL_EASY_BOXED_STEPS;
   const src = (typeof EVAL_EASY_BOXED_FULL !== "undefined") ? EVAL_EASY_BOXED_FULL : EVAL_EASY_BOXED;
   const s3src = (typeof EVAL_FULL_S3 !== "undefined") ? EVAL_FULL_S3 : {};
+  const v2src = (typeof EVAL_FULL_V2 !== "undefined") ? EVAL_FULL_V2 : {};
+  const hasV2 = Object.keys(v2src).some((k) => {
+    const row = v2src[k];
+    return row && ["mmlu", "aime24", "aime25", "math500"].some((m) => row[m] && row[m].some((v) => v != null));
+  });
+  const steps = (hasV2 && typeof EVAL_V2_STEPS !== "undefined") ? EVAL_V2_STEPS : baseSteps;
 
-  // Easy-Boxed 实线 / S3 异色虚线（S3_ALT，避免与同实验 Easy 撞色）。
-  function seriesWithS3(metric) {
+  // Easy-Boxed 实线 / S3 异色虚线 / V2 短虚线（V2 存在时 X 轴扩到 10–300）。
+  function seriesWithOverlays(metric) {
     const items = [];
     EVAL_EASY_BOXED_ORDER.forEach((k) => {
       const s3ev = s3src[k];
+      const v2ev = v2src[k];
       const hasS3 = s3ev && s3ev[metric] && s3ev[metric].some((v) => v != null);
-      items.push({ name: hasS3 ? `${src[k].label} (Easy-Boxed)` : src[k].label, data: src[k][metric], color: src[k].color });
-      if (hasS3) items.push(s3Series(`${src[k].label} (S3)`, s3ev[metric], S3_ALT[k] || COLORS.s3));
+      const hasV2k = v2ev && v2ev[metric] && v2ev[metric].some((v) => v != null);
+      const easyData = alignEvalSeries(src[k][metric], baseSteps, steps);
+      const labelBase = (hasS3 || hasV2k) ? `${src[k].label} (Easy-Boxed)` : src[k].label;
+      items.push({ name: labelBase, data: easyData, color: src[k].color });
+      if (hasS3) {
+        items.push(s3Series(
+          `${src[k].label} (S3)`,
+          alignEvalSeries(s3ev[metric], baseSteps, steps),
+          S3_ALT[k] || COLORS.s3,
+        ));
+      }
+      if (hasV2k) {
+        items.push(v2Series(
+          `${v2ev.label || src[k].label + " V2"}`,
+          v2ev[metric],
+          V2_ALT[k] || COLORS.v2,
+        ));
+      }
     });
     return items;
   }
 
-  renderLegend(document.getElementById("legend-eval-mmlu"), seriesWithS3("mmlu"),
+  renderLegend(document.getElementById("legend-eval-mmlu"), seriesWithOverlays("mmlu"),
     (visible) => {
       const [yMin, yMax] = yRangeFromSeries(visible);
       drawLineChart("chart-eval-mmlu", "tip-eval-mmlu", {
@@ -1043,7 +1321,7 @@ function renderEvalPanel() {
     });
 
   if (document.getElementById("legend-eval-math500")) {
-    renderLegend(document.getElementById("legend-eval-math500"), seriesWithS3("math500"),
+    renderLegend(document.getElementById("legend-eval-math500"), seriesWithOverlays("math500"),
       (visible) => {
         const [yMin, yMax] = yRangeFromSeries(visible);
         drawLineChart("chart-eval-math500", "tip-eval-math500", {
@@ -1055,7 +1333,7 @@ function renderEvalPanel() {
   }
 
   if (document.getElementById("legend-eval-aime24")) {
-    renderLegend(document.getElementById("legend-eval-aime24"), seriesWithS3("aime24"),
+    renderLegend(document.getElementById("legend-eval-aime24"), seriesWithOverlays("aime24"),
       (visible) => {
         const [yMin, yMax] = yRangeFromSeries(visible);
         drawLineChart("chart-eval-aime24", "tip-eval-aime24", {
@@ -1066,7 +1344,7 @@ function renderEvalPanel() {
       });
   }
 
-  renderLegend(document.getElementById("legend-eval-aime25"), seriesWithS3("aime25"),
+  renderLegend(document.getElementById("legend-eval-aime25"), seriesWithOverlays("aime25"),
     (visible) => {
       const [yMin, yMax] = yRangeFromSeries(visible);
       drawLineChart("chart-eval-aime25", "tip-eval-aime25", {
@@ -1113,27 +1391,53 @@ function renderEvalPanel() {
     });
   }
 
-  // ---- Agent（BFCL-v3 + tau-bench）----
-  if (typeof AGENT_S3 !== "undefined" && document.getElementById("chart-agent-bfcl")) {
-    const order = (typeof AGENT_S3_ORDER !== "undefined") ? AGENT_S3_ORDER : Object.keys(AGENT_S3);
-    const steps = (typeof AGENT_S3_STEPS !== "undefined") ? AGENT_S3_STEPS : EVAL_EASY_BOXED_FULL_STEPS;
+  // ---- Agent（BFCL-v3 + tau-bench；Easy 实线 / S3 虚线 / V2 短虚线）----
+  if ((typeof AGENT_S3 !== "undefined" || typeof AGENT_V2 !== "undefined") && document.getElementById("chart-agent-bfcl")) {
+    const order = (typeof AGENT_S3_ORDER !== "undefined")
+      ? AGENT_S3_ORDER
+      : (typeof AGENT_EASY_ORDER !== "undefined" ? AGENT_EASY_ORDER : ["e1", "e2", "e3", "e4", "e5"]);
+    const baseSteps = (typeof AGENT_S3_STEPS !== "undefined")
+      ? AGENT_S3_STEPS
+      : (typeof AGENT_EASY_STEPS !== "undefined" ? AGENT_EASY_STEPS : EVAL_EASY_BOXED_FULL_STEPS);
     const easySrc = (typeof AGENT_EASY !== "undefined") ? AGENT_EASY : null;
+    const v2Src = (typeof AGENT_V2 !== "undefined") ? AGENT_V2 : null;
+    const hasV2 = v2Src && Object.keys(v2Src).some((k) => {
+      const row = v2Src[k];
+      return row && ["bfcl", "bfcl_mt", "tau"].some((m) => row[m] && row[m].some((v) => v != null));
+    });
+    const steps = (hasV2 && typeof AGENT_V2_STEPS !== "undefined") ? AGENT_V2_STEPS : baseSteps;
     const hasValues = (series) => series && series.some((v) => v != null);
     const items = (dataKey) => {
       const out = [];
       order.forEach((k) => {
         const easy = easySrc && easySrc[k];
-        const s3 = AGENT_S3[k];
+        const s3 = (typeof AGENT_S3 !== "undefined") ? AGENT_S3[k] : null;
+        const v2 = v2Src && v2Src[k];
         const easyHas = easy && hasValues(easy[dataKey]);
-        // Easy keeps per-exp color; S3 uses a distinct alt hue when both are plotted.
-        if (easyHas) out.push({ name: easy.label, data: easy[dataKey], color: easy.color });
-        if (s3 && hasValues(s3[dataKey])) {
+        const s3Has = s3 && hasValues(s3[dataKey]);
+        const v2Has = v2 && hasValues(v2[dataKey]);
+        // Easy keeps per-exp color; S3/V2 use distinct alt hues when overlaid.
+        if (easyHas) {
+          out.push({
+            name: easy.label,
+            data: alignEvalSeries(easy[dataKey], baseSteps, steps),
+            color: easy.color,
+          });
+        }
+        if (s3Has) {
           out.push({
             name: s3.label,
-            data: s3[dataKey],
-            color: easyHas ? (S3_ALT[k] || COLORS.s3) : (s3.color || COLORS[k] || COLORS.s3),
-            dash: easyHas ? [6, 5] : null,
+            data: alignEvalSeries(s3[dataKey], baseSteps, steps),
+            color: (easyHas || v2Has) ? (S3_ALT[k] || COLORS.s3) : (s3.color || COLORS[k] || COLORS.s3),
+            dash: [6, 5],
           });
+        }
+        if (v2Has) {
+          out.push(v2Series(
+            v2.label || `${k.toUpperCase()} V2`,
+            v2[dataKey],
+            V2_ALT[k] || COLORS.v2,
+          ));
         }
       });
       return out;

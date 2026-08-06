@@ -14,14 +14,16 @@
 
         <section class="detail-sec" id="eval-sec-overview">
           <h2 class="sec-title">概览</h2>
-          <p class="sec-sub">评测配置 · Easy-Boxed 实线 / S3 虚线 · step150 汇总</p>
-          <p class="tertiary">Source: <code>evalscope</code>（evalscope 框架，本地 vLLM 0.24 serving 出的 checkpoint 权重，非训练时 verl 内置验证）。评测配置：math 类（aime24/aime25/math_500）<code>temperature=0.6, top_p=0.95, max_tokens=16384, n=8</code>（8 采样取均值 acc）；mmlu_temp <code>n=2</code>。权重来自 FSDP → HuggingFace 合并（<code>trans_weight.sh</code>），路径 <code>model/exp2card/&lt;exp&gt;/merged_&lt;step&gt;</code>。训练数据：Stage-1 <code>polaris_easy_boxed</code> / Stage-3 S3。曲线为 step 10→150（缺报告为断点）。刷新：<code>python3 scripts/monitoring/2b/sync_2b_eval_dashboard.py</code>。</p>
+          <p class="sec-sub">评测配置 · Easy-Boxed 实线 / S3 虚线 / V2 短虚线 · step150 汇总</p>
+          <p class="tertiary">Source: <code>evalscope</code>（evalscope 框架，本地 vLLM 0.24 serving 出的 checkpoint 权重，非训练时 verl 内置验证）。评测配置：math 类（aime24/aime25/math_500）<code>temperature=0.6, top_p=0.95, max_tokens=16384, n=8</code>（8 采样取均值 acc）；mmlu_temp <code>n=2</code>。权重来自 FSDP → HuggingFace 合并（<code>trans_weight.sh</code>），路径 <code>model/exp2card/&lt;exp&gt;/merged_&lt;step&gt;</code>。训练数据：Stage-1 <code>polaris_easy_boxed</code> / Stage-3 S3 / V2 difficulty-band。Easy/S3 曲线 step 10→150；有 V2 时 X 轴扩到 10→300（缺报告为断点）。刷新：<code>python3 scripts/monitoring/2b/sync_2b_eval_dashboard.py</code>。</p>
           <div class="callout" style="margin-top:10px">
-            <div class="title">Easy-Boxed + S3 offline 均已 15/15；S3 Agent2（BFCL + tau-bench）已同步</div>
+            <div class="title">Easy-Boxed + S3 offline 均已 15/15；V2 E1（e1_grpo_2b_v2_s1）offline 已同步 10–250</div>
             <strong>Easy mmlu_temp</strong> 峰值 <strong>E3@100 = 82.42%</strong>；step150 最高 E4（79.74%）。
             <strong>Easy aime24</strong> 峰值 E2/E4@80–100 = 42.50%；
             <strong>aime25</strong> 峰值 <strong>E5@130 = 38.33%</strong>，step150 最高 E4（37.50%）。
             <strong>S3</strong> 整体低于 Easy（aime25 step150 约 22–26%）。
+            <strong>V2 E1</strong>：mmlu/aime24/aime25 25/30（10–250）；math_500 23/30（缺 110/240）；260–300 待评测。
+            <strong>V2 Agent</strong>：BFCL + tau-bench 均 25/30（10–250）；MULTI_TURN 仅 160–250（native-FC）；260–300 待评测。
             Agent 柱状图取 step150，缺报告则为空。
           </div>
           <section class="grid2" style="margin-top:20px">
@@ -63,54 +65,54 @@
           <p class="sec-sub">aime24 / aime25 · Easy-Boxed 实线 / S3 虚线 · n=8</p>
           <section class="grid2" style="margin-top:12px">
             <div>
-              <h2>aime24（Easy + S3 E1–E5）</h2>
+              <h2>aime24（Easy + S3 + V2）</h2>
               <div class="chart-card">
                 <div class="legend" id="legend-eval-aime24"></div>
                 <div class="chart-wrap"><canvas id="chart-eval-aime24" height="240"></canvas><div class="tooltip" id="tip-eval-aime24"></div></div>
               </div>
-              <p class="caption">X: checkpoint step（10–150，缺报告断开） · Y: aime24 mean_acc（%，n=8）。异色虚线 = 该算法 S3。</p>
+              <p class="caption">X: checkpoint step（有 V2 时 10–300，否则 10–150；缺报告断开） · Y: aime24 mean_acc（%，n=8）。虚线=S3，短虚线=V2。</p>
             </div>
             <div>
-              <h2>aime25（Easy + S3 E1–E5）</h2>
+              <h2>aime25（Easy + S3 + V2）</h2>
               <div class="chart-card">
                 <div class="legend" id="legend-eval-aime25"></div>
                 <div class="chart-wrap"><canvas id="chart-eval-aime25" height="240"></canvas><div class="tooltip" id="tip-eval-aime25"></div></div>
               </div>
-              <p class="caption">X: checkpoint step（10–150） · Y: aime25 mean_acc（%，n=8）。异色虚线 = 该算法 S3。</p>
+              <p class="caption">X: checkpoint step（有 V2 时 10–300） · Y: aime25 mean_acc（%，n=8）。虚线=S3，短虚线=V2。</p>
             </div>
           </section>
         </section>
 
         <section class="detail-sec" id="eval-sec-math500">
           <h2 class="sec-title">MATH-500</h2>
-          <p class="sec-sub">Easy-Boxed 实线 / S3 虚线 · 缺报告为断点</p>
+          <p class="sec-sub">Easy-Boxed 实线 / S3 虚线 / V2 短虚线 · 缺报告为断点</p>
           <div style="margin-top:12px">
-            <h2>MATH-500（Easy + S3 E1–E5）</h2>
+            <h2>MATH-500（Easy + S3 + V2）</h2>
             <div class="chart-card">
               <div class="legend" id="legend-eval-math500"></div>
               <div class="chart-wrap"><canvas id="chart-eval-math500" height="240"></canvas><div class="tooltip" id="tip-eval-math500"></div></div>
             </div>
-            <p class="caption">X: checkpoint step（10–150） · Y: MATH-500 pass@1（%）。异色虚线 = 该算法 S3。</p>
+            <p class="caption">X: checkpoint step（有 V2 时 10–300） · Y: MATH-500 pass@1（%）。虚线=S3，短虚线=V2。</p>
           </div>
         </section>
 
         <section class="detail-sec" id="eval-sec-mmlu">
           <h2 class="sec-title">通识（MMLU）</h2>
-          <p class="sec-sub">mmlu_temp · n=2 · Easy-Boxed 实线 / S3 虚线</p>
+          <p class="sec-sub">mmlu_temp · n=2 · Easy-Boxed 实线 / S3 虚线 / V2 短虚线</p>
           <div style="margin-top:12px">
-            <h2>mmlu_temp（Easy + S3 E1–E5）</h2>
+            <h2>mmlu_temp（Easy + S3 + V2）</h2>
             <div class="chart-card">
               <div class="legend" id="legend-eval-mmlu"></div>
               <div class="chart-wrap"><canvas id="chart-eval-mmlu" height="240"></canvas><div class="tooltip" id="tip-eval-mmlu"></div></div>
             </div>
-            <p class="caption">X: checkpoint step（10–150） · Y: mmlu_temp acc（%）。异色虚线 = 该算法 S3。</p>
+            <p class="caption">X: checkpoint step（有 V2 时 10–300） · Y: mmlu_temp acc（%）。虚线=S3，短虚线=V2。</p>
           </div>
         </section>
 
         <section class="detail-sec" id="eval-sec-agent">
           <h2 class="sec-title">Agent / 工具调用能力</h2>
-          <p class="sec-sub">BFCL-v3 + tau-bench · Easy 实线 / S3 虚线（有 Easy 数据时）</p>
-          <p class="tertiary">Source: <code>evalscope/outputs/agent2</code>（<code>run_agent2_queue_2b.sh</code> / <code>run_agent2_s3_queue_2b.sh</code>，vLLM <code>qwen3_xml</code>）。BFCL-v3：10 subset × 30、prompt/native-FC 兼容报告；tau-bench：retail+airline 共 40、user-sim=<code>gpt-5p5-apipro</code>。Agent2 Easy：BFCL 75/75，tau-bench 75/75（非空 step：10/20/30/40/50/60/70/80/90/100/110/120/130/140/150）。S3：BFCL native-FC 75/75，tau-bench 75/75（非空 step：10/20/30/40/50/60/70/80/90/100/110/120/130/140/150）。刷新：<code>python3 scripts/monitoring/2b/sync_2b_agent_dashboard.py</code>。协议说明见 <a href="../benchmark/index.html">Benchmark 介绍</a>。</p>
+          <p class="sec-sub">BFCL-v3 + tau-bench · Easy 实线 / S3 虚线 / V2 短虚线</p>
+          <p class="tertiary">Source: <code>evalscope/outputs/agent2</code>（<code>run_agent2_queue_2b.sh</code> / <code>run_agent2_s3_queue_2b.sh</code>，vLLM <code>qwen3_xml</code>）。BFCL-v3：10 subset × 30、prompt/native-FC 兼容报告；tau-bench：retail+airline 共 40、user-sim=<code>gpt-5p5-apipro</code>。Agent2 Easy：BFCL 75/75，tau-bench 75/75（非空 step：10/20/30/40/50/60/70/80/90/100/110/120/130/140/150）。S3：BFCL native-FC 75/75，tau-bench 75/75（非空 step：10/20/30/40/50/60/70/80/90/100/110/120/130/140/150）。V2：BFCL 25/150，tau-bench 25/150（非空 step：10/20/30/40/50/60/70/80/90/100/110/120/130/140/150/160/170/180/190/200/210/220/230/240/250）。刷新：<code>python3 scripts/monitoring/2b/sync_2b_agent_dashboard.py</code>。协议说明见 <a href="../benchmark/index.html">Benchmark 介绍</a>。</p>
           <div class="callout" style="margin-top:10px">
             <div class="title">S3 agent：BFCL 有区分度，MULTI_TURN 仍弱，tau 噪声大</div>
             <strong>BFCL OVERALL</strong>：E1/E2/E3 多数 step 落在 50–60%；E1 若干 step 掉到 ~38%（随后回升）；E5 仅有 step120–150，落在 36–40%。
@@ -123,7 +125,7 @@
               <div class="legend" id="legend-agent-bfcl"></div>
               <div class="chart-wrap"><canvas id="chart-agent-bfcl" height="240"></canvas><div class="tooltip" id="tip-agent-bfcl"></div></div>
             </div>
-            <p class="caption">X: checkpoint step（10–150） · Y: BFCL-v3 OVERALL acc（%）。每条曲线独立着色，可点图例显隐。</p>
+            <p class="caption">X: checkpoint step（有 V2 时 10–300） · Y: BFCL-v3 OVERALL acc（%）。虚线=S3，短虚线=V2；可点图例显隐。</p>
           </div>
           <section class="grid2" style="margin-top:16px">
             <div>
@@ -132,15 +134,15 @@
                 <div class="legend" id="legend-agent-mt"></div>
                 <div class="chart-wrap"><canvas id="chart-agent-mt" height="240"></canvas><div class="tooltip" id="tip-agent-mt"></div></div>
               </div>
-              <p class="caption">X: step · Y: MULTI_TURN acc（%，4 subset × 30）。多轮会 exec 工具；数学 RL 普遍偏低。</p>
+              <p class="caption">X: step · Y: MULTI_TURN acc（%，4 subset × 30）。短虚线=V2；多轮会 exec 工具；数学 RL 普遍偏低。</p>
             </div>
             <div>
-              <h2>tau-bench（E1–E5）</h2>
+              <h2>tau-bench（E1–E5 + V2）</h2>
               <div class="chart-card">
                 <div class="legend" id="legend-agent-tau"></div>
                 <div class="chart-wrap"><canvas id="chart-agent-tau" height="240"></canvas><div class="tooltip" id="tip-agent-tau"></div></div>
               </div>
-              <p class="caption">X: step · Y: tau-bench mean_acc（%，40 条）。缺报告为断点；每点噪声约 ±8pt。</p>
+              <p class="caption">X: step（有 V2 时 10–300） · Y: tau-bench mean_acc（%，40 条）。短虚线=V2；缺报告为断点；每点噪声约 ±8pt。</p>
             </div>
           </section>
         </section>

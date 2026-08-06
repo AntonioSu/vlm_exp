@@ -1,4 +1,4 @@
-    <p class="tertiary">Easy-Boxed（e2_dapo_2b）与 S3（e2_dapo_2b_s3）对比。图例可点击切换显示/隐藏。</p>
+    <p class="tertiary">Easy-Boxed（e2_dapo_2b）· S3（e2_dapo_2b_s3）· Easy-24K（e2_dapo_2b_easy_24k）· Easy-32K（e2_dapo_2b_easy_32k）· S1-24K（e2_dapo_2b_s1_24k，S1×24K 冷启动）· Ext（easy@150 续训：<code>e2_dapo_2b_easy_cont150</code> / <code>e2_dapo_2b_s1_from_easy150</code>，目标 300）。虚线=S3，点线=Easy-24K，点划点=Easy-32K，点划线=S1-24K / Ext easy-cont，长虚线=Ext S1-switch。有 Ext 时横轴自动拉长。图例可点击切换显示/隐藏。</p>
     <div class="detail-layout">
       <nav class="detail-toc" aria-label="目录" id="e2-toc">
         <p class="toc-heading">目录</p>
@@ -47,10 +47,10 @@
             <div>
               <h2>平均响应长度（tokens）</h2>
               <div class="chart-card"><div class="legend" id="legend-e2-len"></div><div class="chart-wrap"><canvas id="chart-e2-len" height="200"></canvas><div class="tooltip" id="tip-e2-len"></div></div></div>
-              <p class="caption">虚线 = 16K cap。</p>
+              <p class="caption">红虚线 = 16K cap；灰虚线 = 24K / 32K cap（Easy-24K / S1-24K / Easy-32K）。</p>
             </div>
             <div>
-              <h2>截断率 clip@16K（%）</h2>
+              <h2>截断率 clip@cap（%）</h2>
               <div class="chart-card"><div class="legend" id="legend-e2-trunc"></div><div class="chart-wrap"><canvas id="chart-e2-trunc" height="200"></canvas><div class="tooltip" id="tip-e2-trunc"></div></div></div>
               <p class="caption"><code>response_length/clip_ratio</code>。</p>
             </div>
@@ -60,13 +60,11 @@
               <h2>平均输入长度（tokens）</h2>
               <div class="chart-card"><div class="legend" id="legend-e2-promptlen"></div><div class="chart-wrap"><canvas id="chart-e2-promptlen" height="200"></canvas><div class="tooltip" id="tip-e2-promptlen"></div></div></div>
             </div>
-            <div></div>
+            <div>
+              <h2>整体损失 actor/loss</h2>
+              <div class="chart-card"><div class="legend" id="legend-e2-loss"></div><div class="chart-wrap"><canvas id="chart-e2-loss" height="220"></canvas><div class="tooltip" id="tip-e2-loss"></div></div></div>
+            </div>
           </section>
-          <h2 style="margin-top:16px">整体损失 actor/loss</h2>
-          <div class="chart-card">
-            <div class="legend" id="legend-e2-loss"></div>
-            <div class="chart-wrap"><canvas id="chart-e2-loss" height="220"></canvas><div class="tooltip" id="tip-e2-loss"></div></div>
-          </div>
           <section class="grid2" style="margin-top:16px">
             <div>
               <h2>策略熵 entropy</h2>
@@ -177,16 +175,25 @@
           <section class="grid2" style="margin-top:10px">
             <div><h2>mmlu_temp（%）</h2><div class="chart-card"><div class="legend" id="legend-e2-eval-mmlu"></div><div class="chart-wrap"><canvas id="chart-e2-eval-mmlu" height="200"></canvas><div class="tooltip" id="tip-e2-eval-mmlu"></div></div></div></div>
             <div>
-              <h2>aime24 / aime25（%）</h2>
-              <div class="chart-card">
-                <div class="legend" id="legend-e2-eval-aime"></div>
-                <div class="chart-wrap"><canvas id="chart-e2-eval-aime" height="200"></canvas><div class="tooltip" id="tip-e2-eval-aime"></div></div>
-              </div>
+              <h2>math_500（%）</h2>
+              <div class="chart-card"><div class="legend" id="legend-e2-eval-math500"></div><div class="chart-wrap"><canvas id="chart-e2-eval-math500" height="200"></canvas><div class="tooltip" id="tip-e2-eval-math500"></div></div></div>
             </div>
           </section>
-          <section style="margin-top:12px">
-            <h2>math_500（%）</h2>
-            <div class="chart-card"><div class="legend" id="legend-e2-eval-math500"></div><div class="chart-wrap"><canvas id="chart-e2-eval-math500" height="200"></canvas><div class="tooltip" id="tip-e2-eval-math500"></div></div></div>
+          <section class="grid2" style="margin-top:12px">
+            <div>
+              <h2>aime24（%）</h2>
+              <div class="chart-card">
+                <div class="legend" id="legend-e2-eval-aime24"></div>
+                <div class="chart-wrap"><canvas id="chart-e2-eval-aime24" height="200"></canvas><div class="tooltip" id="tip-e2-eval-aime24"></div></div>
+              </div>
+            </div>
+            <div>
+              <h2>aime25（%）</h2>
+              <div class="chart-card">
+                <div class="legend" id="legend-e2-eval-aime25"></div>
+                <div class="chart-wrap"><canvas id="chart-e2-eval-aime25" height="200"></canvas><div class="tooltip" id="tip-e2-eval-aime25"></div></div>
+              </div>
+            </div>
           </section>
         </section>
 

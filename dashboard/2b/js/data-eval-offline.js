@@ -1,9 +1,10 @@
 // =============================================================================
-// data-eval-offline.js — Offline evalscope scores (Stage-1 + Stage-3); auto-synced 2026-07-31
-// NOT training-log metrics (those live in data-easy-boxed-e*.js / data-s3-e*.js).
+// data-eval-offline.js — Offline evalscope scores (Stage-1 + Stage-3 + V2); auto-synced 2026-08-06
+// NOT training-log metrics (those live in data-easy-boxed-e*.js / data-s3-e*.js / data-v2-e*.js).
 //
 //   EVAL_EASY_BOXED*  → Stage-1 offline (e*_2b_<step>)
 //   EVAL_FULL_S3      → Stage-3 offline (e*_2b_s3_<step>)
+//   EVAL_FULL_V2      → V2 offline (e*_2b_v2_s1_<step>, steps 10–300)
 //   EVAL_STAGE_S3_150 → Stage-3 ad-hoc E1@150 detail card
 //
 // Refresh: python3 scripts/monitoring/2b/sync_2b_eval_dashboard.py
@@ -106,6 +107,23 @@ const EVAL_FULL_S3 = {
   },
 };
 
+// ---- V2 offline (Source: .../exp2card/<exp>_2b_v2_s1_<step>/... ) ----
+// Only exps with ≥1 report appear; charts.js overlays V2 series from this.
+// Axis 10→300 (missing = null). NOT the same as data-v2-e*.js (those = training logs).
+const EVAL_V2_STEPS = ["10", "20", "30", "40", "50", "60", "70", "80", "90", "100", "110", "120", "130", "140", "150", "160", "170", "180", "190", "200", "210", "220", "230", "240", "250", "260", "270", "280", "290", "300"];
+
+const EVAL_FULL_V2 = {
+  e1: {
+    label: "V2 E1 GRPO", color: COLORS.e1,
+    mmlu:   [76.09, 77.80, 77.15, 77.96, 77.64, 77.87, 79.74, 79.58, 78.44, 79.17, 77.64, 77.63, 77.23, 76.91, 78.69, 77.79, 77.79, 77.23, 77.79, 77.79, 76.82, 76.34, 76.26, 75.93, 76.58, null, null, null, null, null],
+    aime24: [19.17, 25.42, 28.75, 30.00, 28.33, 26.67, 25.83, 25.42, 21.67, 25.00, 19.58, 17.92, 14.58, 13.33, 13.75, 14.17, 13.33, 11.67, 9.58, 10.00, 8.75, 8.75, 9.58, 7.50, 7.08, null, null, null, null, null],
+    aime25: [23.33, 25.00, 26.66, 27.08, 25.84, 25.00, 25.83, 27.50, 24.17, 20.41, 21.25, 23.75, 22.09, 22.91, 22.92, 16.25, 15.42, 15.83, 16.66, 15.42, 13.34, 13.75, 14.58, 12.08, 9.59, null, null, null, null, null],
+    math500:[81.00, 82.40, 83.35, 83.40, 84.07, 84.53, 84.00, 84.52, 83.10, 81.90, null, 81.37, 80.92, 78.08, 79.17, 78.97, 77.73, 77.55, 76.35, 74.12, 74.40, 73.63, 74.50, null, 73.08, null, null, null, null, null],
+  },
+};
+
+const EVAL_FULL_V2_ORDER = ["e1"];
+
 // ---- Stage-3 ad-hoc detail card (E1 GRPO @ step 150 only) ----
 const EVAL_STAGE_S3_150 = {
   label: "E1 GRPO 2B S3 step150",
@@ -114,8 +132,8 @@ const EVAL_STAGE_S3_150 = {
     aime24: "evalscope/outputs/exp2card/e1_grpo_2b_s3_150/20260726_084042/reports/e1_grpo_2b_s3_150/aime24.json",
     aime25: "evalscope/outputs/exp2card/e1_grpo_2b_s3_150/20260726_084042/reports/e1_grpo_2b_s3_150/aime25.json",
     mmlu_temp: "evalscope/outputs/exp2card/e1_grpo_2b_s3_150/20260726_091746/reports/e1_grpo_2b_s3_150/mmlu.json",
-    bfcl_v3: "evalscope/outputs/agent2/20260731_200401/reports/e1_grpo_2b_s3_150/bfcl_v3.json",
-    tau_bench: "evalscope/outputs/agent2/20260726_112538/reports/e1_grpo_2b_s3_150/tau_bench.json",
+    bfcl_v3: "/data/juicefs-white/5281-gpu-a100/lijunyi/evalscope/outputs/agent2/20260731_200401/reports/e1_grpo_2b_s3_150/bfcl_v3.json",
+    tau_bench: "/data/juicefs-white/5281-gpu-a100/lijunyi/evalscope/outputs/agent2/20260726_112538/reports/e1_grpo_2b_s3_150/tau_bench.json",
   },
   rows: [
     { task: "aime24", metric: "AveragePass@1", num: 30, score: 23.75, detail: "default 23.75" },
@@ -126,11 +144,12 @@ const EVAL_STAGE_S3_150 = {
   ],
 };
 
-// ---- Agent BFCL / tool-use benchmarks (evalscope, auto-synced 2026-08-02) ----
-// Source: evalscope/outputs/agent2/<ts>/reports/<exp>_2b[_s3]_<step>/{bfcl_v3,tau_bench}.json
+// ---- Agent BFCL / tool-use benchmarks (evalscope, auto-synced 2026-08-06) ----
+// Source: /data/juicefs-white/5281-gpu-a100/lijunyi/evalscope/outputs/agent2/<ts>/reports/<exp>_2b[_s3|_v2_s1]_<step>/{bfcl_v3,tau_bench}.json
 // Coverage Easy: bfcl=75/75 · tau=75/75 · steps with any report: 10/20/30/40/50/60/70/80/90/100/110/120/130/140/150
 // Coverage S3: bfcl=75/75 · tau=75/75 · steps with any report: 10/20/30/40/50/60/70/80/90/100/110/120/130/140/150
-// BFCL-v3: 10 subset ×30；bfcl=OVERALL（或缺省 top-level）；bfcl_mt=MULTI_TURN；S3 仅使用 native-FC 完整报告。
+// Coverage V2: bfcl=25/150 · tau=25/150 · steps with any report: 10/20/30/40/50/60/70/80/90/100/110/120/130/140/150/160/170/180/190/200/210/220/230/240/250
+// BFCL-v3: 10 subset ×30；bfcl=OVERALL（或缺省 top-level）；bfcl_mt=MULTI_TURN（仅 native-FC）；S3 仅 native-FC；V2 OVERALL 可暂用 scorer-compat。
 // tau-bench: retail+airline×20，user-sim=gpt-5p5-apipro。null = 尚未评测。
 // Refresh: python3 scripts/monitoring/2b/sync_2b_agent_dashboard.py
 
@@ -211,3 +230,17 @@ const AGENT_S3_RAW_ORDER = ["e1", "e2", "e3", "e4", "e5"];
 const AGENT_S3_STEPS = AGENT_S3_RAW_STEPS;
 const AGENT_S3 = AGENT_S3_RAW;
 const AGENT_S3_ORDER = AGENT_S3_RAW_ORDER;
+
+// ---- Agent V2 (e*_2b_v2_s1_<step>; axis 10–300) ----
+const AGENT_V2_STEPS = ["10", "20", "30", "40", "50", "60", "70", "80", "90", "100", "110", "120", "130", "140", "150", "160", "170", "180", "190", "200", "210", "220", "230", "240", "250", "260", "270", "280", "290", "300"];
+
+const AGENT_V2 = {
+  e1: {
+    label: "E1 GRPO V2",       color: COLORS.e1,
+    bfcl:   [43.9, 47.9, 45.1, 43.0, 45.8, 43.1, 48.8, 46.8, 47.6, 47.8, 50.7, 49.2, 50.6, 49.8, 48.1, 18.1, 19.6, 18.7, 18.3, 19.6, 20.7, 20.0, 18.7, 18.7, 19.6, null, null, null, null, null],
+    bfcl_mt:[null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 4.4, 8.9, 6.1, 5.0, 8.9, 12.2, 10.0, 6.1, 6.1, 8.9, null, null, null, null, null],
+    tau:    [47.5, 57.5, 42.5, 52.5, 50.0, 45.0, 35.0, 50.0, 62.5, 47.5, 42.5, 55.0, 50.0, 57.5, 55.0, 47.5, 50.0, 47.5, 47.5, 50.0, 47.5, 42.5, 47.5, 40.0, 47.5, null, null, null, null, null],
+  },
+};
+
+const AGENT_V2_ORDER = ["e1"];

@@ -86,11 +86,8 @@
   table tbody tr:last-child td { border-bottom: none; }
   .grid2 {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr;
     gap: 20px;
-  }
-  @media (max-width: 860px) {
-    .grid2 { grid-template-columns: 1fr; }
   }
   .chart-card {
     border: 1px solid var(--border);
@@ -263,6 +260,56 @@
   .hp-table thead th.hp-e3 { color: var(--e3); }
   .hp-table thead th.hp-e4 { color: var(--e4); }
   .hp-table thead th.hp-e5 { color: var(--e5); }
+  .hp-table .hp-e2 { color: var(--e2); font-weight: 600; }
+  .hp-family td { white-space: normal; vertical-align: top; line-height: 1.45; }
+  .hp-family td:first-child { white-space: nowrap; }
+  .hp-family td .mono { font-size: 11.5px; }
+  .hp-lineage {
+    margin-top: 12px;
+    padding: 14px 16px 12px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: #fafbfc;
+  }
+  .hp-lineage-root {
+    font-size: 13px;
+    font-weight: 650;
+    color: var(--text);
+    margin-bottom: 8px;
+  }
+  .hp-lineage-tree,
+  .hp-lineage-tree ul {
+    list-style: none;
+    margin: 0;
+    padding: 0 0 0 18px;
+  }
+  .hp-lineage-tree { padding-left: 4px; }
+  .hp-lineage-tree li {
+    position: relative;
+    padding: 5px 0 5px 14px;
+    font-size: 13px;
+    line-height: 1.4;
+  }
+  .hp-lineage-tree li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0.95em;
+    width: 10px;
+    border-top: 2px solid #cbd5e1;
+  }
+  .hp-lineage-tree li.hp-branch-dash::before {
+    border-top-style: dashed;
+  }
+  .hp-node { font-weight: 600; color: var(--text); }
+  .hp-node.hp-e2 { color: var(--e2); }
+  .hp-meta {
+    display: inline;
+    margin-left: 8px;
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
+  .hp-meta.mono { font-size: 11.5px; }
   .table-wrap { width: 100%; }
   .memo { list-style: none; padding: 0; margin: 0; }
   .memo li { padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 13.5px; }

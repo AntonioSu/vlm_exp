@@ -3,9 +3,9 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>2B 训练 — Qwen3.5-2B（E1–E5 + S3 + V2）</title>
+<title>2B 训练 — Qwen3.5-2B（E1–E5 + S3 + V2 + Easy-24K/32K + S1-24K + Ext）</title>
 <link rel="stylesheet" href="../common/base.css">
-<link rel="stylesheet" href="styles.css?v=20260803114000">
+<link rel="stylesheet" href="styles.css?v=20260806001000">
 </head>
 <body>
 
@@ -27,8 +27,8 @@
 </div>
 
 <div class="page">
-  <h1>2B 训练监控 — Qwen3.5-2B（E1–E5 + S3 + V2）</h1>
-  <p class="subtitle">2×A100-80GB · non-thinking · 16K response · Easy-Boxed / S3 E1–E5 均 150/150；V2（难度池）E1 GRPO 进行中（~99/150）。数据由 <code>scripts/monitoring/2b/parse_2b_logs.py</code> 从 <code>logs/exp2card/e*_2b{,_s3,_v2_s1}/</code> 生成。算法定义见 <a href="../algo/index.html">算法介绍</a> · 数据池见 <a href="../dataset/index.html">数据集介绍</a> · 评测协议见 <a href="../benchmark/index.html">Benchmark 介绍</a>。</p>
+  <h1>2B 训练监控 — Qwen3.5-2B（E1–E5 + S3 + V2 + Easy-24K/32K + S1-24K + Ext）</h1>
+  <p class="subtitle">2×A100-80GB · non-thinking · 16K response · Easy-Boxed / S3 E1–E5 均 150/150；V2（难度池）E1 GRPO 续训中（~250/300），E2 DAPO 尚无 step；Easy-24K（DAPO 长度消融，<code>e2_dapo_2b_easy_24k</code>）87/150（~53.3h）；Easy-32K（<code>e2_dapo_2b_easy_32k</code>）63/150（~6.4h）；S1-24K（DAPO × S1 × 24K，<code>e2_dapo_2b_s1_24k</code>）51/150（~9.2h）；Ext（DAPO easy@150 数据集对照）easy-cont <code>e2_dapo_2b_easy_cont150</code> 300/300（~19.5h），S1-switch <code>e2_dapo_2b_s1_from_easy150</code> 300/300（~18.6h）。数据由 <code>scripts/monitoring/2b/parse_2b_logs.py</code> 从 <code>logs/exp2card/</code> + <code>tensorboard/exp2card/</code> 生成。算法定义见 <a href="../algo/index.html">算法介绍</a> · 数据池见 <a href="../dataset/index.html">数据集介绍</a> · 评测协议见 <a href="../benchmark/index.html">Benchmark 介绍</a>。</p>
 
   <div class="subtabs">
     <button class="subtab-btn active" data-subtab="compare">对比总览（E1–E5 + S3 + V2）</button>
@@ -43,20 +43,25 @@
   <div id="panel-container"></div>
 </div>
 
-<script src="js/data-compare.js?v=20260803120000"></script>
-<script src="js/data-eval-offline.js?v=20260802120523"></script>
-<script src="js/data-easy-boxed-e1.js?v=20260803112800"></script>
-<script src="js/data-easy-boxed-e2.js?v=20260803112800"></script>
-<script src="js/data-easy-boxed-e3.js?v=20260803112800"></script>
-<script src="js/data-easy-boxed-e4.js?v=20260803112800"></script>
-<script src="js/data-easy-boxed-e5.js?v=20260803112800"></script>
-<script src="js/data-s3-e1.js?v=20260803112800"></script>
-<script src="js/data-s3-e2.js?v=20260803112800"></script>
-<script src="js/data-s3-e3.js?v=20260803112800"></script>
-<script src="js/data-s3-e4.js?v=20260803112800"></script>
-<script src="js/data-s3-e5.js?v=20260803112800"></script>
-<script src="js/data-v2-e1.js?v=20260803112800"></script>
-<script src="js/charts.js?v=20260803120000"></script>
-<script src="js/tab-loader.js?v=20260803114000"></script>
+<script src="js/data-compare.js?v=20260806204036"></script>
+<script src="js/data-eval-offline.js?v=20260806204126"></script>
+<script src="js/data-easy-boxed-e1.js?v=20260806204036"></script>
+<script src="js/data-easy-boxed-e2.js?v=20260806204036"></script>
+<script src="js/data-easy-boxed-e3.js?v=20260806204036"></script>
+<script src="js/data-easy-boxed-e4.js?v=20260806204036"></script>
+<script src="js/data-easy-boxed-e5.js?v=20260806204036"></script>
+<script src="js/data-s3-e1.js?v=20260806204036"></script>
+<script src="js/data-s3-e2.js?v=20260806204036"></script>
+<script src="js/data-s3-e3.js?v=20260806204036"></script>
+<script src="js/data-s3-e4.js?v=20260806204036"></script>
+<script src="js/data-s3-e5.js?v=20260806204036"></script>
+<script src="js/data-v2-e1.js?v=20260806204036"></script>
+<script src="js/data-e24k-e2.js?v=20260806204036"></script>
+<script src="js/data-e32k-e2.js?v=20260806204036"></script>
+<script src="js/data-s124k-e2.js?v=20260806204036"></script>
+<script src="js/data-ext-easy-e2.js?v=20260806204036"></script>
+<script src="js/data-ext-s1-e2.js?v=20260806204036"></script>
+<script src="js/charts.js?v=20260806204150"></script>
+<script src="js/tab-loader.js?v=20260806204036"></script>
 </body>
 </html>
