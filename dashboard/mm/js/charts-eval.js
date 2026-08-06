@@ -16,7 +16,7 @@
   const SERIES_COLOR_FALLBACK = [
     "#2563eb", "#d97706", "#059669", "#9333ea", "#db2777",
     "#65a30d", "#e11d48", "#0891b2", "#c026d3", "#ea580c",
-    "#334155", "#ca8a04", "#7c2d12", "#0e7490", "#4c1d95",
+    "#6366f1", "#ca8a04", "#f97316", "#0e7490", "#7c3aed",
   ];
   function dedupeSeriesColors(series) {
     const used = new Set();
