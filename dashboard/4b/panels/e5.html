@@ -62,15 +62,12 @@
               <h2>平均输入长度（tokens）</h2>
               <div class="chart-card"><div class="legend" id="legend-e5-promptlen"></div><div class="chart-wrap"><canvas id="chart-e5-promptlen" height="200"></canvas><div class="tooltip" id="tip-e5-promptlen"></div></div></div>
             </div>
-            <div></div>
+            <div>
+              <h2>整体损失 actor/loss</h2>
+              <div class="chart-card"><div class="legend" id="legend-e5-loss"></div><div class="chart-wrap"><canvas id="chart-e5-loss" height="220"></canvas><div class="tooltip" id="tip-e5-loss"></div></div></div>
+              <p class="caption">RL loss 幅值波动，不是监督训练那种单调下降指标——进展看 pass rate。</p>
+            </div>
           </section>
-
-          <h2 style="margin-top:16px">整体损失 actor/loss</h2>
-          <div class="chart-card">
-            <div class="legend" id="legend-e5-loss"></div>
-            <div class="chart-wrap"><canvas id="chart-e5-loss" height="220"></canvas><div class="tooltip" id="tip-e5-loss"></div></div>
-          </div>
-          <p class="caption">RL loss 幅值波动，不是监督训练那种单调下降指标——进展看 pass rate。</p>
 
           <section class="grid2" style="margin-top:16px">
             <div>
@@ -185,13 +182,23 @@
           <h2 class="sec-title">评测</h2>
           <p class="sec-sub">evalscope offline · mmlu_temp / aime24 / aime25（n=8）</p>
           <p class="tertiary">与训练日志验证不同：<code>eval_exp4b.sh</code> + vLLM serving；E5 三项全 step 已齐。</p>
-          <section class="grid2" style="margin-top:10px">
-            <div><h2>mmlu_temp（%）</h2><div class="chart-card"><div class="legend" id="legend-e5-eval-mmlu"></div><div class="chart-wrap"><canvas id="chart-e5-eval-mmlu" height="200"></canvas><div class="tooltip" id="tip-e5-eval-mmlu"></div></div></div></div>
+          <section style="margin-top:10px">
+            <h2>mmlu_temp（%）</h2>
+            <div class="chart-card"><div class="legend" id="legend-e5-eval-mmlu"></div><div class="chart-wrap"><canvas id="chart-e5-eval-mmlu" height="200"></canvas><div class="tooltip" id="tip-e5-eval-mmlu"></div></div></div>
+          </section>
+          <section class="grid2" style="margin-top:12px">
             <div>
-              <h2>aime24 / aime25（%）</h2>
+              <h2>aime24（%）</h2>
               <div class="chart-card">
-                <div class="legend" id="legend-e5-eval-aime"></div>
-                <div class="chart-wrap"><canvas id="chart-e5-eval-aime" height="200"></canvas><div class="tooltip" id="tip-e5-eval-aime"></div></div>
+                <div class="legend" id="legend-e5-eval-aime24"></div>
+                <div class="chart-wrap"><canvas id="chart-e5-eval-aime24" height="200"></canvas><div class="tooltip" id="tip-e5-eval-aime24"></div></div>
+              </div>
+            </div>
+            <div>
+              <h2>aime25（%）</h2>
+              <div class="chart-card">
+                <div class="legend" id="legend-e5-eval-aime25"></div>
+                <div class="chart-wrap"><canvas id="chart-e5-eval-aime25" height="200"></canvas><div class="tooltip" id="tip-e5-eval-aime25"></div></div>
               </div>
             </div>
           </section>
