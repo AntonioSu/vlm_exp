@@ -284,7 +284,14 @@
       const mx = e.clientX - rect.left;
       let idx = Math.round((mx - padL) / (xStep || 1));
       idx = Math.max(0, Math.min(categories.length - 1, idx));
-      const lines = series.map((s) => {
+      const lines = series.slice().sort((a, b) => {
+        const va = a.data[idx];
+        const vb = b.data[idx];
+        if (va == null && vb == null) return 0;
+        if (va == null) return 1;
+        if (vb == null) return -1;
+        return vb - va;
+      }).map((s) => {
         const v = s.data[idx];
         return `<span style="color:${s.color}">●</span> ${s.name}: ${v == null ? "—" : v + valueSuffix}`;
       }).join("<br>");
