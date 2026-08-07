@@ -274,10 +274,13 @@ function drawLineChart(canvasId, tipId, { categories, series, yMin, yMax, valueS
     c2.lineTo(x, padT + plotH);
     c2.stroke();
     c2.restore();
-    const lines = series.map(s => `<span style="color:${s.color}">●</span> ${s.name}: ${s.data[idx] == null ? "—" : s.data[idx] + valueSuffix}`).join("<br>");
-    tip.innerHTML = `step ${categories[idx] || idx + 1}<br>${lines}`;
+    const present = series
+      .filter(s => s.data[idx] != null)
+      .sort((a, b) => b.data[idx] - a.data[idx]);
+    const lines = present.map(s => `<span style="color:${s.color}">●</span> ${s.name}: ${s.data[idx]}${valueSuffix}`).join("<br>");
+    tip.innerHTML = `step ${categories[idx] || idx + 1}${lines ? "<br>" + lines : ""}`;
     tip.style.left = x + "px";
-    const valsAtIdx = series.map(s => s.data[idx]).filter(v => v != null);
+    const valsAtIdx = present.map(s => s.data[idx]);
     tip.style.top = ((valsAtIdx.length ? yAt(Math.max(...valsAtIdx)) : padT) - 6) + "px";
     tip.style.opacity = 1;
   };
