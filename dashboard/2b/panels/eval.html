@@ -14,16 +14,18 @@
 
         <section class="detail-sec" id="eval-sec-overview">
           <h2 class="sec-title">概览</h2>
-          <p class="sec-sub">评测配置 · Easy-Boxed 实线 / S3 虚线 / V2 短虚线 · step150 汇总</p>
+          <p class="sec-sub">评测配置 · Easy 实线 / S3 虚线 / V2 短虚线 / Easy-32K·Ext overlays · step150 汇总</p>
           <p class="tertiary">Source: <code>evalscope</code>（evalscope 框架，本地 vLLM 0.24 serving 出的 checkpoint 权重，非训练时 verl 内置验证）。评测配置：math 类（aime24/aime25/math_500）<code>temperature=0.6, top_p=0.95, max_tokens=16384, n=8</code>（8 采样取均值 acc）；mmlu_temp <code>n=2</code>。权重来自 FSDP → HuggingFace 合并（<code>trans_weight.sh</code>），路径 <code>model/exp2card/&lt;exp&gt;/merged_&lt;step&gt;</code>。训练数据：Stage-1 <code>polaris_easy_boxed</code> / Stage-3 S3 / V2 difficulty-band。Easy/S3 曲线 step 10→150；有 V2 时 X 轴扩到 10→300（缺报告为断点）。刷新：<code>python3 scripts/monitoring/2b/sync_2b_eval_dashboard.py</code>。</p>
           <div class="callout" style="margin-top:10px">
-            <div class="title">Easy-Boxed + S3 offline 均已 15/15；V2 E1（e1_grpo_2b_v2_s1）offline 已同步 10–250</div>
+            <div class="title">Easy-Boxed + S3 offline 均已 15/15；V2 E1 10–250；Easy-24K/32K + Ext 已接入</div>
             <strong>Easy mmlu_temp</strong> 峰值 <strong>E3@100 = 82.42%</strong>；step150 最高 E4（79.74%）。
             <strong>Easy aime24</strong> 峰值 E2/E4@80–100 = 42.50%；
             <strong>aime25</strong> 峰值 <strong>E5@130 = 38.33%</strong>，step150 最高 E4（37.50%）。
             <strong>S3</strong> 整体低于 Easy（aime25 step150 约 22–26%）。
-            <strong>V2 E1</strong>：mmlu/aime24/aime25 25/30（10–250）；math_500 23/30（缺 110/240）；260–300 待评测。
-            <strong>V2 Agent</strong>：BFCL + tau-bench 均 25/30（10–250）；MULTI_TURN 仅 160–250（native-FC）；260–300 待评测。
+            <strong>V2 E1</strong>：mmlu/aime24/aime25/math_500 均 25/30（10–250）；260–300 待评测。
+            <strong>Easy-32K E2</strong>：offline mmlu/aime 6/15（10–60；math_500 5/15）；agent 5/15（10–50）；step70 评测中。
+            <strong>Easy-24K E2</strong>：offline + agent @step90。
+            <strong>Ext S1-switch E2</strong>：offline + agent @step300。
             Agent 柱状图取 step150，缺报告则为空。
           </div>
           <section class="grid2" style="margin-top:20px">
