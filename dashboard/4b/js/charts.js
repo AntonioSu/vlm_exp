@@ -274,10 +274,8 @@ function drawLineChart(canvasId, tipId, { categories, series, yMin, yMax, valueS
     c2.lineTo(x, padT + plotH);
     c2.stroke();
     c2.restore();
-    const present = series
-      .filter(s => s.data[idx] != null)
-      .sort((a, b) => b.data[idx] - a.data[idx]);
-    const lines = present.map(s => `<span style="color:${s.color}">●</span> ${s.name}: ${s.data[idx]}${valueSuffix}`).join("<br>");
+    const present = ChartTooltip.seriesPresentAtIndex(series, idx);
+    const lines = ChartTooltip.seriesTooltipLines(present, idx, valueSuffix);
     tip.innerHTML = `step ${categories[idx] || idx + 1}${lines ? "<br>" + lines : ""}`;
     tip.style.left = x + "px";
     const valsAtIdx = present.map(s => s.data[idx]);
@@ -342,6 +340,19 @@ function drawBarChart(canvasId, tipId, { categories, data, colors, valueSuffix =
     ctx.fillText(v + valueSuffix, padL + i * bandW + bandW / 2, y - 4);
     ctx.font = "11px -apple-system, sans-serif";
   });
+
+  if (tip) {
+    canvas.onmousemove = (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const lines = ChartTooltip.barTooltipLines(categories, data, colors, valueSuffix);
+      tip.innerHTML = lines || "—";
+      tip.style.left = Math.min(cssWidth - 160, Math.max(8, x)) + "px";
+      tip.style.top = "8px";
+      tip.style.opacity = 1;
+    };
+    canvas.onmouseleave = () => { tip.style.opacity = 0; };
+  }
 }
 
 
