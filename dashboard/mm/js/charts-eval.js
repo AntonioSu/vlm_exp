@@ -171,12 +171,11 @@
       canvas.onmousemove = (e) => {
         const rect = canvas.getBoundingClientRect();
         const x = e.clientX - rect.left;
-        const idx = Math.min(categories.length - 1, Math.max(0, Math.floor((x - padL) / bandW)));
-        const v = data[idx];
-        tip.style.left = Math.min(cssWidth - 120, Math.max(8, x + 10)) + "px";
+        const lines = ChartTooltip.barTooltipLines(categories, data, colors, valueSuffix);
+        tip.style.left = Math.min(cssWidth - 160, Math.max(8, x)) + "px";
         tip.style.top = "8px";
         tip.style.opacity = 1;
-        tip.innerHTML = `<strong>${categories[idx]}</strong><br>${v == null ? "暂无" : v + valueSuffix}`;
+        tip.innerHTML = lines || "—";
       };
       canvas.onmouseleave = () => { tip.style.opacity = 0; };
     }
@@ -284,17 +283,7 @@
       const mx = e.clientX - rect.left;
       let idx = Math.round((mx - padL) / (xStep || 1));
       idx = Math.max(0, Math.min(categories.length - 1, idx));
-      const lines = series.slice().sort((a, b) => {
-        const va = a.data[idx];
-        const vb = b.data[idx];
-        if (va == null && vb == null) return 0;
-        if (va == null) return 1;
-        if (vb == null) return -1;
-        return vb - va;
-      }).map((s) => {
-        const v = s.data[idx];
-        return `<span style="color:${s.color}">●</span> ${s.name}: ${v == null ? "—" : v + valueSuffix}`;
-      }).join("<br>");
+      const lines = ChartTooltip.seriesTooltipLines(series, idx, valueSuffix, { includeNull: true });
       tip.innerHTML = `step ${categories[idx] || idx + 1}<br>${lines}`;
       tip.style.left = Math.min(cssWidth - 140, Math.max(8, xAt(idx))) + "px";
       tip.style.top = "8px";
