@@ -217,6 +217,15 @@
                 <td class="mono">151→300</td>
               </tr>
               <tr>
+                <td>Ext · easy-cont-24K</td>
+                <td class="mono">e2_dapo_2b_easy_cont150_24k</td>
+                <td class="hp-e2">E2 DAPO</td>
+                <td><span class="mono">stage1/polaris_easy_boxed.parquet</span><br>同 Easy</td>
+                <td>extends <span class="mono">e2_dapo_2b@150</span><br>拷权重 + 保留 <span class="mono">data.pt</span></td>
+                <td>同数据续训 + <span class="mono">max_response_length=24576</span></td>
+                <td class="mono">151→300</td>
+              </tr>
+              <tr>
                 <td>Ext · S1-switch</td>
                 <td class="mono">e2_dapo_2b_s1_from_easy150</td>
                 <td class="hp-e2">E2 DAPO</td>
@@ -245,6 +254,10 @@
                     <li class="hp-branch-solid">
                       <span class="hp-node">Ext easy-cont</span>
                       <span class="hp-meta">同 easy 数据 · 151→300 · 保留 data.pt</span>
+                    </li>
+                    <li class="hp-branch-solid">
+                      <span class="hp-node">Ext easy-cont-24K</span>
+                      <span class="hp-meta">同 easy · RESP_LEN=24576 · 151→300 · 保留 data.pt</span>
                     </li>
                     <li class="hp-branch-solid">
                       <span class="hp-node">Ext S1-switch</span>

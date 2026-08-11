@@ -22,10 +22,12 @@
             <strong>Easy aime24</strong> 峰值 E2/E4@80–100 = 42.50%；
             <strong>aime25</strong> 峰值 <strong>E5@130 = 38.33%</strong>，step150 最高 E4（37.50%）。
             <strong>S3</strong> 整体低于 Easy（aime25 step150 约 22–26%）。
-            <strong>V2 E1</strong>：mmlu/aime24/aime25/math_500 均 25/30（10–250）；260–300 待评测。
-            <strong>Easy-32K E2</strong>：offline mmlu/aime 6/15（10–60；math_500 5/15）；agent 5/15（10–50）；step70 评测中。
-            <strong>Easy-24K E2</strong>：offline + agent @step90。
-            <strong>Ext S1-switch E2</strong>：offline + agent @step300。
+            <strong>V2 E1</strong>：mmlu/aime/math 均 25/30（10–250）；260–300 待评测。
+            <strong>Easy-32K E2</strong>：offline + agent 均已满 15/15（10–150）。
+            <strong>Easy-24K E2</strong>：10–150 + step230 均齐（offline/agent）；轴 10–300。
+            <strong>Ext easy-cont E2</strong>：offline 15/30（150–300，缺 270）；agent 仍仅@150。
+            <strong>Ext easy-cont-24K E2</strong>：offline 四任务@150–170（3/30）；agent BFCL@150 + tau@150–190。
+            <strong>Ext S1-switch E2</strong>：offline + agent 均 16/30（150–300 全点）。
             Agent 柱状图取 step150，缺报告则为空。
           </div>
           <section class="grid2" style="margin-top:20px">
@@ -114,7 +116,7 @@
         <section class="detail-sec" id="eval-sec-agent">
           <h2 class="sec-title">Agent / 工具调用能力</h2>
           <p class="sec-sub">BFCL-v3 + tau-bench · Easy 实线 / S3 虚线 / V2 短虚线</p>
-          <p class="tertiary">Source: <code>evalscope/outputs/agent2</code>（<code>run_agent2_queue_2b.sh</code> / <code>run_agent2_s3_queue_2b.sh</code>，vLLM <code>qwen3_xml</code>）。BFCL-v3：10 subset × 30、prompt/native-FC 兼容报告；tau-bench：retail+airline 共 40、user-sim=<code>gpt-5p5-apipro</code>。Agent2 Easy：BFCL 75/75，tau-bench 75/75（非空 step：10/20/30/40/50/60/70/80/90/100/110/120/130/140/150）。S3：BFCL native-FC 75/75，tau-bench 75/75（非空 step：10/20/30/40/50/60/70/80/90/100/110/120/130/140/150）。V2：BFCL 25/150，tau-bench 25/150（非空 step：10/20/30/40/50/60/70/80/90/100/110/120/130/140/150/160/170/180/190/200/210/220/230/240/250）。刷新：<code>python3 scripts/monitoring/2b/sync_2b_agent_dashboard.py</code>。协议说明见 <a href="../benchmark/index.html">Benchmark 介绍</a>。</p>
+          <p class="tertiary">Source: <code>evalscope/outputs/agent2</code>（<code>run_agent2_queue_2b.sh</code> / <code>run_agent2_s3_queue_2b.sh</code>，vLLM <code>qwen3_xml</code>）。BFCL-v3：10 subset × 30、prompt/native-FC 兼容报告；tau-bench：retail+airline 共 40、user-sim=<code>gpt-5p5-apipro</code>。Agent2 Easy：BFCL 75/75，tau-bench 75/75（非空 step：10/20/30/40/50/60/70/80/90/100/110/120/130/140/150）。S3：BFCL native-FC 75/75，tau-bench 75/75（非空 step：10/20/30/40/50/60/70/80/90/100/110/120/130/140/150）。V2：BFCL 15/150，tau-bench 25/150（非空 step：10/20/30/40/50/60/70/80/90/100/110/120/130/140/150/160/170/180/190/200/210/220/230/240/250）。刷新：<code>python3 scripts/monitoring/2b/sync_2b_agent_dashboard.py</code>。协议说明见 <a href="../benchmark/index.html">Benchmark 介绍</a>。</p>
           <div class="callout" style="margin-top:10px">
             <div class="title">S3 agent：BFCL 有区分度，MULTI_TURN 仍弱，tau 噪声大</div>
             <strong>BFCL OVERALL</strong>：E1/E2/E3 多数 step 落在 50–60%；E1 若干 step 掉到 ~38%（随后回升）；E5 仅有 step120–150，落在 36–40%。
