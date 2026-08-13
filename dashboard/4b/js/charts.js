@@ -88,6 +88,20 @@ function yRangeFromSeries(series, { padRatio = 0.1, floor = 0, ceil = null } = {
   return [min, Math.max(min + 1, max)];
 }
 
+// Offline eval / agent % axes: locked so legend toggles / new checkpoints do not rescale.
+const EVAL_Y = {
+  mmlu:    { yMin: 80, yMax: 100 },
+  math500: { yMin: 80, yMax: 100 },
+  aime24:  { yMin: 30, yMax: 90 },
+  aime25:  { yMin: 30, yMax: 90 },
+};
+
+const AGENT_Y = {
+  bfcl:    { yMin: 0, yMax: 80 },
+  bfcl_mt: { yMin: 0, yMax: 50 },
+  tau:     { yMin: 0, yMax: 100 },
+};
+
 // Renders a clickable legend bound to a chart: clicking a series name toggles
 // it on/off and redraws with only the still-selected series (ECharts-style
 // legend select). A leading "隐藏全部/显示全部" button toggles every series
@@ -912,16 +926,15 @@ function renderExpPanel(key) {
     if (hasS3("mmlu")) mmluItems.push(s3Series("mmlu_temp (S3)", s3ev.mmlu, COLORS.s3));
     const mmluLegendEl = document.getElementById(`legend-${key}-eval-mmlu`);
     const drawMmlu = (visible) => {
-      const [yMin, yMax] = yRangeFromSeries(visible, { floor: 80, ceil: 100 });
       drawLineChart(`chart-${key}-eval-mmlu`, `tip-${key}-eval-mmlu`, {
         categories: EVAL_EASY_BOXED_FULL_STEPS, series: visible,
-        valueSuffix: "%", yMin, yMax, height: 200,
+        valueSuffix: "%", ...EVAL_Y.mmlu, height: 200,
       });
     };
     if (mmluLegendEl) renderLegend(mmluLegendEl, mmluItems, drawMmlu);
     else drawMmlu(mmluItems);
 
-    const bindAimeMetric = (metric, data, color, yFloor, yCeil) => {
+    const bindAimeMetric = (metric, data, color) => {
       const legendEl = document.getElementById(`legend-${key}-eval-${metric}`);
       if (!legendEl) return;
       const items = [
@@ -933,24 +946,22 @@ function renderExpPanel(key) {
           : s3Series("S3", s3ev.aime25, COLORS.s3));
       }
       renderLegend(legendEl, items, (visible) => {
-        const [yMin, yMax] = yRangeFromSeries(visible, { floor: yFloor, ceil: yCeil });
         drawLineChart(`chart-${key}-eval-${metric}`, `tip-${key}-eval-${metric}`, {
           categories: EVAL_EASY_BOXED_FULL_STEPS, series: visible,
-          valueSuffix: "%", yMin, yMax, height: 200,
+          valueSuffix: "%", ...EVAL_Y[metric], height: 200,
         });
       });
     };
-    bindAimeMetric("aime24", ev.aime24, COLORS.e1, 30, 90);
-    bindAimeMetric("aime25", ev.aime25, ev.color === COLORS.e1 ? COLORS.e5 : ev.color, 30, 90);
+    bindAimeMetric("aime24", ev.aime24, COLORS.e1);
+    bindAimeMetric("aime25", ev.aime25, ev.color === COLORS.e1 ? COLORS.e5 : ev.color);
     const mathLegendEl = document.getElementById(`legend-${key}-eval-math500`);
     if (mathLegendEl && ev.math500) {
       const mathItems = [{ name: hasS3("math500") ? "math_500 (Easy-Boxed)" : "math_500", data: ev.math500, color: ev.color }];
       if (hasS3("math500")) mathItems.push(s3Series("math_500 (S3)", s3ev.math500, COLORS.s3));
       renderLegend(mathLegendEl, mathItems, (visible) => {
-        const [yMin, yMax] = yRangeFromSeries(visible, { floor: 0, ceil: 100 });
         drawLineChart(`chart-${key}-eval-math500`, `tip-${key}-eval-math500`, {
           categories: EVAL_EASY_BOXED_FULL_STEPS, series: visible,
-          valueSuffix: "%", yMin, yMax, height: 200,
+          valueSuffix: "%", ...EVAL_Y.math500, height: 200,
         });
       });
     }
@@ -960,14 +971,7 @@ function renderExpPanel(key) {
   if (typeof AGENT !== "undefined" && AGENT[key] && document.getElementById(`chart-${key}-agent-bfcl`)) {
     const ag = AGENT[key];
     const agSteps = (typeof AGENT_STEPS !== "undefined") ? AGENT_STEPS : EVAL_EASY_BOXED_FULL_STEPS;
-    const yPad = (series, loPad, hiPad, floor, ceil) => {
-      const vals = series.flatMap((s) => (s.data || []).filter((v) => v != null));
-      if (!vals.length) return [floor, ceil];
-      const lo = Math.max(floor, Math.floor(Math.min(...vals) - loPad));
-      const hi = Math.min(ceil, Math.ceil(Math.max(...vals) + hiPad));
-      return [lo, Math.max(lo + 2, hi)];
-    };
-    const drawAgent = (metric, suffix, loPad, hiPad, floor, ceil) => {
+    const drawAgent = (metric, suffix) => {
       const canvasId = `chart-${key}-agent-${suffix}`;
       const tipId = `tip-${key}-agent-${suffix}`;
       const legendEl = document.getElementById(`legend-${key}-agent-${suffix}`);
@@ -978,19 +982,17 @@ function renderExpPanel(key) {
         items.push(s3Series(s3ag.label || `${ag.label || key.toUpperCase()} S3`, s3ag[metric], S3_ALT[key] || COLORS.s3));
       }
       const draw = (visible) => {
-        const [yMin, yMax] = yPad(visible, loPad, hiPad, floor, ceil);
         drawLineChart(canvasId, tipId, {
           categories: agSteps, series: visible,
-          valueSuffix: "%", yMin, yMax, height: 200,
+          valueSuffix: "%", ...AGENT_Y[metric], height: 200,
         });
       };
       if (legendEl) renderLegend(legendEl, items, draw);
       else draw(items);
     };
-    // S3 BFCL OVERALL tops out ~66%; keep headroom above the old 60% clamp.
-    drawAgent("bfcl", "bfcl", 1, 2, 0, 80);
-    drawAgent("bfcl_mt", "mt", 0.5, 1, 0, 20);
-    drawAgent("tau", "tau", 5, 5, 0, 100);
+    drawAgent("bfcl", "bfcl");
+    drawAgent("bfcl_mt", "mt");
+    drawAgent("tau", "tau");
   }
 }
 
@@ -1030,22 +1032,21 @@ function renderEvalPanel() {
       });
       return items;
     };
-    const drawMetric = (legendId, chartId, tipId, metric, floor, ceil) => {
+    const drawMetric = (legendId, chartId, tipId, metric) => {
       const legendEl = document.getElementById(legendId);
       if (!legendEl) return;
       renderLegend(legendEl, seriesWithS3(metric), (visible) => {
-        const [yMin, yMax] = yRangeFromSeries(visible, { floor, ceil });
         drawLineChart(chartId, tipId, {
           categories: EVAL_EASY_BOXED_FULL_STEPS,
           series: visible,
-          valueSuffix: "%", yMin, yMax, height: 240,
+          valueSuffix: "%", ...EVAL_Y[metric], height: 240,
         });
       });
     };
-    drawMetric("legend-evalfull-mmlu", "chart-evalfull-mmlu", "tip-evalfull-mmlu", "mmlu", 80, 100);
-    drawMetric("legend-evalfull-aime24", "chart-evalfull-aime24", "tip-evalfull-aime24", "aime24", 40, 90);
-    drawMetric("legend-evalfull-aime25", "chart-evalfull-aime25", "tip-evalfull-aime25", "aime25", 30, 70);
-    drawMetric("legend-evalfull-math500", "chart-evalfull-math500", "tip-evalfull-math500", "math500", 0, 100);
+    drawMetric("legend-evalfull-mmlu", "chart-evalfull-mmlu", "tip-evalfull-mmlu", "mmlu");
+    drawMetric("legend-evalfull-aime24", "chart-evalfull-aime24", "tip-evalfull-aime24", "aime24");
+    drawMetric("legend-evalfull-aime25", "chart-evalfull-aime25", "tip-evalfull-aime25", "aime25");
+    drawMetric("legend-evalfull-math500", "chart-evalfull-math500", "tip-evalfull-math500", "math500");
   }
 
   // ---- Agent / 工具调用能力（BFCL-v3 + tau-bench）：每个 index 一条曲线 ----
@@ -1065,36 +1066,25 @@ function renderEvalPanel() {
       });
       return rows;
     };
-    const yPad = (series, loPad, hiPad, floor, ceil) => {
-      const vals = series.flatMap((s) => (s.data || []).filter((v) => v != null));
-      if (!vals.length) return [floor, ceil];
-      const lo = Math.max(floor, Math.floor(Math.min(...vals) - loPad));
-      const hi = Math.min(ceil, Math.ceil(Math.max(...vals) + hiPad));
-      return [lo, Math.max(lo + 2, hi)];
-    };
     renderLegend(document.getElementById("legend-agent-bfcl"), items("bfcl"),
       (visible) => {
-        // S3 points (up to ~66%) were clipped by the old 60% ceiling.
-        const [yMin, yMax] = yPad(visible, 1, 2, 0, 80);
         drawLineChart("chart-agent-bfcl", "tip-agent-bfcl", {
           categories: AGENT_STEPS, series: visible,
-          valueSuffix: "%", yMin, yMax, height: 240,
+          valueSuffix: "%", ...AGENT_Y.bfcl, height: 240,
         });
       });
     renderLegend(document.getElementById("legend-agent-mt"), items("bfcl_mt"),
       (visible) => {
-        const [yMin, yMax] = yPad(visible, 0.5, 1, 0, 20);
         drawLineChart("chart-agent-mt", "tip-agent-mt", {
           categories: AGENT_STEPS, series: visible,
-          valueSuffix: "%", yMin, yMax, height: 240,
+          valueSuffix: "%", ...AGENT_Y.bfcl_mt, height: 240,
         });
       });
     renderLegend(document.getElementById("legend-agent-tau"), items("tau"),
       (visible) => {
-        const [yMin, yMax] = yPad(visible, 5, 5, 0, 100);
         drawLineChart("chart-agent-tau", "tip-agent-tau", {
           categories: AGENT_STEPS, series: visible,
-          valueSuffix: "%", yMin, yMax, height: 240,
+          valueSuffix: "%", ...AGENT_Y.tau, height: 240,
         });
       });
   }
