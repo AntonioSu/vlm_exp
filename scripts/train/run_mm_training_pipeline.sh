@@ -1,0 +1,133 @@
+#!/usr/bin/env bash
+# Unattended M1 -> M2 -> M3 training supervisor.
+# A failed run is relaunched with resume_mode=auto after a short cooldown.
+set -uo pipefail
+SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+# Resolve workspace root without hardcoding user paths.
+if [[ -z "${WORKSPACE_ROOT:-}" ]]; then
+  if [[ -f "${SCRIPT_DIR}/../../../scripts/workspace_root.sh" ]]; then
+    # polaris/vlm_exp/scripts/<...>/
+    source "${SCRIPT_DIR}/../../../scripts/workspace_root.sh"
+  elif [[ -f "${SCRIPT_DIR}/../../../../polaris/scripts/workspace_root.sh" ]]; then
+    # sibling vlm_exp/scripts/<...>/
+    source "${SCRIPT_DIR}/../../../../polaris/scripts/workspace_root.sh"
+  else
+    _pkg=$(cd "${SCRIPT_DIR}/../.." && pwd)
+    WORKSPACE_ROOT=$(cd "${_pkg}/.." && pwd)
+    # nested polaris/vlm_exp → go up one more if needed
+    if [[ "$(basename "${_pkg}")" == "vlm_exp" && "$(basename "$(dirname "${_pkg}")")" == "polaris" ]]; then
+      WORKSPACE_ROOT=$(cd "${_pkg}/../.." && pwd)
+    fi
+    export WORKSPACE_ROOT
+    unset _pkg
+  fi
+fi
+POLARIS=${POLARIS:-${WORKSPACE_ROOT}/polaris}
+VLM_EXP=${VLM_EXP:-${WORKSPACE_ROOT}/vlm_exp}
+VERL_DIR=${VERL_DIR:-${WORKSPACE_ROOT}/verl-main}
+
+PROJECT_DIR=${VLM_EXP}/model/exp2card_mm
+LOG_DIR=${VLM_EXP}/logs/exp2card_mm/pipeline
+mkdir -p "${LOG_DIR}"
+STALE_SECONDS=${STALE_SECONDS:-7200}
+
+experiments=(m1_geo3k100_2b m2_mix50_2b m3_mix20_2b)
+entrypoints=(run_m1_geo3k_2b.sh run_m2_mix50_2b.sh run_m3_mix20_2b.sh)
+
+checkpoint_step() {
+  local tracker=${PROJECT_DIR}/$1/latest_checkpointed_iteration.txt
+  if [[ -f "${tracker}" ]]; then
+    tr -cd '0-9' < "${tracker}"
+  else
+    printf '0'
+  fi
+}
+
+is_complete() {
+  local exp=$1
+  local step
+  step=$(checkpoint_step "${exp}")
+  [[ ${step:-0} -ge 150 && -d "${PROJECT_DIR}/${exp}/global_step_150/actor" ]]
+}
+
+process_running() {
+  local pid=$1
+  local state
+  state=$(ps -o stat= -p "${pid}" 2>/dev/null | tr -d ' ')
+  [[ -n "${state}" && "${state}" != Z* ]]
+}
+
+latest_progress_mtime() {
+  local exp=$1
+  local latest=0
+  local candidate
+  for candidate in \
+    "${PROJECT_DIR}/${exp}/latest_checkpointed_iteration.txt" \
+    "${VLM_EXP}/logs/exp2card_mm/${exp}"/launcher_*.log \
+    "${VLM_EXP}/logs/exp2card_mm/${exp}"/train_*.log \
+    "${VLM_EXP}/logs/exp2card_mm/${exp}/rollout_dump"/*.jsonl; do
+    [[ -e "${candidate}" ]] || continue
+    local mtime
+    mtime=$(stat -c '%Y' "${candidate}" 2>/dev/null || printf '0')
+    if [[ ${mtime:-0} -gt ${latest} ]]; then
+      latest=${mtime}
+    fi
+  done
+  printf '%s' "${latest}"
+}
+
+maybe_stop_stale_process() {
+  local exp=$1
+  local pid=$2
+  local latest now age
+  latest=$(latest_progress_mtime "${exp}")
+  now=$(date +%s)
+  age=$((now - latest))
+  if [[ ${latest:-0} -gt 0 && ${age} -ge ${STALE_SECONDS} ]]; then
+    echo "[$(date -Is)] ${exp}: existing PID ${pid} has no file progress for ${age}s; sending TERM to process group"
+    kill -- "-${pid}" 2>/dev/null || kill "${pid}" 2>/dev/null || true
+    sleep 30
+    if process_running "${pid}"; then
+      echo "[$(date -Is)] ${exp}: existing PID ${pid} still alive after TERM; sending KILL to process group"
+      kill -KILL -- "-${pid}" 2>/dev/null || kill -KILL "${pid}" 2>/dev/null || true
+      sleep 5
+    fi
+  fi
+}
+
+for index in "${!experiments[@]}"; do
+  exp=${experiments[$index]}
+  entry=${entrypoints[$index]}
+
+  while ! is_complete "${exp}"; do
+    # M1 may already have been launched before this supervisor. Wait for that
+    # detached process instead of creating a duplicate training job.
+    existing_pid_file=${VLM_EXP}/logs/exp2card_mm/${exp}/launcher.pid
+    if [[ -f "${existing_pid_file}" ]]; then
+      existing_pid=$(tr -cd '0-9' < "${existing_pid_file}")
+      if [[ -n "${existing_pid}" ]] && process_running "${existing_pid}"; then
+        maybe_stop_stale_process "${exp}" "${existing_pid}"
+        if ! process_running "${existing_pid}"; then
+          echo "[$(date -Is)] ${exp}: stale PID ${existing_pid} stopped; relaunching via resume"
+          continue
+        fi
+        echo "[$(date -Is)] ${exp}: waiting for existing PID ${existing_pid}; checkpoint=$(checkpoint_step "${exp}")"
+        sleep 60
+        continue
+      fi
+    fi
+
+    echo "[$(date -Is)] ${exp}: launching ${entry}; checkpoint=$(checkpoint_step "${exp}")"
+    bash "${VLM_EXP}/scripts/train/${entry}"
+    exit_code=$?
+    echo "[$(date -Is)] ${exp}: process exited ${exit_code}; checkpoint=$(checkpoint_step "${exp}")"
+    if ! is_complete "${exp}"; then
+      echo "[$(date -Is)] ${exp}: incomplete, retrying after 60 seconds"
+      sleep 60
+    fi
+  done
+
+  echo "[$(date -Is)] ${exp}: complete at step 150"
+done
+
+echo "[$(date -Is)] M1, M2, and M3 training complete"

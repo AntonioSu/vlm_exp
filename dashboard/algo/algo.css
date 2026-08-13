@@ -95,11 +95,23 @@ body.algo-body {
   border-bottom-color: var(--algo-accent);
 }
 
-/* Hero */
+/* Hero — full-width panel, text left / chip legend right so the band doesn't
+   read as a small island of text floating in empty space */
 .algo-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 32px;
   margin-bottom: 40px;
+  padding: 30px 36px;
+  border: 1px solid var(--algo-line);
+  border-radius: 18px;
+  background:
+    radial-gradient(560px 280px at 100% 0%, var(--algo-accent-soft), transparent 65%),
+    var(--algo-panel);
   animation: algo-in 0.45s ease both;
 }
+.algo-hero-text { min-width: 0; }
 .algo-kicker {
   display: inline-block;
   font-size: 11.5px;
@@ -111,7 +123,7 @@ body.algo-body {
 }
 .algo-hero h1 {
   font-family: "Fraunces", "Source Serif 4", Georgia, serif;
-  font-size: clamp(28px, 4vw, 36px);
+  font-size: clamp(28px, 3.4vw, 38px);
   font-weight: 650;
   line-height: 1.2;
   letter-spacing: -0.02em;
@@ -121,7 +133,7 @@ body.algo-body {
 .algo-hero .lede {
   font-size: 16px;
   color: var(--algo-muted);
-  max-width: 62ch;
+  max-width: 72ch;
   margin: 0;
 }
 .algo-hero .lede a {
@@ -131,29 +143,51 @@ body.algo-body {
   border-bottom: 1px solid rgba(31, 107, 74, 0.35);
 }
 .algo-hero .lede a:hover { border-bottom-color: var(--algo-accent); }
+@media (max-width: 900px) {
+  .algo-hero {
+    grid-template-columns: 1fr;
+    padding: 24px 22px;
+  }
+}
 
-/* 算法色条 */
+/* 算法色条 — 桌面端作为 hero 右侧的快速跳转图例（纵向），窄屏下退化为横向换行 */
 .algo-chips {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
-  margin-top: 22px;
+  flex-shrink: 0;
+  padding-left: 32px;
+  border-left: 1px solid var(--algo-line);
 }
 .algo-chips span,
-.algo-chips a {
+.algo-chips a,
+.algo-switcher a[class^="chip-"],
+.family-members a[class^="chip-"] {
   font-size: 12.5px;
   font-weight: 700;
-  padding: 5px 11px;
+  padding: 6px 13px;
   border-radius: 6px;
   color: #fff;
+  text-decoration: none;
+  display: inline-block;
   letter-spacing: 0.01em;
   text-decoration: none;
+  text-align: center;
   display: inline-block;
   transition: filter 0.15s, transform 0.15s;
 }
 .algo-chips a:hover {
   filter: brightness(1.08);
   transform: translateY(-1px);
+}
+@media (max-width: 900px) {
+  .algo-chips {
+    display: flex;
+    flex-wrap: wrap;
+    margin-top: 22px;
+    padding-left: 0;
+    border-left: none;
+  }
 }
 .chip-ppo { background: var(--algo-ppo); }
 .chip-grpo { background: var(--algo-grpo); }
@@ -532,17 +566,66 @@ body.algo-body {
   font-size: 14.5px;
   color: var(--algo-muted);
   margin: 0 0 10px;
-  max-width: 68ch;
+  max-width: none;
   line-height: 1.65;
 }
 .module-intro .how {
   font-size: 13.5px;
   color: var(--algo-ink);
-  margin-bottom: 18px;
+  margin-bottom: 14px;
 }
 .module-intro .how strong {
   font-weight: 650;
   color: var(--module-tone, var(--algo-accent));
+}
+.ref-list {
+  list-style: none;
+  margin: 0 0 18px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.ref-list li {
+  display: grid;
+  grid-template-columns: 4.5em minmax(0, 1fr) auto;
+  gap: 10px 14px;
+  align-items: baseline;
+  padding: 8px 0 8px 12px;
+  border-left: 3px solid var(--module-tone, var(--algo-accent));
+  background: transparent;
+}
+.ref-list .ref-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--module-tone, var(--algo-accent));
+}
+.ref-list a {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--algo-ink);
+  text-decoration: none;
+  border-bottom: 1px solid color-mix(in srgb, var(--module-tone, var(--algo-accent)) 35%, transparent);
+  justify-self: start;
+}
+.ref-list a:hover {
+  color: var(--module-tone, var(--algo-accent));
+  border-bottom-color: var(--module-tone, var(--algo-accent));
+}
+.ref-list .ref-meta {
+  font-size: 12px;
+  color: var(--algo-faint);
+  white-space: nowrap;
+}
+@media (max-width: 640px) {
+  .ref-list li {
+    grid-template-columns: 4.5em minmax(0, 1fr);
+  }
+  .ref-list .ref-meta {
+    grid-column: 2;
+  }
 }
 .module-pros {
   display: grid;
@@ -825,6 +908,315 @@ a.mix-cell:hover {
   color: var(--algo-muted);
   margin: 0;
   line-height: 1.45;
+}
+
+/* Algo page switcher + summary cards + pager */
+.algo-switcher {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--algo-line);
+}
+.algo-switcher .switcher-home {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--algo-accent);
+  text-decoration: none;
+}
+.algo-switcher .switcher-home:hover { text-decoration: underline; }
+.algo-switcher .switcher-sep {
+  width: 1px;
+  height: 18px;
+  background: var(--algo-line);
+  margin: 0 4px;
+}
+.algo-switcher a[class^="chip-"] {
+  opacity: 0.72;
+}
+.algo-switcher a[class^="chip-"].is-active {
+  opacity: 1;
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+.algo-hero-compact {
+  margin-bottom: 8px;
+}
+.algo-hero-compact .algo-kicker a {
+  color: inherit;
+  text-decoration: none;
+}
+.algo-hero-compact .algo-kicker a:hover {
+  color: var(--algo-accent);
+  text-decoration: underline;
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+@media (max-width: 720px) {
+  .summary-grid { grid-template-columns: 1fr; }
+}
+.summary-card {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  padding: 18px 18px 14px;
+  background: var(--algo-panel);
+  border: 1px solid var(--algo-line);
+  border-left: 3px solid var(--card-tone, var(--algo-accent));
+  border-radius: 10px;
+  transition: border-color 0.15s, transform 0.15s;
+}
+.summary-card:hover {
+  border-color: var(--card-tone, var(--algo-accent));
+  transform: translateY(-1px);
+}
+.summary-card[data-a="ppo"] { --card-tone: var(--algo-ppo); }
+.summary-card[data-a="grpo"] { --card-tone: var(--algo-grpo); }
+.summary-card[data-a="dapo"] { --card-tone: var(--algo-dapo); }
+.summary-card[data-a="dr"] { --card-tone: var(--algo-dr); }
+.summary-card[data-a="rloo"] { --card-tone: var(--algo-rloo); }
+.summary-card[data-a="rpp"] { --card-tone: var(--algo-rpp); }
+.summary-tag {
+  margin: 0 0 6px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--card-tone, var(--algo-accent));
+}
+.summary-card h3 {
+  margin: 0 0 8px;
+  font-size: 18px;
+  font-weight: 700;
+}
+.summary-one {
+  margin: 0 0 10px;
+  font-size: 13.5px;
+  color: var(--algo-muted);
+  line-height: 1.55;
+  min-height: 3.2em;
+}
+.summary-how {
+  margin: 0 0 12px;
+  font-size: 12.5px;
+  color: var(--algo-faint);
+}
+.summary-go {
+  font-size: 13px;
+  font-weight: 650;
+  color: var(--card-tone, var(--algo-accent));
+}
+
+.algo-pager {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 12px;
+  align-items: center;
+  margin: 36px 0 8px;
+  padding-top: 22px;
+  border-top: 1px solid var(--algo-line);
+}
+.pager-link {
+  display: flex;
+  flex-direction: column;
+  text-decoration: none;
+  color: var(--algo-ink);
+  min-height: 44px;
+}
+.pager-link.prev { align-items: flex-start; }
+.pager-link.next { align-items: flex-end; text-align: right; }
+.pager-link.is-empty { visibility: hidden; }
+.pager-dir {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--algo-faint);
+}
+.pager-name {
+  font-size: 15px;
+  font-weight: 650;
+  color: var(--algo-accent);
+}
+.pager-link:hover .pager-name { text-decoration: underline; }
+.pager-home {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--algo-muted);
+  text-decoration: none;
+  text-align: center;
+}
+.pager-home:hover { color: var(--algo-accent); }
+
+.toc-list-pages a.is-active {
+  color: var(--algo-accent);
+  font-weight: 700;
+}
+.memo-list a {
+  display: flex;
+  gap: 12px;
+  text-decoration: none;
+  color: inherit;
+  width: 100%;
+}
+.memo-list a:hover .k { text-decoration: underline; }
+.table-wrap th a {
+  color: inherit;
+  text-decoration: none;
+}
+.table-wrap th a:hover {
+  color: var(--algo-accent);
+  text-decoration: underline;
+}
+
+/* DAPO four-kit detail blocks */
+.kit-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  margin: 8px 0 20px;
+}
+.kit-item {
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: 10px;
+  row-gap: 6px;
+}
+.kit-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid var(--module-tone, var(--algo-accent));
+  color: var(--module-tone, var(--algo-accent));
+  font-size: 13px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  margin: 0;
+  flex: 0 0 auto;
+}
+.kit-item h3 {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--algo-ink);
+  margin: 0;
+  flex: 1 1 auto;
+  min-width: 0;
+  line-height: 1.3;
+}
+.kit-desc,
+.kit-item .formula-block,
+.kit-item .table-wrap,
+.kit-item .module-pros {
+  flex: 1 1 100%;
+  width: 100%;
+}
+.kit-desc {
+  font-size: 13.5px;
+  color: var(--algo-muted);
+  margin: 0 0 4px;
+  max-width: none;
+  line-height: 1.55;
+}
+.kit-table {
+  margin: 10px 0 0;
+}
+.kit-table table {
+  font-size: 13px;
+  width: auto;
+  min-width: 280px;
+}
+.kit-table-wide table {
+  width: 100%;
+  min-width: 0;
+}
+.kit-table-wide th:first-child,
+.kit-table-wide td:first-child {
+  width: 18%;
+  white-space: nowrap;
+}
+.kit-table th,
+.kit-table td {
+  padding: 6px 14px;
+}
+
+/* Nested tables inside formula-block: one outer box only, no second left bar */
+.formula-block > .table-wrap {
+  margin: 10px 0 0;
+  width: 100%;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+}
+.formula-block > .table-wrap.kit-table-wide table,
+.formula-block .sym-table {
+  width: 100%;
+  min-width: 0;
+}
+.formula-block .sym-table th,
+.formula-block .sym-table td {
+  text-align: left;
+  vertical-align: baseline;
+  white-space: nowrap;
+  background: transparent;
+  position: static;
+}
+.formula-block .sym-table th:last-child,
+.formula-block .sym-table td:last-child {
+  white-space: normal;
+}
+.formula-block .sym-table thead th {
+  background: transparent;
+}
+.formula-block .sym-table td:first-child {
+  width: 7.5em;
+  color: var(--algo-ink);
+  font-weight: 650;
+}
+
+/* Formula blocks */
+.formula-block {
+  margin: 18px 0 4px;
+  padding: 18px 22px;
+  background: linear-gradient(135deg, #faf9f7 0%, #f5f3ef 100%);
+  border: 1px solid var(--algo-line);
+  border-left: 3px solid var(--module-tone, var(--algo-accent));
+  border-radius: 10px;
+}
+.formula-block .formula-label {
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--algo-faint);
+  margin: 0 0 8px;
+}
+.formula-block .formula-label:not(:first-child) {
+  margin-top: 16px;
+}
+.formula-block .formula {
+  margin: 0 0 4px;
+  overflow-x: auto;
+  padding: 4px 0;
+}
+.formula-block .formula-note {
+  font-size: 12.5px;
+  color: var(--algo-muted);
+  margin: 12px 0 0;
+  line-height: 1.5;
+  border-top: 1px dashed var(--algo-line);
+  padding-top: 10px;
 }
 
 @keyframes algo-in {

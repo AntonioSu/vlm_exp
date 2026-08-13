@@ -1,0 +1,556 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>数据集介绍 — Polaris / Easy-Boxed / S1–S3 / mix band</title>
+<link rel="stylesheet" href="../common/base.css">
+<link rel="stylesheet" href="../algo/algo.css">
+<link rel="stylesheet" href="dataset.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+</head>
+<body class="algo-body">
+
+<div class="site-header">
+  <div class="site-header-inner">
+    <a class="site-brand" href="../index.html"><span class="dot">●</span> RL 实验看板</a>
+    <div class="site-nav">
+      <a href="../index.html">总览</a>
+      <a href="../algo/index.html">算法介绍</a>
+      <a href="../benchmark/index.html">Benchmark 介绍</a>
+      <a href="../dataset/index.html" class="active">数据集介绍</a>
+      <a href="../2b/index.html">2B 训练</a>
+      <a href="../4b/index.html">4B 训练</a>
+      <a href="../mm/index.html">多模态训练</a>
+      <a href="../conclusion/index.html">综合结论</a>
+      <a href="../chronicle/index.html">实验日志</a>
+    </div>
+  </div>
+</div>
+
+<div class="algo-page algo-page-with-toc">
+  <header class="algo-hero">
+    <div class="algo-hero-text">
+      <p class="algo-kicker">Train · Dataset Primer</p>
+      <h1>训练数据集简介</h1>
+      <p class="lede">
+        只说明公开来源与数据形态：上游从 DeepScaleR / AReaL 到
+        <span class="mono">Polaris-Dataset-53K</span>，再切出 Easy-Boxed，以及难度递进的 S1 Hard → S2 Harder → S3 Hardest，并由此拼 mix band。
+      </p>
+    </div>
+    <div class="algo-chips">
+      <a class="chip-grpo" href="#mod-polaris">Polaris-53K</a>
+      <a class="chip-dapo" href="#mod-easy">Easy-Boxed</a>
+      <a class="chip-dr" href="#mod-s1">S1 · Hard</a>
+      <a class="chip-rloo" href="#mod-s2">S2 · Harder</a>
+      <a class="chip-rpp" href="#mod-s3">S3 · Hardest</a>
+      <a class="chip-grpo" href="#mod-mix">mix band</a>
+    </div>
+  </header>
+
+  <div class="algo-layout">
+  <nav class="algo-toc" aria-label="目录">
+    <p class="toc-heading">目录</p>
+    <ol class="toc-list">
+      <li><a href="#sec-map"><span class="toc-num">0</span><span class="toc-title">数据地图</span></a></li>
+      <li><a href="#mod-polaris"><span class="toc-num">1</span><span class="toc-title">Polaris-53K</span></a></li>
+      <li><a href="#mod-easy"><span class="toc-num">2</span><span class="toc-title">Easy-Boxed</span></a></li>
+      <li><a href="#mod-s1"><span class="toc-num">3</span><span class="toc-title">S1 · Hard</span></a></li>
+      <li><a href="#mod-s2"><span class="toc-num">4</span><span class="toc-title">S2 · Harder</span></a></li>
+      <li><a href="#mod-s3"><span class="toc-num">5</span><span class="toc-title">S3 · Hardest</span></a></li>
+      <li><a href="#mod-mix"><span class="toc-num">6</span><span class="toc-title">mix_*_band</span></a></li>
+    </ol>
+  </nav>
+
+  <div class="algo-main">
+
+  <section class="algo-section" id="sec-map">
+    <h2>数据地图</h2>
+    <p class="sec-sub">公开母集 → 过滤根集 → 切片 / 课程 / 难度带</p>
+
+    <div class="ds-table-wrap">
+      <table class="ds-table">
+        <thead>
+          <tr>
+            <th>池子</th>
+            <th>公开来源</th>
+            <th>题数</th>
+            <th>构成概要</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>DeepScaleR</strong></td>
+            <td><a href="https://huggingface.co/datasets/agentica-org/DeepScaleR-Preview-Dataset" target="_blank" rel="noopener">agentica-org/DeepScaleR-Preview-Dataset</a></td>
+            <td class="num">~40K</td>
+            <td>母集之一</td>
+          </tr>
+          <tr>
+            <td><strong>AReaL-boba</strong></td>
+            <td><a href="https://huggingface.co/datasets/inclusionAI/AReaL-boba-Data" target="_blank" rel="noopener">inclusionAI/AReaL-boba-Data</a></td>
+            <td class="num">~106K</td>
+            <td>母集之一</td>
+          </tr>
+          <tr>
+            <td><strong>Polaris-53K</strong></td>
+            <td><a href="https://huggingface.co/datasets/POLARIS-Project/Polaris-Dataset-53K" target="_blank" rel="noopener">POLARIS-Project/Polaris-Dataset-53K</a></td>
+            <td class="num">53,291</td>
+            <td>DeepScaleR≈26K + AReaL≈27K，去过易题</td>
+          </tr>
+          <tr>
+            <td><strong>Easy-Boxed</strong></td>
+            <td>衍生自 Polaris-53K</td>
+            <td class="num">13,688</td>
+            <td>偏易档（多为 5–7/8）+ 追加 <span class="mono">\boxed{}</span></td>
+          </tr>
+          <tr>
+            <td><strong>S1 · Hard</strong></td>
+            <td>衍生自 Polaris-53K（Qwen3-4B 校准）</td>
+            <td class="num">29,946</td>
+            <td>偏难起步池 · blog 所述 ~30K</td>
+          </tr>
+          <tr>
+            <td><strong>S2 · Harder</strong></td>
+            <td>衍生自 S1</td>
+            <td class="num">27,597</td>
+            <td>S1 训后去易题 · 更难</td>
+          </tr>
+          <tr>
+            <td><strong>S3 · Hardest</strong></td>
+            <td>衍生自 S2</td>
+            <td class="num">24,652</td>
+            <td>S2 再去易题 · 课程链最难档</td>
+          </tr>
+          <tr>
+            <td><strong>mix_2b_band</strong></td>
+            <td>衍生自 Easy + S3</td>
+            <td class="num">6,471</td>
+            <td>2B pass ∈ [0.2, 0.8]</td>
+          </tr>
+          <tr>
+            <td><strong>mix_4b_band</strong></td>
+            <td>衍生自 Easy + S3</td>
+            <td class="num">2,315</td>
+            <td>4B pass ∈ [0.2, 0.8]</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="ds-flow">
+      <strong>血缘</strong>：
+      DeepScaleR + AReaL
+      → <span class="mono">Polaris-53K</span>
+      → Easy-Boxed / S1 Hard；
+      S1 Hard →（训后去易题）→ S2 Harder → S3 Hardest；
+      Easy + S3 Hardest → mix_*_band。
+      配方说明见
+      <a href="https://hkunlp.github.io/blog/2025/Polaris/" target="_blank" rel="noopener">POLARIS blog</a>
+      ·
+      <a href="https://github.com/ChenxinAn-fdu/POLARIS" target="_blank" rel="noopener">GitHub</a>。
+    </div>
+  </section>
+
+  <section class="algo-section" id="mod-polaris">
+    <h2>Polaris-Dataset-53K</h2>
+    <p class="sec-sub">公开过滤根集</p>
+    <p><strong>在哪</strong>：
+      <a href="https://huggingface.co/datasets/POLARIS-Project/Polaris-Dataset-53K" target="_blank" rel="noopener">HuggingFace · POLARIS-Project/Polaris-Dataset-53K</a>；
+      项目页
+      <a href="https://github.com/ChenxinAn-fdu/POLARIS" target="_blank" rel="noopener">ChenxinAn-fdu/POLARIS</a>。
+    </p>
+    <p><strong>来源</strong>：从
+      <a href="https://huggingface.co/datasets/agentica-org/DeepScaleR-Preview-Dataset" target="_blank" rel="noopener">DeepScaleR-Preview (~40K)</a>
+      与
+      <a href="https://huggingface.co/datasets/inclusionAI/AReaL-boba-Data" target="_blank" rel="noopener">AReaL-boba (~106K)</a>
+      按 8-sample pass rate 过滤（去掉对标定模型过易的题，拼成 mirrored-J），约 26K + 27K → 53K；主要为 Distill-7B 等校准（见
+      <a href="https://hkunlp.github.io/blog/2025/Polaris/" target="_blank" rel="noopener">blog · Data Difficulty</a>）。
+    </p>
+    <p><strong>数据形态</strong>：53,291 道题；<span class="mono">data_source=math_dapo</span>；列含 <span class="mono">difficulty</span>（0/8–7/8）。题干多数<strong>不</strong>带 boxed 指令；答案在 <span class="mono">reward_model.ground_truth</span>。</p>
+
+    <div class="ds-stats">
+      <div class="ds-stat"><div class="k">Rows</div><div class="v">53,291</div><div class="s">根集全量</div></div>
+      <div class="ds-stat"><div class="k">Difficulty</div><div class="v">0–7 / 8</div><div class="s">0/8 最多 15,368</div></div>
+      <div class="ds-stat"><div class="k">Source</div><div class="v">math_dapo</div><div class="s">全表相同</div></div>
+      <div class="ds-stat"><div class="k">Host</div><div class="v">HF</div><div class="s">POLARIS-Project</div></div>
+    </div>
+
+    <h3>样例</h3>
+    <div class="ds-sample">
+      <div class="ds-row">
+        <span class="lbl">题</span>
+        <div class="ds-body">
+          <p class="ds-q">The front tires of a car wear out after 25,000 km, and the rear tires wear out after 15,000 km. When should the tires be swapped so that they wear out at the same time?</p>
+        </div>
+      </div>
+      <div class="ds-row">
+        <span class="lbl">答</span>
+        <div class="ds-body">
+          <pre class="ds-code">9375</pre>
+        </div>
+      </div>
+      <div class="ds-row meta">
+        <span class="lbl">元</span>
+        <div class="ds-body">
+          <p class="ds-meta-line"><span class="mono">difficulty=7/8</span> · <span class="mono">data_source=math_dapo</span> · 无 boxed 后缀</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="algo-section" id="mod-easy">
+    <h2>Easy-Boxed</h2>
+    <p class="sec-sub">衍生自 Polaris-53K · 偏易 + boxed</p>
+    <p><strong>数据形态</strong>：13,688 道题。保留 <span class="mono">difficulty</span>，且几乎全部题干追加
+      “Let's think step by step and output the final answer within <span class="mono">\boxed{}</span>.”
+      难度列仅剩 <span class="mono">5/8</span>（4,164）、<span class="mono">6/8</span>（3,575）、<span class="mono">7/8</span>（5,949）。</p>
+    <p><strong>来源</strong>：去掉 boxed 后缀后，题干与
+      <a href="https://huggingface.co/datasets/POLARIS-Project/Polaris-Dataset-53K" target="_blank" rel="noopener">Polaris-53K</a>
+      <strong>一一对应</strong>——从根集取偏易档并改写 prompt，不是另一套公开集。</p>
+
+    <div class="ds-stats">
+      <div class="ds-stat"><div class="k">Rows</div><div class="v">13,688</div><div class="s">训练行</div></div>
+      <div class="ds-stat"><div class="k">Difficulty</div><div class="v">5–7 / 8</div><div class="s">仅三档</div></div>
+      <div class="ds-stat"><div class="k">Parent</div><div class="v">53K</div><div class="s">HF 根集切片</div></div>
+      <div class="ds-stat"><div class="k">Prompt</div><div class="v">boxed</div><div class="s">统一追加指令</div></div>
+    </div>
+
+    <h3>样例（与上题同源，多了 boxed 指令）</h3>
+    <div class="ds-sample">
+      <div class="ds-row">
+        <span class="lbl">题</span>
+        <div class="ds-body">
+          <p class="ds-q">The front tires of a car wear out after 25,000 km, and the rear tires wear out after 15,000 km. When should the tires be swapped so that they wear out at the same time? Let's think step by step and output the final answer within \(\boxed{}\).</p>
+        </div>
+      </div>
+      <div class="ds-row">
+        <span class="lbl">答</span>
+        <div class="ds-body">
+          <pre class="ds-code">9375</pre>
+        </div>
+      </div>
+      <div class="ds-row meta">
+        <span class="lbl">元</span>
+        <div class="ds-body">
+          <p class="ds-meta-line"><span class="mono">difficulty=7/8</span> · <span class="mono">data_source=math_dapo</span></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="algo-section" id="mod-s1">
+    <h2>S1 · Hard</h2>
+    <p class="sec-sub">偏难档 · Qwen3-4B 校准后的第一阶段池 · ~30K</p>
+    <p><strong>数据形态</strong>：29,946 道题；全表 <span class="mono">data_source=aime_stage1</span>、<span class="mono">ability=math</span>、<span class="mono">reward_model.style=rule</span>；无顶层 <span class="mono">difficulty</span>。题干统一追加 step-by-step + <span class="mono">\boxed{}</span>（部分题含 Asymptote 图）。</p>
+
+    <p><strong>来源（三层，均可在网上追溯）</strong></p>
+    <ol>
+      <li><strong>公开母集</strong>：
+        <a href="https://huggingface.co/datasets/agentica-org/DeepScaleR-Preview-Dataset" target="_blank" rel="noopener">DeepScaleR-Preview ~40K</a>
+        +
+        <a href="https://huggingface.co/datasets/inclusionAI/AReaL-boba-Data" target="_blank" rel="noopener">AReaL-boba ~106K</a>。
+      </li>
+      <li><strong>→ Polaris-53K</strong>：按模型 8-sample pass rate 去掉「过易」（典型 8/8 全对），拼成 mirrored-J；约 26K 来自 DeepScaleR、27K 来自 AReaL（
+        <a href="https://hkunlp.github.io/blog/2025/Polaris/" target="_blank" rel="noopener">POLARIS blog</a>
+        ·
+        <a href="https://huggingface.co/datasets/POLARIS-Project/Polaris-Dataset-53K" target="_blank" rel="noopener">HF 53K</a>）。
+      </li>
+      <li><strong>→ S1（~30K）</strong>：再对 <strong>Qwen3-4B</strong> 做一轮难度校准，从 53K 滤到约 30K，作为 4B 多阶段课程的 stage1 池（blog 原文：additional filtering pass → 30K sample dataset）。</li>
+    </ol>
+
+    <p><strong>与 53K 的关系</strong>：去掉 boxed 后缀后，S1 题干均可在 Polaris-53K 对齐——是 53K 的<strong>真子集 + prompt 改写</strong>。相对 53K 约丢掉 23.3K；越易档丢掉越多（用 53K 的 <span class="mono">difficulty</span> 回标）：</p>
+
+    <div class="ds-table-wrap">
+      <table class="ds-table">
+        <thead>
+          <tr>
+            <th>53K difficulty</th>
+            <th>53K 题数</th>
+            <th>留在 S1</th>
+            <th>保留率</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td class="mono">0/8</td><td class="num">15,368</td><td class="num">11,545</td><td class="num">75.1%</td></tr>
+          <tr><td class="mono">1/8</td><td class="num">6,956</td><td class="num">5,113</td><td class="num">73.5%</td></tr>
+          <tr><td class="mono">2/8</td><td class="num">5,459</td><td class="num">3,470</td><td class="num">63.6%</td></tr>
+          <tr><td class="mono">3/8</td><td class="num">5,137</td><td class="num">2,887</td><td class="num">56.2%</td></tr>
+          <tr><td class="mono">4/8</td><td class="num">5,211</td><td class="num">2,551</td><td class="num">49.0%</td></tr>
+          <tr><td class="mono">5/8</td><td class="num">4,720</td><td class="num">1,856</td><td class="num">39.3%</td></tr>
+          <tr><td class="mono">6/8</td><td class="num">4,000</td><td class="num">1,062</td><td class="num">26.6%</td></tr>
+          <tr><td class="mono">7/8</td><td class="num">6,440</td><td class="num">1,462</td><td class="num">22.7%</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>为贴合更强的 Qwen3-4B，S1 偏向保留更难档（0–2/8），大幅砍掉 5–7/8；池内不再带 <span class="mono">difficulty</span> 列，可用 53K 反查。</p>
+
+    <div class="ds-flow">
+      <strong>和 Easy-Boxed 的差别</strong>：两者都来自 HF 上的 Polaris-53K，但切片方向相反——
+      Easy-Boxed ≈ 偏易档（多为 5–7/8）+ boxed；
+      S1 ≈ 对 4B 再滤后的偏难子集（0/8 约占 39%）+ boxed，并改标 <span class="mono">data_source=aime_stage1</span>。
+      去重后 S1 ∩ Easy-Boxed 仅约 3.8K。
+    </div>
+
+    <div class="ds-stats">
+      <div class="ds-stat"><div class="k">Rows</div><div class="v">29,946</div><div class="s">≈ blog 所述 30K</div></div>
+      <div class="ds-stat"><div class="k">Parent</div><div class="v">53K</div><div class="s">HF 真子集</div></div>
+      <div class="ds-stat"><div class="k">Tag</div><div class="v">aime_stage1</div><div class="s">data_source</div></div>
+      <div class="ds-stat"><div class="k">Next</div><div class="v">→ S2</div><div class="s">训后去易题</div></div>
+    </div>
+
+    <h3>样例</h3>
+    <div class="ds-sample">
+      <div class="ds-row">
+        <span class="lbl">题</span>
+        <div class="ds-body">
+          <p class="ds-q">The sum of an infinite geometric series is \(16\) times the series that results if the first two terms of the original series are removed. What is the value of the series' common ratio? Let's think step by step and output the final answer within \(\boxed{}\).</p>
+        </div>
+      </div>
+      <div class="ds-row">
+        <span class="lbl">答</span>
+        <div class="ds-body">
+          <div class="ds-code">\(-\dfrac{1}{4}\)</div>
+        </div>
+      </div>
+      <div class="ds-row meta">
+        <span class="lbl">元</span>
+        <div class="ds-body">
+          <p class="ds-meta-line"><span class="mono">data_source=aime_stage1</span> · 题干可在 Polaris-53K 对齐</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="algo-section" id="mod-s2">
+    <h2>S2 · Harder</h2>
+    <p class="sec-sub">更难档 · 衍生自 S1 · stage1 训后去易题</p>
+    <p><strong>数据形态</strong>：27,597 道题（相对 S1 −2,349）。Schema 同 S1；<span class="mono">data_source</span> 常为空。</p>
+    <p><strong>来源</strong>：在 S1 上完成 stage1 训练后，按该阶段 rollout 统计每题均分，丢掉均分 &gt; 0.9 的题，其余构成 S2（POLARIS 多阶段课程的动态去易题步骤，见
+      <a href="https://hkunlp.github.io/blog/2025/Polaris/" target="_blank" rel="noopener">blog · Dynamically drop easy data</a>）。不重新采题。</p>
+
+    <div class="ds-stats">
+      <div class="ds-stat"><div class="k">Rows</div><div class="v">27,597</div><div class="s">S1 − easy</div></div>
+      <div class="ds-stat"><div class="k">Filter</div><div class="v">&gt; 0.9</div><div class="s">rollout 均分</div></div>
+      <div class="ds-stat"><div class="k">Parent</div><div class="v">S1</div><div class="s">同题子集</div></div>
+      <div class="ds-stat"><div class="k">Next</div><div class="v">→ S3</div><div class="s">再滤一轮</div></div>
+    </div>
+
+    <h3>样例（仍保留在 S2 中的 S1 题）</h3>
+    <div class="ds-sample">
+      <div class="ds-row">
+        <span class="lbl">题</span>
+        <div class="ds-body">
+          <p class="ds-q">The sum of an infinite geometric series is \(16\) times the series that results if the first two terms of the original series are removed. What is the value of the series' common ratio? Let's think step by step and output the final answer within \(\boxed{}\).</p>
+        </div>
+      </div>
+      <div class="ds-row">
+        <span class="lbl">答</span>
+        <div class="ds-body">
+          <div class="ds-code">\(-\dfrac{1}{4}\)</div>
+        </div>
+      </div>
+      <div class="ds-row meta">
+        <span class="lbl">元</span>
+        <div class="ds-body">
+          <p class="ds-meta-line">对 stage1 ckpt 未达「过易」阈值，故留在 S2</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="algo-section" id="mod-s3">
+    <h2>S3 · Hardest</h2>
+    <p class="sec-sub">最难档 · 衍生自 S2 · 课程链第三档</p>
+    <p><strong>数据形态</strong>：24,652 道题（相对 S2 再 −2,945）。Schema 同 S1/S2。</p>
+    <p><strong>来源</strong>：对 S2 再跑一轮「训 → 按 rollout 去易题」。血缘仍回到
+      <a href="https://huggingface.co/datasets/POLARIS-Project/Polaris-Dataset-53K" target="_blank" rel="noopener">Polaris-53K</a>
+      / DeepScaleR / AReaL，但是经 S1→S2 两轮动态过滤后的更难子集；与 Easy-Boxed 切片方向不同。</p>
+
+    <div class="ds-stats">
+      <div class="ds-stat"><div class="k">Rows</div><div class="v">24,652</div><div class="s">stage3 全量</div></div>
+      <div class="ds-stat"><div class="k">Parent</div><div class="v">S2</div><div class="s">再去易题</div></div>
+      <div class="ds-stat"><div class="k">Root</div><div class="v">53K</div><div class="s">经课程链</div></div>
+      <div class="ds-stat"><div class="k">vs Easy</div><div class="v">更难</div><div class="s">过滤方向不同</div></div>
+    </div>
+
+    <h3>样例</h3>
+    <div class="ds-sample">
+      <div class="ds-row">
+        <span class="lbl">题</span>
+        <div class="ds-body">
+          <p class="ds-q">Given that the number of parcels received by a person in the months from January to May are \(1\), \(3\), \(2\), \(2\), \(2\) respectively, find the variance (\(s^{2}=\) ___) of these \(5\) numbers. Let's think step by step and output the final answer within \(\boxed{}\).</p>
+        </div>
+      </div>
+      <div class="ds-row">
+        <span class="lbl">答</span>
+        <div class="ds-body">
+          <div class="ds-code">\(\dfrac{2}{5}\)</div>
+        </div>
+      </div>
+      <div class="ds-row meta">
+        <span class="lbl">元</span>
+        <div class="ds-body">
+          <p class="ds-meta-line">stage3 池样例 · 规则 GT 判分</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="algo-section" id="mod-mix">
+    <h2>mix_2b_band / mix_4b_band</h2>
+    <p class="sec-sub">衍生自 Easy-Boxed + S3 · 按模型 pass rate 切 band</p>
+    <p><strong>数据形态</strong>：verl 训练五列；难度写在 <span class="mono">extra_info</span>（<span class="mono">pass_rate / n_correct / n_total / pool</span>）。</p>
+    <p><strong>来源</strong>：对 Easy-Boxed 与 S3 按目标模型 8-sample pass rate 打标，保留 <span class="mono">[0.2, 0.8]</span>，再拼成一个池。题仍来自公开根集血缘（Polaris-53K ← DeepScaleR / AReaL），只是按模型难度带重筛。</p>
+
+    <div class="ds-table-wrap">
+      <table class="ds-table">
+        <thead>
+          <tr>
+            <th>训练池</th>
+            <th>题数</th>
+            <th>组成</th>
+            <th>pass_rate 均值</th>
+            <th>标签模型</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>mix_2b_band</strong></td>
+            <td class="num">6,471</td>
+            <td>Easy 3,758 + S3 2,713</td>
+            <td class="num">0.488</td>
+            <td>2B</td>
+          </tr>
+          <tr>
+            <td><strong>mix_4b_band</strong></td>
+            <td class="num">2,315</td>
+            <td>Easy 636 + S3 1,679</td>
+            <td class="num">0.544</td>
+            <td>4B</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>样例 · mix_2b（来自 Easy-Boxed）</h3>
+    <div class="ds-sample">
+      <div class="ds-row">
+        <span class="lbl">题</span>
+        <div class="ds-body">
+          <p class="ds-q">Determine all values of the parameter \(a\) for which the system
+\[
+\begin{aligned}
+2^{|x|}+|x| &= x^{2}+y+a \\
+x^{2}+y^{2} &= 1
+\end{aligned}
+\]
+has exactly one solution \((x, y) \in \mathbb{R}^{2}\). Let's think step by step and output the final answer within \(\boxed{}\).</p>
+        </div>
+      </div>
+      <div class="ds-row">
+        <span class="lbl">答</span>
+        <div class="ds-body">
+          <pre class="ds-code">0</pre>
+        </div>
+      </div>
+      <div class="ds-row meta">
+        <span class="lbl">元</span>
+        <div class="ds-body">
+          <p class="ds-meta-line"><span class="mono">pool=Easy-Boxed</span> · <span class="mono">pass_rate=0.625</span>（20/32）</p>
+        </div>
+      </div>
+    </div>
+
+    <h3>样例 · mix_2b（来自 S3）</h3>
+    <div class="ds-sample">
+      <div class="ds-row">
+        <span class="lbl">题</span>
+        <div class="ds-body">
+          <p class="ds-q">There are exactly three integers \(x\) satisfying the inequality
+\[x^2 + bx + 2 \le 0.\]
+How many integer values of \(b\) are possible? Let's think step by step and output the final answer within \(\boxed{}\).</p>
+        </div>
+      </div>
+      <div class="ds-row">
+        <span class="lbl">答</span>
+        <div class="ds-body">
+          <pre class="ds-code">2</pre>
+        </div>
+      </div>
+      <div class="ds-row meta">
+        <span class="lbl">元</span>
+        <div class="ds-body">
+          <p class="ds-meta-line"><span class="mono">pool=S3</span> · <span class="mono">pass_rate=0.475</span>（19/40）</p>
+        </div>
+      </div>
+    </div>
+
+    <h3>源池标注分布（打标子集）</h3>
+    <div class="ds-table-wrap">
+      <table class="ds-table">
+        <thead>
+          <tr>
+            <th>池子 × 模型</th>
+            <th>已标注 / 总量</th>
+            <th>[0.2, 0.8] 命中</th>
+            <th>全对</th>
+            <th>全错</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>easy_boxed × 2B</td>
+            <td class="num">7,886 / 13,688</td>
+            <td class="num">47.7%</td>
+            <td class="num">12.1%</td>
+            <td class="num">6.6%</td>
+          </tr>
+          <tr>
+            <td>easy_boxed × 4B</td>
+            <td class="num">4,793 / 13,688</td>
+            <td class="num">13.3%</td>
+            <td class="num">44.0%</td>
+            <td class="num">2.4%</td>
+          </tr>
+          <tr>
+            <td>s3 × 2B</td>
+            <td class="num">8,670 / 24,652</td>
+            <td class="num">31.3%</td>
+            <td class="num">2.4%</td>
+            <td class="num">34.1%</td>
+          </tr>
+          <tr>
+            <td>s3 × 4B</td>
+            <td class="num">4,800 / 24,652</td>
+            <td class="num">35.0%</td>
+            <td class="num">21.0%</td>
+            <td class="num">18.8%</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  </div><!-- /.algo-main -->
+  </div><!-- /.algo-layout -->
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  renderMathInElement(document.body, {
+    delimiters: [
+      { left: "$$", right: "$$", display: true },
+      { left: "\\[", right: "\\]", display: true },
+      { left: "$", right: "$", display: false },
+      { left: "\\(", right: "\\)", display: false }
+    ],
+    throwOnError: false,
+    ignoredTags: ["script", "noscript", "style", "textarea", "option"]
+  });
+});
+</script>
+
+</body>
+</html>

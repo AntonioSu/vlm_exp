@@ -13,11 +13,17 @@
   <div class="site-header-inner">
     <a class="site-brand" href="../index.html"><span class="dot">●</span> RL 实验看板</a>
     <div class="site-nav">
+      
       <a href="../index.html">总览</a>
       <a href="../algo/index.html" class="active">算法介绍</a>
+      <a href="../benchmark/index.html">Benchmark 介绍</a>
+      <a href="../dataset/index.html">数据集介绍</a>
       <a href="../2b/index.html">2B 训练</a>
       <a href="../4b/index.html">4B 训练</a>
       <a href="../mm/index.html">多模态训练</a>
+      <a href="../conclusion/index.html">综合结论</a>
+      <a href="../chronicle/index.html">实验日志</a>
+    
     </div>
   </div>
 </div>
@@ -30,13 +36,15 @@
   </div>
 
   <header class="algo-hero">
-    <p class="algo-kicker">Multimodal · Vision–Language Stack</p>
-    <h1>多模态技术：ViT、VAE 与图文对齐</h1>
-    <p class="lede">
-      多模态 LLM 把图像变成语言模型能吃的 token：常见路径是 <strong>ViT</strong> 提视觉特征，再经投影 / 适配器进 LLM；
-      生成与压缩侧常用 <strong>VAE</strong>（或 VQ-VAE）做潜变量。下方按模块分述：介绍 + 优缺点。
-      训练曲线见 <a href="../mm/index.html">多模态训练</a>；策略侧见 <a href="index.html">RL 算法</a>。
-    </p>
+    <div class="algo-hero-text">
+      <p class="algo-kicker">Multimodal · Vision–Language Stack</p>
+      <h1>多模态技术：ViT、VAE 与图文对齐</h1>
+      <p class="lede">
+        多模态 LLM 把图像变成语言模型能吃的 token：常见路径是 <strong>ViT</strong> 提视觉特征，再经投影 / 适配器进 LLM；
+        生成与压缩侧常用 <strong>VAE</strong>（或 VQ-VAE）做潜变量。下方按模块分述：介绍 + 优缺点。
+        训练曲线见 <a href="../mm/index.html">多模态训练</a>；策略侧见 <a href="index.html">RL 算法</a>。
+      </p>
+    </div>
     <div class="algo-chips">
       <a class="chip-vit" href="#mod-vit">ViT</a>
       <a class="chip-vae" href="#mod-vae">VAE</a>
@@ -268,6 +276,11 @@
         <div class="diff-num">2</div>
         <h3>生成型：VAE / VQ-VAE → 生成头</h3>
         <p>像素压到 latent 或离散码，再扩散 / 自回归生成。与「图→文理解」栈不同，但共享「视觉要先进紧凑表征」这一层。</p>
+      </li>
+      <li class="diff-item">
+        <div class="diff-num">3</div>
+        <h3>和本看板的关系</h3>
+        <p>多模态训练页跑的是<strong>理解型栈 + GRPO</strong>；本页只讲视觉–语言构件，不改 RL 算法变量。底座语言侧见 <a href="base.html">基座</a>。</p>
       </li>
     </ol>
   </section>

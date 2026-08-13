@@ -13,11 +13,17 @@
   <div class="site-header-inner">
     <a class="site-brand" href="../index.html"><span class="dot">●</span> RL 实验看板</a>
     <div class="site-nav">
+      
       <a href="../index.html">总览</a>
       <a href="../algo/index.html" class="active">算法介绍</a>
+      <a href="../benchmark/index.html">Benchmark 介绍</a>
+      <a href="../dataset/index.html">数据集介绍</a>
       <a href="../2b/index.html">2B 训练</a>
       <a href="../4b/index.html">4B 训练</a>
       <a href="../mm/index.html">多模态训练</a>
+      <a href="../conclusion/index.html">综合结论</a>
+      <a href="../chronicle/index.html">实验日志</a>
+    
     </div>
   </div>
 </div>
@@ -30,13 +36,15 @@
   </div>
 
   <header class="algo-hero">
-    <p class="algo-kicker">Model Backbone · Linear Attention Family</p>
-    <h1>基座算法：GDN、KDA、混合架构与 Attention Sink</h1>
-    <p class="lede">
-      本轮 RL 对比跑在 <strong>Qwen3.5</strong>（<span class="mono">model_type: qwen3_5</span>）上：多数层用 <strong>GDN</strong>，每隔若干层插 <strong>Full Attention</strong>。
-      同谱系里还有 Moonshot 的 <strong>KDA</strong>；Softmax 精确层还会出现 <strong>Attention Sink</strong>。
-      下方按模块分述：介绍 + 优缺点。策略优化见 <a href="index.html">RL 算法</a>。
-    </p>
+    <div class="algo-hero-text">
+      <p class="algo-kicker">Model Backbone · Linear Attention Family</p>
+      <h1>基座算法：GDN、KDA、混合架构与 Attention Sink</h1>
+      <p class="lede">
+        本轮 RL 对比跑在 <strong>Qwen3.5</strong>（<span class="mono">model_type: qwen3_5</span>）上：多数层用 <strong>GDN</strong>，每隔若干层插 <strong>Full Attention</strong>。
+        同谱系里还有 Moonshot 的 <strong>KDA</strong>；Softmax 精确层还会出现 <strong>Attention Sink</strong>。
+        下方按模块分述：介绍 + 优缺点。策略优化见 <a href="index.html">RL 算法</a>。
+      </p>
+    </div>
     <div class="algo-chips">
       <a class="chip-gdn" href="#mod-gdn">GDN</a>
       <a class="chip-kda" href="#mod-kda">KDA</a>
@@ -56,8 +64,8 @@
       <li data-a="gdn"><a href="#mod-gdn"><span class="toc-num">1</span><span class="toc-title">GDN</span></a></li>
       <li data-a="kda"><a href="#mod-kda"><span class="toc-num">2</span><span class="toc-title">KDA</span></a></li>
       <li data-a="delta"><a href="#mod-delta"><span class="toc-num">3</span><span class="toc-title">Delta Rule</span></a></li>
-      <li data-a="full"><a href="#mod-full"><span class="toc-num">4</span><span class="toc-title">Full Attention</span></a></li>
-      <li data-a="sink"><a href="#mod-sink"><span class="toc-num">5</span><span class="toc-title">Attention Sink</span></a></li>
+      <li data-a="full"><a href="#mod-full"><span class="toc-num">4</span><span class="toc-title">Full Attn</span></a></li>
+      <li data-a="sink"><a href="#mod-sink"><span class="toc-num">5</span><span class="toc-title">Attn Sink</span></a></li>
       <li data-a="hybrid"><a href="#mod-hybrid"><span class="toc-num">6</span><span class="toc-title">Hybrid</span></a></li>
       <li data-a="moe"><a href="#mod-moe"><span class="toc-num">7</span><span class="toc-title">MoE</span></a></li>
       <li><a href="#sec-compare"><span class="toc-num">8</span><span class="toc-title">GDN vs KDA</span></a></li>
@@ -67,6 +75,7 @@
   </nav>
 
   <div class="algo-main">
+
   <section class="algo-section" id="sec-rl">
     <h2>和 RL 算法的关系</h2>
     <p class="sec-sub">一层骨架，一层训练目标</p>
@@ -288,6 +297,7 @@
       <li data-a="moe"><span class="k">MoE</span><span>大规格才有；本轮 2B/4B 为 dense</span></li>
     </ul>
   </section>
+
   </div><!-- /.algo-main -->
   </div><!-- /.algo-layout -->
 </div>
@@ -317,7 +327,6 @@
   );
   sections.forEach((s) => observer.observe(s));
 
-  // initial hash / first section
   const hash = location.hash.slice(1);
   if (hash && document.getElementById(hash)) setActive(hash);
   else if (sections[0]) setActive(sections[0].id);

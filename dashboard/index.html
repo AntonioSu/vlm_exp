@@ -53,11 +53,17 @@
   <div class="site-header-inner">
     <a class="site-brand" href="index.html"><span class="dot">●</span> RL 实验看板</a>
             <div class="site-nav">
+      
       <a href="index.html" class="active">总览</a>
       <a href="algo/index.html">算法介绍</a>
+      <a href="benchmark/index.html">Benchmark 介绍</a>
+      <a href="dataset/index.html">数据集介绍</a>
       <a href="2b/index.html">2B 训练</a>
       <a href="4b/index.html">4B 训练</a>
       <a href="mm/index.html">多模态训练</a>
+      <a href="conclusion/index.html">综合结论</a>
+      <a href="chronicle/index.html">实验日志</a>
+    
     </div>
   </div>
 </div>
@@ -95,7 +101,7 @@
       </div>
       <div class="intro-item">
         <h4>看板怎么读</h4>
-        <p>「算法介绍」讲定义与权衡（含多模态配比说明）；「2B / 4B 训练」放训练曲线与 evalscope 评测对比；「多模态训练」展示执行状态、M0 正式评测与 M1 light 探查结果（M2/M3 齐备后继续补齐）。下方卡片按入口进入。</p>
+        <p>「算法介绍」讲定义与权衡；「Benchmark 介绍」说明 AIME / MMLU / BFCL / tau-bench 怎么判分；「数据集介绍」说明 Easy-Boxed / S1–S3 / mix band 各池从哪来、怎么用；「2B / 4B 训练」放训练曲线与评测对比；「综合结论」按 Model Size / Param / MM / Algorithm 四轴汇总；「多模态训练」展示执行状态与评测；「实验日志」按时间线记节点。下方卡片按入口进入。</p>
       </div>
       <div class="intro-item">
         <h4>数据与复现</h4>
@@ -117,16 +123,38 @@
         </div>
       </a>
 
+      <a class="track-card" href="benchmark/index.html">
+        <div class="bar" style="background:var(--e3)"></div>
+        <div class="go">进入 →</div>
+        <div class="kicker">Shared · Benchmarks</div>
+        <h3>Benchmark 介绍</h3>
+        <p class="desc">AIME / MMLU / BFCL-v3 / tau-bench：各自测什么、输入输出是什么、怎么判对错。评测曲线见各赛道「评测结果」页。</p>
+        <div class="stat-row">
+          <span><b>Math · Knowledge · Agent</b></span>
+        </div>
+      </a>
+
+      <a class="track-card" href="dataset/index.html">
+        <div class="bar" style="background:var(--e2)"></div>
+        <div class="go">进入 →</div>
+        <div class="kicker">Shared · Datasets</div>
+        <h3>数据集介绍</h3>
+        <p class="desc">Easy-Boxed / S1 / S2 / S3 / mix_2b_band / mix_4b_band：题量、难度、V1/V2 用法与构建方式。</p>
+        <div class="stat-row">
+          <span><b>Easy · S1–S3 · mix band</b></span>
+        </div>
+      </a>
+
       <a class="track-card" href="2b/index.html">
         <div class="bar" style="background:var(--e1)"></div>
         <div class="go">进入 →</div>
         <div class="kicker">Track 1 · Language Model</div>
         <h3>2B 训练监控</h3>
-        <p class="desc">Qwen3.5-2B · 2×A100-80GB · 16K 非思考模式 · E1–E5 五组算法对比，是本轮最先跑完、数据最完整的赛道。</p>
+        <p class="desc">Qwen3.5-2B · 2×A100-80GB · 16K 非思考模式 · E1–E5 五组算法对比；V2 / 长度消融 / Ext 续训已接入看板。</p>
         <div class="stat-row">
-          <span><b>E1–E5</b> 训练+评测均已完成</span>
-          <span>offline aime24@150 <b>E1 · 38.8%</b></span>
-          <span>峰值 aime25 <b>37.5%</b>（E3@100 / E4@150）</span>
+          <span><b>E1–E5</b> Easy-Boxed / S3 完成 · V2 E1 250/300</span>
+          <span>Easy-24K 321 · Easy-32K 435 · Ext 三臂满 300</span>
+          <span>峰值 aime25 <b>38.33%</b>（E5@130）</span>
         </div>
       </a>
 
@@ -135,22 +163,49 @@
         <div class="go">进入 →</div>
         <div class="kicker">Track 2 · Language Model</div>
         <h3>4B 训练监控</h3>
-        <p class="desc">Qwen3.5-4B · 4×A100-80GB · 同一套算法对比在更大模型规模上复验；训练曲线 + evalscope 评测（mmlu_temp / aime24 / aime25）。</p>
+        <p class="desc">Qwen3.5-4B · 4×A100-80GB · Easy-Boxed 完成；S3 E4 进行中；V2 难度池 E1 GRPO 进行中。</p>
         <div class="stat-row">
-          <span><b>E1–E5</b> 训练完成 · offline 评测 73/75</span>
+          <span><b>E1–E5</b> Easy-Boxed 完成 · S3 E4 ~75/150 · V2 E1 ~61/150</span>
           <span>峰值 aime24 <b>E2@80 · 80.4%</b></span>
           <span>峰值 aime25 <b>E2@80 · 62.5%</b></span>
         </div>
       </a>
 
-      <a class="track-card" href="algo/mm.html">
+      <a class="track-card" href="mm/index.html">
         <div class="bar" style="background:var(--tl-green)"></div>
         <div class="go">进入 →</div>
-        <div class="kicker">Under 算法介绍 · Multimodal</div>
-        <h3>多模态配比说明</h3>
-        <p class="desc">在「算法介绍」下的「多模态」页签：固定 GRPO，只改图文占比（0/20/50/100%）。训练监控见「多模态训练」。</p>
+        <div class="kicker">Track 3 · Multimodal</div>
+        <h3>多模态训练</h3>
+        <p class="desc">固定 GRPO，只改图文占比（0/20/50/100%）。M1/M2/M3 训练曲线已同步；含 M0 正式评测与 M1 light 探查。</p>
         <div class="stat-row">
-          <span><b>算法介绍 → 多模态</b></span>
+          <span><b>M0 formal</b> Geo3K <b>57.3%</b> · MATH-500 <b>86.4%</b></span>
+          <span><b>M1 light</b> Geo3K @70 <b>13.6%</b> → @100 <b>14.8%</b></span>
+          <span>M1/M2/M3 <b>150/150</b></span>
+        </div>
+      </a>
+
+      <a class="track-card" href="conclusion/index.html">
+        <div class="bar" style="background:var(--danger)"></div>
+        <div class="go">进入 →</div>
+        <div class="kicker">Synthesis · Size · Param · MM · Algo</div>
+        <h3>综合结论</h3>
+        <p class="desc">按四轴汇总：模型规模、共享超参/开关、多模态配比、E1–E5 算法；跨规模成立 vs 反转与怎么选。</p>
+        <div class="stat-row">
+          <span><b>Size</b> 2B 散 · 4B 看 offline</span>
+          <span><b>MM</b> M0 基线 · M1 伤文本</span>
+          <span><b>Algo</b> E2 快 · E4 定盘 2B</span>
+        </div>
+      </a>
+
+      <a class="track-card" href="chronicle/index.html">
+        <div class="bar" style="background:var(--tl-green)"></div>
+        <div class="go">进入 →</div>
+        <div class="kicker">Chronicle · Timeline</div>
+        <h3>实验日志</h3>
+        <p class="desc">时间线记录训练跑满、评测同步、看板与环境节点。空心绿圆 + 竖线，按日倒序追加。</p>
+        <div class="stat-row">
+          <span><b>最新</b> 2026-08-13 看板全量刷新</span>
+          <span>Easy-24K/32K · Ext 三臂 · BFCL 空 AST 剔除</span>
         </div>
       </a>
 
@@ -160,7 +215,7 @@
 </div>
 
 <div class="footer-note">
-  数据来源：<code>archive/e*_2b/</code>、<code>archive/eval_2b/summary.md</code>、<code>archive/eval_4b/summary.md</code>、<code>logs/exp2card/e*_4b/</code>、<code>vlm_exp/exp_plan_mm.md</code> 各自的训练日志、评测结果与方案文档。零依赖静态网页（无 CDN、无框架），<code>bash serve.sh</code> 起服务后浏览器访问，或直接拖入浏览器以 <code>file://</code> 方式打开。
+  数据来源：<code>archive/e*_2b/</code>、<code>archive/eval_2b/summary.md</code>、<code>archive/eval_4b/summary.md</code>、<code>logs/exp2card/e*_4b/</code>、<code>vlm_exp/exp_plan_mm.md</code>、<code>dashboard/mm/js/data-eval.js</code>（Geo3K + evalscope MM）各自的训练日志、评测结果与方案文档；四轴综合结论见 <code>dashboard/conclusion/</code>。零依赖静态网页（无 CDN、无框架），<code>bash serve.sh</code> 起服务后浏览器访问，或直接拖入浏览器以 <code>file://</code> 方式打开。
 </div>
 
 </body>

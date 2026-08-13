@@ -1,0 +1,325 @@
+    <p class="tertiary">Easy-Boxed（e3_drgrpo_4b，150/150）与 S3（e3_drgrpo_4b_s3，150/150 已完成）对比。虚线 = S3 曲线。Source: logs/exp2card/…/train_*.log · 刷新：<code>parse_4b_logs.py && gen_4b_js.py</code>。</p>
+
+    <div class="detail-layout">
+      <nav class="detail-toc" aria-label="目录" id="e3-toc">
+        <p class="toc-heading">目录</p>
+        <ol class="toc-list">
+          <li><a href="#e3-sec-overview"><span class="toc-num">0</span><span class="toc-title">概览</span></a></li>
+          <li>
+            <a href="#e3-sec-learning"><span class="toc-num">1</span><span class="toc-title">学习曲线</span></a>
+            <ol class="toc-sub">
+              <li><a href="#e3-sec-learn-acc"><span class="toc-num">1.1</span><span class="toc-title">准确率</span></a></li>
+              <li><a href="#e3-sec-learn-len"><span class="toc-num">1.2</span><span class="toc-title">长度</span></a></li>
+              <li><a href="#e3-sec-learn-loss"><span class="toc-num">1.3</span><span class="toc-title">损失</span></a></li>
+              <li><a href="#e3-sec-learn-ent"><span class="toc-num">1.4</span><span class="toc-title">熵</span></a></li>
+            </ol>
+          </li>
+          <li>
+            <a href="#e3-sec-stability"><span class="toc-num">2</span><span class="toc-title">稳定性</span></a>
+            <ol class="toc-sub">
+              <li><a href="#e3-sec-stab-grad"><span class="toc-num">2.1</span><span class="toc-title">梯度</span></a></li>
+              <li><a href="#e3-sec-stab-update"><span class="toc-num">2.2</span><span class="toc-title">更新幅度</span></a></li>
+              <li><a href="#e3-sec-stab-cons"><span class="toc-num">2.3</span><span class="toc-title">一致性</span></a></li>
+            </ol>
+          </li>
+          <li>
+            <a href="#e3-sec-efficiency"><span class="toc-num">3</span><span class="toc-title">效率</span></a>
+            <ol class="toc-sub">
+              <li><a href="#e3-sec-eff-mfu"><span class="toc-num">3.1</span><span class="toc-title">MFU</span></a></li>
+              <li><a href="#e3-sec-eff-thru"><span class="toc-num">3.2</span><span class="toc-title">吞吐</span></a></li>
+            </ol>
+          </li>
+          <li>
+            <a href="#e3-sec-timing"><span class="toc-num">4</span><span class="toc-title">耗时拆解</span></a>
+            <ol class="toc-sub">
+              <li><a href="#e3-sec-time-step"><span class="toc-num">4.1</span><span class="toc-title">单步耗时</span></a></li>
+              <li><a href="#e3-sec-time-stage"><span class="toc-num">4.2</span><span class="toc-title">Stage 拆解</span></a></li>
+            </ol>
+          </li>
+          <li>
+            <a href="#e3-sec-eval"><span class="toc-num">5</span><span class="toc-title">评测</span></a>
+            <ol class="toc-sub">
+              <li><a href="#e3-sec-eval-mmlu"><span class="toc-num">5.1</span><span class="toc-title">MMLU 通识</span></a></li>
+              <li><a href="#e3-sec-eval-math"><span class="toc-num">5.2</span><span class="toc-title">Math 数学</span></a></li>
+              <li><a href="#e3-sec-eval-agent"><span class="toc-num">5.3</span><span class="toc-title">Agent 智能体</span></a></li>
+              <li><a href="#e3-sec-eval-tools"><span class="toc-num">5.4</span><span class="toc-title">Function tools 工具调用</span></a></li>
+            </ol>
+          </li>
+        </ol>
+      </nav>
+
+      <div class="detail-main">
+
+        <section class="detail-sec" id="e3-sec-overview">
+          <h2 class="sec-title">概览</h2>
+          <p class="sec-sub">E3 Dr.GRPO · 一页速览</p>
+          <div class="intro-card">
+            <p class="intro-title">E3 · Dr.GRPO —— 熵收得最紧、梯度最稳，但长度涨幅反而全场最小</p>
+            <p class="intro-body">
+              不除以组内 std + loss_agg_mode=seq-mean-token-sum-norm，关闭 KL loss。本轮最值得关注的是「2B 上长度涨最多 → 4B 上长度涨最少」的规模反转。
+            </p>
+            <ul class="intro-points">
+              <li><strong>算法设定：</strong>Dr.GRPO：advantage 不除组内 std；loss_agg=seq-mean-token-sum-norm；关闭 KL loss。</li>
+              <li><strong>学习信号：</strong>entropy 0.081→0.048 全场最低最紧；响应长度只 5.3k→7.3k，涨幅四组最小（与 2B 结论相反）。</li>
+              <li><strong>稳定性：</strong>grad_norm 基线全场最低（0.03–0.23）；更新保守、曲线最稳。</li>
+              <li><strong>耗时：</strong>均值 ~12.5 min/step（gen ≈55%，update_actor ≈35%）；总墙钟约 31.2h。</li>
+              <li><strong>评测亮点：</strong>offline 三项全 step 已齐；mmlu 峰值 E3@120=92.47%；aime24@120=75.0%、@140=73.3%。训练验证 aime24 step125 曾摸到 0.800。</li>
+            </ul>
+          </div>
+        </section>
+        <section class="detail-sec" id="e3-sec-learning">
+          <h2 class="sec-title">学习曲线</h2>
+          <p class="sec-sub">pass rate · 响应长度 · 截断 · loss · entropy</p>
+        </section>
+
+        <section class="detail-sub" id="e3-sec-learn-acc">
+          <h2 class="sec-title">准确率</h2>
+          <h2>Pass rate（%）</h2>
+          <div class="chart-card">
+            <div class="legend" id="legend-e3-pass"></div>
+            <div class="chart-wrap"><canvas id="chart-e3-pass" height="240"></canvas><div class="tooltip" id="tip-e3-pass"></div></div>
+          </div>
+          <p class="caption">X: step · Y: batch pass rate（%）。细线=逐 step；粗线=5-step 移动平均。</p>
+        </section>
+
+        <section class="detail-sub" id="e3-sec-learn-len">
+          <h2 class="sec-title">长度</h2>
+          <section class="grid2" style="margin-top:12px">
+            <div>
+              <h2>平均响应长度（tokens）</h2>
+              <div class="chart-card"><div class="legend" id="legend-e3-len"></div><div class="chart-wrap"><canvas id="chart-e3-len" height="200"></canvas><div class="tooltip" id="tip-e3-len"></div></div></div>
+              <p class="caption">虚线 = 16K cap。</p>
+            </div>
+            <div>
+              <h2>截断率 clip@16K（%）</h2>
+              <div class="chart-card"><div class="legend" id="legend-e3-trunc"></div><div class="chart-wrap"><canvas id="chart-e3-trunc" height="200"></canvas><div class="tooltip" id="tip-e3-trunc"></div></div></div>
+              <p class="caption"><code>response_length/clip_ratio</code>（≠ pg_clipfrac）。</p>
+            </div>
+          </section>
+          <div style="margin-top:12px">
+            <div>
+              <h2>平均输入长度（tokens）</h2>
+              <div class="chart-card"><div class="legend" id="legend-e3-promptlen"></div><div class="chart-wrap"><canvas id="chart-e3-promptlen" height="200"></canvas><div class="tooltip" id="tip-e3-promptlen"></div></div></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="detail-sub" id="e3-sec-learn-loss">
+          <h2 class="sec-title">损失</h2>
+          <section class="grid2" style="margin-top:12px">
+            <div>
+              <h2>整体损失 actor/loss</h2>
+              <div class="chart-card"><div class="legend" id="legend-e3-loss"></div><div class="chart-wrap"><canvas id="chart-e3-loss" height="220"></canvas><div class="tooltip" id="tip-e3-loss"></div></div></div>
+              <p class="caption">RL loss 幅值波动，不是监督训练那种单调下降指标——进展看 pass rate。</p>
+            </div>
+            <div>
+              <h2>说明</h2>
+              <div class="callout" style="margin-top:0">
+                <div class="title">本组关闭 KL loss</div>
+                无 <code>actor/kl_loss</code> 曲线。稳定性看下方 ppo_kl / clip / corr。
+              </div>
+            </div>
+          </section>
+        </section>
+
+        <section class="detail-sub" id="e3-sec-learn-ent">
+          <h2 class="sec-title">熵</h2>
+          <div style="margin-top:12px">
+            <div>
+              <h2>策略熵 entropy</h2>
+              <div class="chart-card"><div class="legend" id="legend-e3-ent"></div><div class="chart-wrap"><canvas id="chart-e3-ent" height="200"></canvas><div class="tooltip" id="tip-e3-ent"></div></div></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="detail-sec" id="e3-sec-stability">
+          <h2 class="sec-title">稳定性</h2>
+          <p class="sec-sub">grad_norm · ppo_kl · pg_clipfrac · rollout↔训练一致性</p>
+        </section>
+
+        <section class="detail-sub" id="e3-sec-stab-grad">
+          <h2 class="sec-title">梯度</h2>
+          <div style="margin-top:12px">
+            <div><h2>梯度范数 grad_norm</h2><div class="chart-card"><div class="legend" id="legend-e3-grad"></div><div class="chart-wrap"><canvas id="chart-e3-grad" height="200"></canvas><div class="tooltip" id="tip-e3-grad"></div></div></div></div>
+          </div>
+        </section>
+
+        <section class="detail-sub" id="e3-sec-stab-update">
+          <h2 class="sec-title">更新幅度</h2>
+          <section class="grid2" style="margin-top:12px">
+            <div><h2>策略更新位移 ppo_kl（×1e5）</h2><div class="chart-card"><div class="legend" id="legend-e3-ppokl"></div><div class="chart-wrap"><canvas id="chart-e3-ppokl" height="200"></canvas><div class="tooltip" id="tip-e3-ppokl"></div></div></div></div>
+            <div><h2>PPO 裁剪比例 pg_clipfrac（%）</h2><div class="chart-card"><div class="legend" id="legend-e3-clip"></div><div class="chart-wrap"><canvas id="chart-e3-clip" height="200"></canvas><div class="tooltip" id="tip-e3-clip"></div></div></div></div>
+          </section>
+        </section>
+
+        <section class="detail-sub" id="e3-sec-stab-cons">
+          <h2 class="sec-title">一致性</h2>
+          <div style="margin-top:12px">
+            <div><h2>rollout↔训练概率偏离度（(1−corr)×1e4）</h2><div class="chart-card"><div class="legend" id="legend-e3-corr"></div><div class="chart-wrap"><canvas id="chart-e3-corr" height="200"></canvas><div class="tooltip" id="tip-e3-corr"></div></div></div></div>
+          </div>
+          <section style="margin-top:16px">
+            <h2>rollout_corr/kl（×1e4）</h2>
+            <div class="chart-card"><div class="legend" id="legend-e3-rollkl"></div><div class="chart-wrap"><canvas id="chart-e3-rollkl" height="200"></canvas><div class="tooltip" id="tip-e3-rollkl"></div></div></div>
+            <p class="caption">与皮尔逊偏离度互补的一致性指标。</p>
+          </section>
+        </section>
+
+        <section class="detail-sec" id="e3-sec-efficiency">
+          <h2 class="sec-title">效率</h2>
+          <p class="sec-sub">MFU · throughput</p>
+        </section>
+
+        <section class="detail-sub" id="e3-sec-eff-mfu">
+          <h2 class="sec-title">MFU</h2>
+          <div style="margin-top:12px">
+            <div>
+              <h2>MFU（actor，%）</h2>
+              <div class="chart-card"><div class="legend" id="legend-e3-mfu"></div><div class="chart-wrap"><canvas id="chart-e3-mfu" height="200"></canvas><div class="tooltip" id="tip-e3-mfu"></div></div></div>
+              <p class="caption"><code>perf/mfu/actor</code>，随序列长度波动。</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="detail-sub" id="e3-sec-eff-thru">
+          <h2 class="sec-title">吞吐</h2>
+          <div style="margin-top:12px">
+            <div>
+              <h2>吞吐 throughput（tokens/s）</h2>
+              <div class="chart-card"><div class="legend" id="legend-e3-thru"></div><div class="chart-wrap"><canvas id="chart-e3-thru" height="200"></canvas><div class="tooltip" id="tip-e3-thru"></div></div></div>
+              <p class="caption"><code>perf/throughput</code>（采样+训练）。</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="detail-sec" id="e3-sec-timing">
+          <h2 class="sec-title">耗时拆解</h2>
+          <p class="sec-sub">单步墙钟 · gen / update_actor / ref / old_log_prob 等 stage</p>
+          <div class="callout timing-box" id="e3-timing-summary">
+            <div class="title">加载中…</div>
+            <div class="timing-metrics tertiary">加载中…</div>
+            <details class="stage-gloss">
+              <summary>展开 stage 释义 · gen / update_actor / ref / adv …</summary>
+              <ul class="intro-points">
+                <li><strong>gen (rollout)：</strong>vLLM 采样生成响应，通常占一半以上时间；随响应变长而抬升。</li>
+                <li><strong>update_actor：</strong>FSDP 上策略网络反向与参数更新（PPO/GRPO clip 目标）。</li>
+                <li><strong>ref：</strong>参考模型前向算 logprob，供 KL loss；关闭 KL 的组（如 DAPO / Dr.GRPO）此项为 null/≈0。</li>
+                <li><strong>old_log_prob：</strong>用更新前策略再算一遍 logprob，供重要性采样 ratio。</li>
+                <li><strong>update_weights：</strong>把新权重同步回 rollout engine（vLLM），一般数秒。</li>
+                <li><strong>adv：</strong>advantage 计算阶段墙钟（含 reward 整理 + <code>compute_advantage</code>），不是 advantage 数值本身；通常 &lt;1s。</li>
+                <li><strong>reward：</strong>打分/奖励函数本身的计时；多数配置下几乎可忽略（≈0）。</li>
+              </ul>
+            </details>
+          </div>
+        </section>
+
+        <section class="detail-sub" id="e3-sec-time-step">
+          <h2 class="sec-title">单步耗时</h2>
+          <section style="margin-top:12px">
+            <h2>单步耗时（分钟）</h2>
+            <div class="chart-card"><div class="legend" id="legend-e3-stepmin"></div><div class="chart-wrap"><canvas id="chart-e3-stepmin" height="200"></canvas><div class="tooltip" id="tip-e3-stepmin"></div></div></div>
+            <p class="caption"><code>timing_s/step</code>/60；均值约 12.5 min/step。</p>
+          </section>
+          <div style="margin-top:12px">
+            <div>
+              <h2>整步耗时 timing_s/step（秒）</h2>
+              <div class="chart-card">
+                <div class="legend" id="legend-e3-timing-step"></div>
+                <div class="chart-wrap"><canvas id="chart-e3-timing-step" height="240"></canvas><div class="tooltip" id="tip-e3-timing-step"></div></div>
+              </div>
+              <p class="caption">均值约 750s；与总训练约 31.2h 一致。</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="detail-sub" id="e3-sec-time-stage">
+          <h2 class="sec-title">Stage 拆解</h2>
+          <div style="margin-top:12px">
+            <div>
+              <h2>主要 stage 曲线（秒）</h2>
+              <div class="chart-card">
+                <div class="legend" id="legend-e3-timing"></div>
+                <div class="chart-wrap"><canvas id="chart-e3-timing" height="240"></canvas><div class="tooltip" id="tip-e3-timing"></div></div>
+              </div>
+              <p class="caption">gen=rollout · update_actor=策略更新 · ref / old_log_prob。</p>
+            </div>
+          </div>
+          <section class="grid2" style="margin-top:12px">
+            <div>
+              <h2>次要 stage（秒）</h2>
+              <div class="chart-card">
+                <div class="legend" id="legend-e3-timing-minor"></div>
+                <div class="chart-wrap"><canvas id="chart-e3-timing-minor" height="200"></canvas><div class="tooltip" id="tip-e3-timing-minor"></div></div>
+              </div>
+            </div>
+            <div>
+              <h2>平均耗时占比（秒）</h2>
+              <div class="chart-card">
+                <div class="legend" id="legend-e3-timing-mean"></div>
+                <div class="chart-wrap"><canvas id="chart-e3-timing-mean" height="200"></canvas><div class="tooltip" id="tip-e3-timing-mean"></div></div>
+              </div>
+              <p class="caption">gen ≈ 55%，update_actor ≈ 35%（本组无 ref）。</p>
+            </div>
+          </section>
+        </section>
+
+
+        <section class="detail-sec" id="e3-sec-eval">
+          <h2 class="sec-title">评测</h2>
+          <p class="sec-sub">evalscope offline · Easy-Boxed 实线 / S3 虚线 · mmlu_temp / aime24 / aime25（n=8）</p>
+          <p class="tertiary">与训练日志验证不同：<code>eval_exp4b.sh</code> + vLLM serving；E3 三项全 step 已齐。</p>
+        </section>
+
+        <section class="detail-sub" id="e3-sec-eval-mmlu">
+          <h2 class="sec-title">MMLU 通识</h2>
+          <div style="margin-top:10px">
+            <h2>mmlu_temp（%）</h2>
+            <div class="chart-card"><div class="legend" id="legend-e3-eval-mmlu"></div><div class="chart-wrap"><canvas id="chart-e3-eval-mmlu" height="200"></canvas><div class="tooltip" id="tip-e3-eval-mmlu"></div></div></div>
+          </div>
+        </section>
+
+        <section class="detail-sub" id="e3-sec-eval-math">
+          <h2 class="sec-title">Math 数学</h2>
+          <div style="margin-top:12px">
+            <h2>MATH-500（%）</h2>
+            <div class="chart-card"><div class="legend" id="legend-e3-eval-math500"></div><div class="chart-wrap"><canvas id="chart-e3-eval-math500" height="200"></canvas><div class="tooltip" id="tip-e3-eval-math500"></div></div></div>
+          </div>
+          <section class="grid2" style="margin-top:12px">
+            <div>
+              <h2>aime24（%）</h2>
+              <div class="chart-card"><div class="legend" id="legend-e3-eval-aime24"></div><div class="chart-wrap"><canvas id="chart-e3-eval-aime24" height="200"></canvas><div class="tooltip" id="tip-e3-eval-aime24"></div></div></div>
+            </div>
+            <div>
+              <h2>aime25（%）</h2>
+              <div class="chart-card"><div class="legend" id="legend-e3-eval-aime25"></div><div class="chart-wrap"><canvas id="chart-e3-eval-aime25" height="200"></canvas><div class="tooltip" id="tip-e3-eval-aime25"></div></div></div>
+            </div>
+          </section>
+        </section>
+
+        <section class="detail-sub" id="e3-sec-eval-agent">
+          <h2 class="sec-title">Agent 智能体</h2>
+          <p class="sec-sub">Easy-Boxed · tau-bench</p>
+          <p class="tertiary">Source: <code>evalscope/outputs/agent2</code>（Easy-Boxed，<code>run_agent2_queue_4b.sh</code>）。数据见 <code>js/data-easy-boxed-eval.js</code>（<code>AGENT</code>）。刷新：<code>python3 scripts/monitoring/4b/sync_4b_agent_dashboard.py</code>。</p>
+          <div style="margin-top:12px">
+            <h2>tau-bench（%）</h2>
+            <div class="chart-card"><div class="legend" id="legend-e3-agent-tau"></div><div class="chart-wrap"><canvas id="chart-e3-agent-tau" height="200"></canvas><div class="tooltip" id="tip-e3-agent-tau"></div></div></div>
+            <p class="caption">X: step · Y: tau-bench mean_acc（%，40 条）。缺报告为断点。</p>
+          </div>
+        </section>
+
+        <section class="detail-sub" id="e3-sec-eval-tools">
+          <h2 class="sec-title">Function tools 工具调用</h2>
+          <p class="sec-sub">BFCL-v3 · OVERALL + MULTI_TURN</p>
+          <div style="margin-top:12px">
+            <h2>BFCL-v3 OVERALL（%）</h2>
+            <div class="chart-card"><div class="legend" id="legend-e3-agent-bfcl"></div><div class="chart-wrap"><canvas id="chart-e3-agent-bfcl" height="200"></canvas><div class="tooltip" id="tip-e3-agent-bfcl"></div></div></div>
+            <p class="caption">X: checkpoint step（10–150） · Y: BFCL-v3 OVERALL acc（%）。缺报告为断点。</p>
+          </div>
+          <div style="margin-top:12px">
+            <h2>BFCL-v3 MULTI_TURN（%）</h2>
+            <div class="chart-card"><div class="legend" id="legend-e3-agent-mt"></div><div class="chart-wrap"><canvas id="chart-e3-agent-mt" height="200"></canvas><div class="tooltip" id="tip-e3-agent-mt"></div></div></div>
+            <p class="caption">X: step · Y: MULTI_TURN acc（%）。</p>
+          </div>
+        </section>
+
+      </div><!-- /.detail-main -->
+    </div><!-- /.detail-layout -->

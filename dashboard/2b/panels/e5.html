@@ -1,0 +1,313 @@
+    <p class="tertiary">Easy-Boxed（e5_reinforce_pp_2b）与 S3（e5_reinforce_pp_2b_s3，150/150 已完成）对比。图例可点击切换显示/隐藏。</p>
+    <div class="detail-layout">
+      <nav class="detail-toc" aria-label="目录" id="e5-toc">
+        <p class="toc-heading">目录</p>
+        <ol class="toc-list">
+          <li><a href="#e5-sec-overview"><span class="toc-num">0</span><span class="toc-title">概览</span></a></li>
+          <li>
+            <a href="#e5-sec-learning"><span class="toc-num">1</span><span class="toc-title">学习曲线</span></a>
+            <ol class="toc-sub">
+              <li><a href="#e5-sec-learn-acc"><span class="toc-num">1.1</span><span class="toc-title">准确率</span></a></li>
+              <li><a href="#e5-sec-learn-len"><span class="toc-num">1.2</span><span class="toc-title">长度</span></a></li>
+              <li><a href="#e5-sec-learn-loss"><span class="toc-num">1.3</span><span class="toc-title">损失</span></a></li>
+              <li><a href="#e5-sec-learn-ent"><span class="toc-num">1.4</span><span class="toc-title">熵</span></a></li>
+            </ol>
+          </li>
+          <li>
+            <a href="#e5-sec-stability"><span class="toc-num">2</span><span class="toc-title">稳定性</span></a>
+            <ol class="toc-sub">
+              <li><a href="#e5-sec-stab-grad"><span class="toc-num">2.1</span><span class="toc-title">梯度</span></a></li>
+              <li><a href="#e5-sec-stab-update"><span class="toc-num">2.2</span><span class="toc-title">更新幅度</span></a></li>
+              <li><a href="#e5-sec-stab-cons"><span class="toc-num">2.3</span><span class="toc-title">一致性</span></a></li>
+            </ol>
+          </li>
+          <li>
+            <a href="#e5-sec-efficiency"><span class="toc-num">3</span><span class="toc-title">效率</span></a>
+            <ol class="toc-sub">
+              <li><a href="#e5-sec-eff-mfu"><span class="toc-num">3.1</span><span class="toc-title">MFU</span></a></li>
+              <li><a href="#e5-sec-eff-thru"><span class="toc-num">3.2</span><span class="toc-title">吞吐</span></a></li>
+            </ol>
+          </li>
+          <li>
+            <a href="#e5-sec-timing"><span class="toc-num">4</span><span class="toc-title">耗时拆解</span></a>
+            <ol class="toc-sub">
+              <li><a href="#e5-sec-time-step"><span class="toc-num">4.1</span><span class="toc-title">单步耗时</span></a></li>
+              <li><a href="#e5-sec-time-stage"><span class="toc-num">4.2</span><span class="toc-title">Stage 拆解</span></a></li>
+            </ol>
+          </li>
+          <li>
+            <a href="#e5-sec-eval"><span class="toc-num">5</span><span class="toc-title">评测</span></a>
+            <ol class="toc-sub">
+              <li><a href="#e5-sec-eval-mmlu"><span class="toc-num">5.1</span><span class="toc-title">MMLU 通识</span></a></li>
+              <li><a href="#e5-sec-eval-math"><span class="toc-num">5.2</span><span class="toc-title">Math 数学</span></a></li>
+              <li><a href="#e5-sec-eval-agent"><span class="toc-num">5.3</span><span class="toc-title">Agent 智能体</span></a></li>
+              <li><a href="#e5-sec-eval-tools"><span class="toc-num">5.4</span><span class="toc-title">Function tools 工具调用</span></a></li>
+            </ol>
+          </li>
+        </ol>
+      </nav>
+      <div class="detail-main">
+        <section class="detail-sec" id="e5-sec-overview">
+          <h2 class="sec-title">概览</h2>
+          <p class="sec-sub">E5 REINFORCE++ · 一页速览</p>
+          <div class="intro-card">
+            <p class="intro-title">E5 · REINFORCE++ —— offline mmlu@150 最高（81.9%）</p>
+            <p class="intro-body">全 batch 白化折扣 return + mse 形式 KL loss。mmlu 末点五组最高；aime25 末点第二。</p>
+            <ul class="intro-points">
+              <li><strong>算法设定：</strong>REINFORCE++；mse KL loss。</li>
+              <li><strong>学习信号：</strong>pass 末段与 E1/E4 同带；entropy 收敛偏紧。</li>
+              <li><strong>稳定性：</strong>有 KL；后期 grad 偶有抬升。</li>
+              <li><strong>耗时：</strong>均值 ~10.2 min/step；总墙钟 25h41m。</li>
+              <li><strong>评测：</strong>offline mmlu@150=81.93%（最高）；aime25@150=36.7%。</li>
+            </ul>
+          </div>
+        </section>
+        <section class="detail-sec" id="e5-sec-learning">
+          <h2 class="sec-title">学习曲线</h2>
+          <p class="sec-sub">pass rate · 响应长度 · 截断 · loss · entropy · kl_loss</p>
+        </section>
+
+        <section class="detail-sub" id="e5-sec-learn-acc">
+          <h2 class="sec-title">准确率</h2>
+          <h2>Pass rate（%）</h2>
+          <div class="chart-card">
+            <div class="legend" id="legend-e5-pass"></div>
+            <div class="chart-wrap"><canvas id="chart-e5-pass" height="240"></canvas><div class="tooltip" id="tip-e5-pass"></div></div>
+          </div>
+          <p class="caption">细线=逐 step；粗线=5-step 移动平均。</p>
+        </section>
+
+        <section class="detail-sub" id="e5-sec-learn-len">
+          <h2 class="sec-title">长度</h2>
+          <section class="grid2" style="margin-top:12px">
+            <div>
+              <h2>平均响应长度（tokens）</h2>
+              <div class="chart-card"><div class="legend" id="legend-e5-len"></div><div class="chart-wrap"><canvas id="chart-e5-len" height="200"></canvas><div class="tooltip" id="tip-e5-len"></div></div></div>
+              <p class="caption">虚线 = 16K cap。</p>
+            </div>
+            <div>
+              <h2>截断率 clip@16K（%）</h2>
+              <div class="chart-card"><div class="legend" id="legend-e5-trunc"></div><div class="chart-wrap"><canvas id="chart-e5-trunc" height="200"></canvas><div class="tooltip" id="tip-e5-trunc"></div></div></div>
+              <p class="caption"><code>response_length/clip_ratio</code>。</p>
+            </div>
+          </section>
+          <div style="margin-top:12px">
+            <div>
+              <h2>平均输入长度（tokens）</h2>
+              <div class="chart-card"><div class="legend" id="legend-e5-promptlen"></div><div class="chart-wrap"><canvas id="chart-e5-promptlen" height="200"></canvas><div class="tooltip" id="tip-e5-promptlen"></div></div></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="detail-sub" id="e5-sec-learn-loss">
+          <h2 class="sec-title">损失</h2>
+          <section class="grid2" style="margin-top:12px">
+            <div>
+              <h2>整体损失 actor/loss</h2>
+              <div class="chart-card"><div class="legend" id="legend-e5-loss"></div><div class="chart-wrap"><canvas id="chart-e5-loss" height="220"></canvas><div class="tooltip" id="tip-e5-loss"></div></div></div>
+            </div>
+            <div>
+              <h2>KL 散度 loss（×100，对参考模型）</h2>
+              <div class="chart-card"><div class="legend" id="legend-e5-klloss"></div><div class="chart-wrap"><canvas id="chart-e5-klloss" height="200"></canvas><div class="tooltip" id="tip-e5-klloss"></div></div></div>
+              <p class="caption"><code>actor/kl_loss</code>×100；≠ ppo_kl。</p>
+            </div>
+          </section>
+        </section>
+
+        <section class="detail-sub" id="e5-sec-learn-ent">
+          <h2 class="sec-title">熵</h2>
+          <div style="margin-top:12px">
+            <div>
+              <h2>策略熵 entropy</h2>
+              <div class="chart-card"><div class="legend" id="legend-e5-ent"></div><div class="chart-wrap"><canvas id="chart-e5-ent" height="200"></canvas><div class="tooltip" id="tip-e5-ent"></div></div></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="detail-sec" id="e5-sec-stability">
+          <h2 class="sec-title">稳定性</h2>
+          <p class="sec-sub">grad_norm · ppo_kl · pg_clipfrac · rollout↔训练一致性</p>
+        </section>
+
+        <section class="detail-sub" id="e5-sec-stab-grad">
+          <h2 class="sec-title">梯度</h2>
+          <div style="margin-top:12px">
+            <div><h2>梯度范数 grad_norm</h2><div class="chart-card"><div class="legend" id="legend-e5-grad"></div><div class="chart-wrap"><canvas id="chart-e5-grad" height="200"></canvas><div class="tooltip" id="tip-e5-grad"></div></div></div></div>
+          </div>
+        </section>
+
+        <section class="detail-sub" id="e5-sec-stab-update">
+          <h2 class="sec-title">更新幅度</h2>
+          <section class="grid2" style="margin-top:12px">
+            <div><h2>策略更新位移 ppo_kl（×1e5）</h2><div class="chart-card"><div class="legend" id="legend-e5-ppokl"></div><div class="chart-wrap"><canvas id="chart-e5-ppokl" height="200"></canvas><div class="tooltip" id="tip-e5-ppokl"></div></div></div></div>
+            <div><h2>PPO 裁剪比例 pg_clipfrac（%）</h2><div class="chart-card"><div class="legend" id="legend-e5-clip"></div><div class="chart-wrap"><canvas id="chart-e5-clip" height="200"></canvas><div class="tooltip" id="tip-e5-clip"></div></div></div></div>
+          </section>
+        </section>
+
+        <section class="detail-sub" id="e5-sec-stab-cons">
+          <h2 class="sec-title">一致性</h2>
+          <div style="margin-top:12px">
+            <div><h2>rollout↔训练概率偏离度（(1−corr)×1e4）</h2><div class="chart-card"><div class="legend" id="legend-e5-corr"></div><div class="chart-wrap"><canvas id="chart-e5-corr" height="200"></canvas><div class="tooltip" id="tip-e5-corr"></div></div></div></div>
+          </div>
+          <section style="margin-top:16px">
+            <h2>rollout_corr/kl（×1e4）</h2>
+            <div class="chart-card"><div class="legend" id="legend-e5-rollkl"></div><div class="chart-wrap"><canvas id="chart-e5-rollkl" height="200"></canvas><div class="tooltip" id="tip-e5-rollkl"></div></div></div>
+          </section>
+        </section>
+
+        <section class="detail-sec" id="e5-sec-efficiency">
+          <h2 class="sec-title">效率</h2>
+          <p class="sec-sub">MFU · throughput</p>
+        </section>
+
+        <section class="detail-sub" id="e5-sec-eff-mfu">
+          <h2 class="sec-title">MFU</h2>
+          <div style="margin-top:12px">
+            <div>
+              <h2>MFU（actor，%）</h2>
+              <div class="chart-card"><div class="legend" id="legend-e5-mfu"></div><div class="chart-wrap"><canvas id="chart-e5-mfu" height="200"></canvas><div class="tooltip" id="tip-e5-mfu"></div></div></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="detail-sub" id="e5-sec-eff-thru">
+          <h2 class="sec-title">吞吐</h2>
+          <div style="margin-top:12px">
+            <div>
+              <h2>吞吐 throughput（tokens/s）</h2>
+              <div class="chart-card"><div class="legend" id="legend-e5-thru"></div><div class="chart-wrap"><canvas id="chart-e5-thru" height="200"></canvas><div class="tooltip" id="tip-e5-thru"></div></div></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="detail-sec" id="e5-sec-timing">
+          <h2 class="sec-title">耗时拆解</h2>
+          <p class="sec-sub">单步墙钟 · gen / update_actor / ref / old_log_prob 等 stage</p>
+          <div class="callout timing-box" id="e5-timing-summary">
+            <div class="title">加载中…</div>
+            <div class="timing-metrics tertiary">加载中…</div>
+            <details class="stage-gloss">
+              <summary>展开 stage 释义 · gen / update_actor / ref / adv …</summary>
+              <ul class="intro-points">
+                <li><strong>gen (rollout)：</strong>vLLM 采样生成响应，通常占一半以上时间；随响应变长而抬升。</li>
+                <li><strong>update_actor：</strong>FSDP 上策略网络反向与参数更新（PPO/GRPO clip 目标）。</li>
+                <li><strong>ref：</strong>参考模型前向算 logprob，供 KL loss；关闭 KL 的组此项为 null/≈0。</li>
+                <li><strong>old_log_prob：</strong>用更新前策略再算一遍 logprob，供重要性采样 ratio。</li>
+                <li><strong>update_weights：</strong>把新权重同步回 rollout engine（vLLM），一般数秒。</li>
+                <li><strong>adv：</strong>advantage 计算阶段墙钟（含 reward 整理 + <code>compute_advantage</code>），不是 advantage 数值本身；通常 &lt;1s。</li>
+                <li><strong>reward：</strong>打分/奖励函数本身的计时；多数配置下几乎可忽略（≈0）。</li>
+              </ul>
+            </details>
+          </div>
+        </section>
+
+        <section class="detail-sub" id="e5-sec-time-step">
+          <h2 class="sec-title">单步耗时</h2>
+          <section style="margin-top:12px">
+            <h2>单步耗时（分钟）</h2>
+            <div class="chart-card"><div class="legend" id="legend-e5-stepmin"></div><div class="chart-wrap"><canvas id="chart-e5-stepmin" height="200"></canvas><div class="tooltip" id="tip-e5-stepmin"></div></div></div>
+            <p class="caption"><code>timing_s/step</code>/60；均值约 10.2 min/step。</p>
+          </section>
+          <div style="margin-top:12px">
+            <div>
+              <h2>整步耗时 timing_s/step（秒）</h2>
+              <div class="chart-card">
+                <div class="legend" id="legend-e5-timing-step"></div>
+                <div class="chart-wrap"><canvas id="chart-e5-timing-step" height="240"></canvas><div class="tooltip" id="tip-e5-timing-step"></div></div>
+              </div>
+              <p class="caption">均值约 609.7s；与总训练 25h41m 一致。</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="detail-sub" id="e5-sec-time-stage">
+          <h2 class="sec-title">Stage 拆解</h2>
+          <div style="margin-top:12px">
+            <div>
+              <h2>主要 stage 曲线（秒）</h2>
+              <div class="chart-card">
+                <div class="legend" id="legend-e5-timing"></div>
+                <div class="chart-wrap"><canvas id="chart-e5-timing" height="240"></canvas><div class="tooltip" id="tip-e5-timing"></div></div>
+              </div>
+            </div>
+          </div>
+          <section class="grid2" style="margin-top:12px">
+            <div>
+              <h2>次要 stage（秒）</h2>
+              <div class="chart-card">
+                <div class="legend" id="legend-e5-timing-minor"></div>
+                <div class="chart-wrap"><canvas id="chart-e5-timing-minor" height="200"></canvas><div class="tooltip" id="tip-e5-timing-minor"></div></div>
+              </div>
+            </div>
+            <div>
+              <h2>平均耗时占比（秒）</h2>
+              <div class="chart-card">
+                <div class="legend" id="legend-e5-timing-mean"></div>
+                <div class="chart-wrap"><canvas id="chart-e5-timing-mean" height="200"></canvas><div class="tooltip" id="tip-e5-timing-mean"></div></div>
+              </div>
+              <p class="caption">含 ref；gen / update_actor / ref+old。</p>
+            </div>
+          </section>
+        </section>
+
+        <section class="detail-sec" id="e5-sec-eval">
+          <h2 class="sec-title">评测</h2>
+          <p class="sec-sub">evalscope offline · Easy-Boxed Stage-1 · mmlu_temp / aime24 / aime25 / math_500</p>
+          <p class="tertiary">offline：step 10→150 dense；Easy-Boxed 15/15，S3 目前 4/15（step 10–40；训练已 150/150 完成，其余 11 个 ckpt 的 offline eval 已排队补齐中，见 <code>scripts/eval/2b/supplement_e5_s3_eval_2b.sh</code>）。数据见 <code>js/data-eval-offline.js</code>。</p>
+        </section>
+
+        <section class="detail-sub" id="e5-sec-eval-mmlu">
+          <h2 class="sec-title">MMLU 通识</h2>
+          <div style="margin-top:10px">
+            <h2>mmlu_temp（%）</h2>
+            <div class="chart-card"><div class="legend" id="legend-e5-eval-mmlu"></div><div class="chart-wrap"><canvas id="chart-e5-eval-mmlu" height="200"></canvas><div class="tooltip" id="tip-e5-eval-mmlu"></div></div></div>
+          </div>
+        </section>
+
+        <section class="detail-sub" id="e5-sec-eval-math">
+          <h2 class="sec-title">Math 数学</h2>
+          <div style="margin-top:12px">
+            <h2>MATH-500（%）</h2>
+            <div class="chart-card"><div class="legend" id="legend-e5-eval-math500"></div><div class="chart-wrap"><canvas id="chart-e5-eval-math500" height="200"></canvas><div class="tooltip" id="tip-e5-eval-math500"></div></div></div>
+          </div>
+          <section class="grid2" style="margin-top:12px">
+            <div>
+              <h2>aime24（%）</h2>
+              <div class="chart-card"><div class="legend" id="legend-e5-eval-aime24"></div><div class="chart-wrap"><canvas id="chart-e5-eval-aime24" height="200"></canvas><div class="tooltip" id="tip-e5-eval-aime24"></div></div></div>
+            </div>
+            <div>
+              <h2>aime25（%）</h2>
+              <div class="chart-card"><div class="legend" id="legend-e5-eval-aime25"></div><div class="chart-wrap"><canvas id="chart-e5-eval-aime25" height="200"></canvas><div class="tooltip" id="tip-e5-eval-aime25"></div></div></div>
+            </div>
+          </section>
+        </section>
+
+        <section class="detail-sub" id="e5-sec-eval-agent">
+          <h2 class="sec-title">Agent 智能体</h2>
+          <p class="sec-sub">S3 · tau-bench</p>
+          <p class="tertiary">Source: <code>evalscope/outputs/agent2</code>（S3，<code>run_agent2_s3_queue_2b.sh</code>）。数据见 <code>js/data-eval-offline.js</code>（<code>AGENT_S3</code>）。刷新：<code>python3 scripts/monitoring/2b/sync_2b_agent_dashboard.py</code>。</p>
+          <div style="margin-top:12px">
+            <h2>tau-bench（%）</h2>
+            <div class="chart-card"><div class="legend" id="legend-e5-agent-tau"></div><div class="chart-wrap"><canvas id="chart-e5-agent-tau" height="200"></canvas><div class="tooltip" id="tip-e5-agent-tau"></div></div></div>
+            <p class="caption">X: step · Y: tau-bench mean_acc（%，40 条）。缺报告为断点。</p>
+          </div>
+        </section>
+
+        <section class="detail-sub" id="e5-sec-eval-tools">
+          <h2 class="sec-title">Function tools 工具调用</h2>
+          <p class="sec-sub">BFCL-v3 · OVERALL + MULTI_TURN</p>
+          <div style="margin-top:12px">
+            <h2>BFCL-v3 OVERALL（%）</h2>
+            <div class="chart-card"><div class="legend" id="legend-e5-agent-bfcl"></div><div class="chart-wrap"><canvas id="chart-e5-agent-bfcl" height="200"></canvas><div class="tooltip" id="tip-e5-agent-bfcl"></div></div></div>
+            <p class="caption">X: checkpoint step（10–150） · Y: BFCL-v3 OVERALL acc（%）。缺报告为断点。</p>
+          </div>
+          <div style="margin-top:12px">
+            <h2>BFCL-v3 MULTI_TURN（%）</h2>
+            <div class="chart-card"><div class="legend" id="legend-e5-agent-mt"></div><div class="chart-wrap"><canvas id="chart-e5-agent-mt" height="200"></canvas><div class="tooltip" id="tip-e5-agent-mt"></div></div></div>
+            <p class="caption">X: step · Y: MULTI_TURN acc（%）。</p>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+

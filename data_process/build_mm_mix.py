@@ -13,13 +13,21 @@ multimodal datasets, get will return None for samples without a modality column"
 """
 
 import os
+from pathlib import Path
 
 import pandas as pd
 import pyarrow as pa
 import pyarrow.parquet as pq
 
-POLARIS = "/data/juicefs-white/5281-gpu-a100/lijunyi/polaris"          # 主仓库：共享的纯文本数据源
-VLM_EXP = "/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp"             # 本实验独立仓库：Geo3K 数据与切片产出
+_PKG = Path(__file__).resolve().parents[1]  # .../vlm_exp
+_WS = _PKG.parent
+if (_WS / "polaris").is_dir() and (_WS / "vlm_exp").is_dir():
+    WORKSPACE_ROOT = _WS
+else:
+    # nested under polaris/vlm_exp
+    WORKSPACE_ROOT = _WS.parent
+POLARIS = str(WORKSPACE_ROOT / "polaris")  # 主仓库：共享的纯文本数据源
+VLM_EXP = str(WORKSPACE_ROOT / "vlm_exp")     # 本实验独立仓库：Geo3K 数据与切片产出
 SEED = 1
 
 TEXT_SRC = f"{POLARIS}/parquet/stage1/polaris_easy_boxed.parquet"

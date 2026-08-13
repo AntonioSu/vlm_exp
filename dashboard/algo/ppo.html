@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>PPO — 算法介绍</title>
+<link rel="stylesheet" href="../common/base.css">
+<link rel="stylesheet" href="algo.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+</head>
+<body class="algo-body">
+
+<div class="site-header">
+  <div class="site-header-inner">
+    <a class="site-brand" href="../index.html"><span class="dot">●</span> RL 实验看板</a>
+    <div class="site-nav">
+      <a href="../index.html">总览</a>
+      <a href="../algo/index.html" class="active">算法介绍</a>
+      <a href="../benchmark/index.html">Benchmark 介绍</a>
+      <a href="../dataset/index.html">数据集介绍</a>
+      <a href="../2b/index.html">2B 训练</a>
+      <a href="../4b/index.html">4B 训练</a>
+      <a href="../mm/index.html">多模态训练</a>
+      <a href="../conclusion/index.html">综合结论</a>
+      <a href="../chronicle/index.html">实验日志</a>
+    </div>
+  </div>
+</div>
+
+<div class="algo-page algo-page-with-toc">
+  <div class="algo-subnav">
+    <a href="base.html">基座</a>
+    <a href="index.html" class="active">RL 算法</a>
+    <a href="mm.html">多模态</a>
+  </div>
+  <nav class="algo-switcher" aria-label="RL 算法">
+    <a class="switcher-home" href="index.html">总览</a>
+    <span class="switcher-sep" aria-hidden="true"></span>
+    <a class="chip-ppo is-active" href="ppo.html">PPO</a><a class="chip-grpo" href="grpo.html">GRPO</a><a class="chip-dapo" href="dapo.html">DAPO</a><a class="chip-dr" href="drgrpo.html">Dr.GRPO</a><a class="chip-rloo" href="rloo.html">RLOO</a><a class="chip-rpp" href="reinforce_pp.html">REINFORCE++</a>
+  </nav>
+  <header class="algo-hero algo-hero-compact">
+    <div class="algo-hero-text">
+      <p class="algo-kicker"><a href="index.html">RL 算法</a> · Family A · Actor-Critic</p>
+      <h1>PPO</h1>
+      <p class="lede">本轮未跑 · 曲线见 <a href="../2b/index.html">2B</a> / <a href="../4b/index.html">4B</a> · 返回 <a href="index.html">算法总览</a></p>
+    </div>
+  </header>
+  <div class="algo-layout">
+  <nav class="algo-toc" aria-label="目录">
+    <p class="toc-heading">本页</p>
+    <ol class="toc-list">
+      <li data-a="ppo"><a href="#mod-ppo"><span class="toc-num">1</span><span class="toc-title">总览</span></a></li><li data-a="ppo"><a href="#sym"><span class="toc-num">2</span><span class="toc-title">符号</span></a></li><li data-a="ppo"><a href="#kit-obj"><span class="toc-num">3</span><span class="toc-title">Clipped Surrogate</span></a></li><li data-a="ppo"><a href="#kit-gae"><span class="toc-num">4</span><span class="toc-title">GAE</span></a></li><li data-a="ppo"><a href="#pros"><span class="toc-num">5</span><span class="toc-title">优缺点</span></a></li>
+    </ol>
+  </nav>
+  <div class="algo-main">
+
+  <section class="algo-section module-sec" id="mod-ppo" data-a="ppo">
+    <p class="module-tag">Family A · Actor-Critic · 本轮未跑</p>
+    <h2>PPO</h2>
+    <p class="sec-sub">Proximal Policy Optimization</p>
+    <div class="module-intro">
+      <p>强化学习里最常用的 actor-critic 算法。策略（actor）与价值（critic）一起训：critic 估 $V(s)$，再用 GAE 得 $\hat{A}$；actor 用重要性比率做对称 clip，防止一步走太远。本轮因 critic 成本<strong>未纳入对比</strong>。</p>
+      <p class="how"><strong>核心：</strong>learned $V(s)$ + clip · <span class="mono">adv_estimator=gae</span></p>
+      <ul class="ref-list">
+        <li>
+          <span class="ref-label">Paper</span>
+          <a href="https://arxiv.org/abs/1707.06347" target="_blank" rel="noopener">Proximal Policy Optimization Algorithms</a>
+          <span class="ref-meta">arXiv:1707.06347</span>
+        </li>
+        <li>
+          <span class="ref-label">Repo</span>
+          <a href="https://github.com/openai/baselines" target="_blank" rel="noopener">openai/baselines</a>
+          <span class="ref-meta">经典实现</span>
+        </li>
+      </ul>
+    </div>
+    <div class="kit-grid">
+      <article class="kit-item" id="sym">
+        <p class="kit-num">S</p>
+        <h3>符号</h3>
+        <p class="kit-desc">阅读后面公式前先扫一眼这些符号。</p>
+        <div class="formula-block">
+          <div class="table-wrap kit-table kit-table-wide">
+            <table class="sym-table">
+              <thead><tr><th>符号</th><th>含义</th></tr></thead>
+              <tbody>
+                <tr><td>$s_t,a_t$</td><td>时刻 $t$ 的状态与动作</td></tr>
+                <tr><td>$r_t(\theta)$</td><td>重要性比率 $\pi_\theta(a_t|s_t)\,/\,\pi_{\text{old}}(a_t|s_t)$</td></tr>
+                <tr><td>$V(s)$</td><td>critic 估计的状态价值</td></tr>
+                <tr><td>$\hat{A}_t$</td><td>GAE 得到的 advantage</td></tr>
+                <tr><td>$\epsilon$</td><td>对称 clip 半径（常见 $0.2$）</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </article>
+      <article class="kit-item" id="kit-obj">
+        <p class="kit-num">1</p>
+        <h3>Clipped Surrogate</h3>
+        <p class="kit-desc">用 clip 限制策略一步更新幅度。</p>
+        <div class="formula-block">
+          <p class="formula-label">策略目标</p>
+          <div class="formula">$$\mathcal{L}^{\text{CLIP}}(\theta) = \mathbb{E}_t\!\left[\min\!\Big(r_t(\theta)\,\hat{A}_t,\;\text{clip}\big(r_t(\theta),\,1{-}\epsilon,\,1{+}\epsilon\big)\,\hat{A}_t\Big)\right]$$</div>
+          <p class="formula-label">重要性比率</p>
+          <div class="formula">$$r_t(\theta) = \frac{\pi_\theta(a_t \mid s_t)}{\pi_{\theta_{\text{old}}}(a_t \mid s_t)}$$</div>
+        </div>
+      </article>
+      <article class="kit-item" id="kit-gae">
+        <p class="kit-num">2</p>
+        <h3>GAE Advantage</h3>
+        <p class="kit-desc">用 value 网络做时序差分，再指数加权成 advantage。</p>
+        <div class="formula-block">
+          <div class="formula">$$\hat{A}_t = \sum_{l=0}^{\infty}(\gamma\lambda)^l\,\delta_{t+l},\quad \delta_t = R_t + \gamma\,V(s_{t+1}) - V(s_t)$$</div>
+        </div>
+      </article>
+    </div>
+    <div class="module-pros" id="pros">
+      <div class="pros-col"><h4>优点</h4><p>经典稳；GAE + clip 成熟；单条样本也能估 advantage。</p></div>
+      <div class="pros-col"><h4>缺点</h4><p>要训 critic；显存与时间更高；LLM 长序列下 critic 更难稳。</p></div>
+    </div>
+  </section>
+  <nav class="algo-pager">
+    <span class="pager-link prev is-empty"></span>
+    <a class="pager-home" href="index.html">返回算法总览</a>
+    <a class="pager-link next" href="grpo.html"><span class="pager-dir">下一篇</span><span class="pager-name">GRPO</span></a>
+  </nav>
+
+  </div><!-- /.algo-main -->
+  </div><!-- /.algo-layout -->
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  renderMathInElement(document.body, {
+    delimiters: [
+      {left: "$$", right: "$$", display: true},
+      {left: "\\[", right: "\\]", display: true},
+      {left: "$", right: "$", display: false},
+      {left: "\\(", right: "\\)", display: false}
+    ],
+    throwOnError: false
+  });
+});
+</script>
+
+<script>
+(function () {
+  const links = Array.from(document.querySelectorAll(".algo-toc a[href^='#']"));
+  if (!links.length) return;
+  const sections = links
+    .map((a) => document.querySelector(a.getAttribute("href")))
+    .filter(Boolean);
+  function setActive(id) {
+    links.forEach((a) => {
+      a.classList.toggle("is-active", a.getAttribute("href") === "#" + id);
+    });
+  }
+  const observer = new IntersectionObserver(
+    (entries) => {
+      const visible = entries
+        .filter((e) => e.isIntersecting)
+        .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
+      if (visible[0]) setActive(visible[0].target.id);
+    },
+    { rootMargin: "-20% 0px -60% 0px", threshold: [0, 0.25, 0.5, 1] }
+  );
+  sections.forEach((s) => observer.observe(s));
+  const hash = location.hash.slice(1);
+  if (hash && document.getElementById(hash)) setActive(hash);
+  else if (sections[0]) setActive(sections[0].id);
+})();
+</script>
+
+</body>
+</html>

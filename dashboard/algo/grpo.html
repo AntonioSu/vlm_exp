@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>GRPO — 算法介绍</title>
+<link rel="stylesheet" href="../common/base.css">
+<link rel="stylesheet" href="algo.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+</head>
+<body class="algo-body">
+
+<div class="site-header">
+  <div class="site-header-inner">
+    <a class="site-brand" href="../index.html"><span class="dot">●</span> RL 实验看板</a>
+    <div class="site-nav">
+      <a href="../index.html">总览</a>
+      <a href="../algo/index.html" class="active">算法介绍</a>
+      <a href="../benchmark/index.html">Benchmark 介绍</a>
+      <a href="../dataset/index.html">数据集介绍</a>
+      <a href="../2b/index.html">2B 训练</a>
+      <a href="../4b/index.html">4B 训练</a>
+      <a href="../mm/index.html">多模态训练</a>
+      <a href="../conclusion/index.html">综合结论</a>
+      <a href="../chronicle/index.html">实验日志</a>
+    </div>
+  </div>
+</div>
+
+<div class="algo-page algo-page-with-toc">
+  <div class="algo-subnav">
+    <a href="base.html">基座</a>
+    <a href="index.html" class="active">RL 算法</a>
+    <a href="mm.html">多模态</a>
+  </div>
+  <nav class="algo-switcher" aria-label="RL 算法">
+    <a class="switcher-home" href="index.html">总览</a>
+    <span class="switcher-sep" aria-hidden="true"></span>
+    <a class="chip-ppo" href="ppo.html">PPO</a><a class="chip-grpo is-active" href="grpo.html">GRPO</a><a class="chip-dapo" href="dapo.html">DAPO</a><a class="chip-dr" href="drgrpo.html">Dr.GRPO</a><a class="chip-rloo" href="rloo.html">RLOO</a><a class="chip-rpp" href="reinforce_pp.html">REINFORCE++</a>
+  </nav>
+  <header class="algo-hero algo-hero-compact">
+    <div class="algo-hero-text">
+      <p class="algo-kicker"><a href="index.html">RL 算法</a> · Family B · Group-Relative</p>
+      <h1>GRPO</h1>
+      <p class="lede">本轮有训 · 曲线见 <a href="../2b/index.html">2B</a> / <a href="../4b/index.html">4B</a> · 返回 <a href="index.html">算法总览</a></p>
+    </div>
+  </header>
+  <div class="algo-layout">
+  <nav class="algo-toc" aria-label="目录">
+    <p class="toc-heading">本页</p>
+    <ol class="toc-list">
+      <li data-a="grpo"><a href="#mod-grpo"><span class="toc-num">1</span><span class="toc-title">总览</span></a></li><li data-a="grpo"><a href="#sym"><span class="toc-num">2</span><span class="toc-title">符号</span></a></li><li data-a="grpo"><a href="#kit-adv"><span class="toc-num">3</span><span class="toc-title">组内 Advantage</span></a></li><li data-a="grpo"><a href="#kit-obj"><span class="toc-num">4</span><span class="toc-title">样本级目标</span></a></li><li data-a="grpo"><a href="#pros"><span class="toc-num">5</span><span class="toc-title">优缺点</span></a></li>
+    </ol>
+  </nav>
+  <div class="algo-main">
+
+  <section class="algo-section module-sec" id="mod-grpo" data-a="grpo">
+    <p class="module-tag">Family B · 基座 · 本轮有训</p>
+    <h2>GRPO</h2>
+    <p class="sec-sub">Group Relative Policy Optimization</p>
+    <div class="module-intro">
+      <p>DeepSeek-R1 等后训练常用的 critic-free 方法。对同一题采样 $G$ 条，用组内 reward 均值（再除以 std）当 $\hat{A}$，只更新策略。本轮对照实验的共同基线。</p>
+      <p class="how"><strong>核心：</strong>组内相对打分 · 常配 KL · <span class="mono">adv_estimator=grpo</span></p>
+      <ul class="ref-list">
+        <li>
+          <span class="ref-label">Paper</span>
+          <a href="https://arxiv.org/abs/2402.03300" target="_blank" rel="noopener">DeepSeekMath: Pushing the Limits of Mathematical Reasoning</a>
+          <span class="ref-meta">arXiv:2402.03300</span>
+        </li>
+        <li>
+          <span class="ref-label">Repo</span>
+          <a href="https://github.com/deepseek-ai/DeepSeek-Math" target="_blank" rel="noopener">deepseek-ai/DeepSeek-Math</a>
+          <span class="ref-meta">项目主仓</span>
+        </li>
+      </ul>
+    </div>
+    <div class="kit-grid">
+      <article class="kit-item" id="sym">
+        <p class="kit-num">S</p>
+        <h3>符号</h3>
+        <p class="kit-desc">阅读后面公式前先扫一眼这些符号。</p>
+        <div class="formula-block">
+          <div class="table-wrap kit-table kit-table-wide">
+            <table class="sym-table">
+              <thead><tr><th>符号</th><th>含义</th></tr></thead>
+              <tbody>
+                <tr><td>$q$</td><td>一道题 / 一个 prompt</td></tr>
+                <tr><td>$G$</td><td>同题采样条数（本轮通常 $G{=}8$）</td></tr>
+                <tr><td>$o_i$</td><td>第 $i$ 条回复；$|o_i|$=长度，$o_{i,t}$=第 $t$ 个 token</td></tr>
+                <tr><td>$R_i$</td><td>第 $i$ 条的标量 reward</td></tr>
+                <tr><td>$r_{i,t}(\theta)$</td><td>重要性比率 $\pi_\theta(o_{i,t}\mid q,o_{i,&lt;t})\,/\,\pi_{\text{old}}(\cdots)$</td></tr>
+                <tr><td>$\hat{A}_i$</td><td>组内相对 advantage（含除以 std）</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </article>
+      <article class="kit-item" id="kit-adv">
+        <p class="kit-num">1</p>
+        <h3>组内 Advantage</h3>
+        <p class="kit-desc">同题 $G$ 条相对打分，再除以组内 std。</p>
+        <div class="formula-block">
+          <div class="formula">$$\hat{A}_i = \frac{R_i - \text{mean}(R_1,\dots,R_G)}{\text{std}(R_1,\dots,R_G)}$$</div>
+        </div>
+      </article>
+      <article class="kit-item" id="kit-obj">
+        <p class="kit-num">2</p>
+        <h3>样本级目标</h3>
+        <p class="kit-desc">论文写法：先对每条做 $1/|o_i|$，再对 $G$ 条平均——对长输出不如 token 级友好。</p>
+        <div class="formula-block">
+          <div class="formula">$$\mathcal{J}_{\text{GRPO}}(\theta) = \mathbb{E}_{q}\!\left[\frac{1}{G}\sum_{i=1}^{G}\frac{1}{|o_i|}\sum_{t=1}^{|o_i|}\min\!\Big(r_{i,t}(\theta)\,\hat{A}_i,\;\text{clip}(r_{i,t}(\theta),\,1{-}\epsilon,\,1{+}\epsilon)\,\hat{A}_i\Big)\right] - \beta\,\mathcal{D}_{\text{KL}}\!\left[\pi_\theta \| \pi_{\text{ref}}\right]$$</div>
+        </div>
+      </article>
+    </div>
+    <div class="module-pros" id="pros">
+      <div class="pros-col"><h4>优点</h4><p>无需 value；组内 baseline 稳；其余变体的共同基座。</p></div>
+      <div class="pros-col"><h4>缺点</h4><p>长度/难度隐藏偏置；开 KL 更慢；无超长与全对/全错组的专门处理。</p></div>
+    </div>
+  </section>
+  <nav class="algo-pager">
+    <a class="pager-link prev" href="ppo.html"><span class="pager-dir">上一篇</span><span class="pager-name">PPO</span></a>
+    <a class="pager-home" href="index.html">返回算法总览</a>
+    <a class="pager-link next" href="dapo.html"><span class="pager-dir">下一篇</span><span class="pager-name">DAPO</span></a>
+  </nav>
+
+  </div><!-- /.algo-main -->
+  </div><!-- /.algo-layout -->
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  renderMathInElement(document.body, {
+    delimiters: [
+      {left: "$$", right: "$$", display: true},
+      {left: "\\[", right: "\\]", display: true},
+      {left: "$", right: "$", display: false},
+      {left: "\\(", right: "\\)", display: false}
+    ],
+    throwOnError: false
+  });
+});
+</script>
+
+<script>
+(function () {
+  const links = Array.from(document.querySelectorAll(".algo-toc a[href^='#']"));
+  if (!links.length) return;
+  const sections = links
+    .map((a) => document.querySelector(a.getAttribute("href")))
+    .filter(Boolean);
+  function setActive(id) {
+    links.forEach((a) => {
+      a.classList.toggle("is-active", a.getAttribute("href") === "#" + id);
+    });
+  }
+  const observer = new IntersectionObserver(
+    (entries) => {
+      const visible = entries
+        .filter((e) => e.isIntersecting)
+        .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
+      if (visible[0]) setActive(visible[0].target.id);
+    },
+    { rootMargin: "-20% 0px -60% 0px", threshold: [0, 0.25, 0.5, 1] }
+  );
+  sections.forEach((s) => observer.observe(s));
+  const hash = location.hash.slice(1);
+  if (hash && document.getElementById(hash)) setActive(hash);
+  else if (sections[0]) setActive(sections[0].id);
+})();
+</script>
+
+</body>
+</html>

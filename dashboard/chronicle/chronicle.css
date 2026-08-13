@@ -1,0 +1,140 @@
+/* 实验日志 — 时间线（空心绿圆 + 竖线，参考 spaces.ac.cn「微言微语」） */
+
+.log-page {
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 36px 24px 96px;
+}
+
+.log-page h1 {
+  font-size: 24px;
+  font-weight: 650;
+  margin: 0 0 8px;
+}
+
+.log-lede {
+  color: var(--text-secondary);
+  font-size: 14px;
+  max-width: 68ch;
+  margin: 0 0 32px;
+  line-height: 1.7;
+}
+
+.log-lede a { color: var(--accent); text-decoration: none; }
+.log-lede a:hover { text-decoration: underline; }
+
+/* ---- feed ---- */
+.feed {
+  position: relative;
+  padding-left: 28px;
+}
+
+.feed::before {
+  content: "";
+  position: absolute;
+  left: 5px;
+  top: 8px;
+  bottom: 8px;
+  width: 1px;
+  background: #e5e7eb;
+}
+
+.feed-item {
+  position: relative;
+  padding: 0 0 28px;
+}
+
+.feed-item:last-child { padding-bottom: 0; }
+
+.feed-item + .feed-item {
+  border-top: 1px solid #eceef1;
+  padding-top: 28px;
+}
+
+.feed-marker {
+  position: absolute;
+  left: -28px;
+  top: 4px;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid var(--tl-green);
+  z-index: 1;
+}
+
+.feed-item + .feed-item .feed-marker {
+  top: 32px; /* account for padding-top */
+}
+
+.feed-head {
+  font-size: 14.5px;
+  color: var(--text);
+  line-height: 1.5;
+  margin: 0 0 10px;
+}
+
+.feed-date {
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+  margin-right: 8px;
+}
+
+.feed-label {
+  font-weight: 550;
+  color: var(--text);
+}
+
+.feed-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 18px;
+}
+
+.feed-time {
+  flex: none;
+  width: 42px;
+  font-size: 13px;
+  color: var(--text-tertiary);
+  font-variant-numeric: tabular-nums;
+  padding-top: 1px;
+  text-align: right;
+}
+
+.feed-content {
+  flex: 1;
+  min-width: 0;
+  font-size: 13.5px;
+  color: var(--text-secondary);
+  line-height: 1.85;
+}
+
+.feed-content p {
+  margin: 0;
+}
+
+.feed-content a {
+  color: var(--text-tertiary);
+  text-decoration: none;
+  word-break: break-all;
+  font-size: 12.5px;
+}
+
+.feed-content a:hover {
+  color: var(--accent);
+  text-decoration: underline;
+}
+
+.feed-content .mono {
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 0.92em;
+  background: #f3f4f6;
+  padding: 1px 5px;
+  border-radius: 4px;
+  color: var(--text);
+}
+
+@media (max-width: 560px) {
+  .feed-row { flex-direction: column; gap: 4px; }
+  .feed-time { text-align: left; width: auto; }
+}
