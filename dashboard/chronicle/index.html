@@ -38,15 +38,173 @@
     <article class="feed-item">
       <div class="feed-marker" aria-hidden="true"></div>
       <div class="feed-head">
+        <span class="feed-date">2026-08-13</span>
+        <span class="feed-label">看板更新：</span>
+      </div>
+      <div class="feed-row">
+        <span class="feed-time">14:10</span>
+        <div class="feed-content">
+          <p>2B 训练曲线全量刷新（Easy-24K <strong>321</strong> / Easy-32K <strong>435</strong> / Ext 三臂满 300 / S1-24K 150 / GRPO-24K 停在 47）；offline + agent 同步进 <span class="mono">data-eval-offline.js</span></p>
+          <p>空 AST 的 BFCL 报告不再进看板（AST 全 0 + irrelevance≈1.0）。Easy-24K E2@150 BFCL OVERALL <strong>42.1%</strong>（对照 DAPO Easy@150 <strong>51.8%</strong>）；Easy-32K@150 <strong>47.0%</strong></p>
+          <p>Easy-32K 续训至 435/435（~70.87h）；<span class="mono">run_easy_32k_bfcl_rerun_all_2b.sh</span> 落地</p>
+        </div>
+      </div>
+    </article>
+
+    <article class="feed-item">
+      <div class="feed-marker" aria-hidden="true"></div>
+      <div class="feed-head">
+        <span class="feed-date">2026-08-12</span>
+        <span class="feed-label">评测结果：</span>
+      </div>
+      <div class="feed-row">
+        <span class="feed-time">15:52</span>
+        <div class="feed-content">
+          <p>Easy-24K BFCL 远低于 DAPO Easy：根因是 evalscope <span class="mono">generate_turn_with_tools</span> 单轮不记 tool_calls，预测变成空 <span class="mono">[[]]</span></p>
+          <p>已恢复 <span class="mono">generation.py</span>；作废 empty-AST 的 <span class="mono">native_fc_v1</span> marker；队列侧加强截断/空调用检测</p>
+          <p>FORCE 重跑 Easy-24K step150；<span class="mono">run_easy_24k_bfcl_rerun_all_2b.sh</span> 覆盖其余 checkpoint</p>
+        </div>
+      </div>
+    </article>
+
+    <article class="feed-item">
+      <div class="feed-marker" aria-hidden="true"></div>
+      <div class="feed-head">
+        <span class="feed-date">2026-08-11</span>
+        <span class="feed-label">训练进展：</span>
+      </div>
+      <div class="feed-row">
+        <span class="feed-time">12:48</span>
+        <div class="feed-content">
+          <p>Ext easy-cont-24K 满 <strong>300/300</strong>（~29.24h）；GRPO-24K 100k 跑到 step <strong>47</strong> 后 watchdog 停（~39.6h）</p>
+          <p>Easy-24K 冷启动续训（晚间重启；看板现 321/321，~41.82h）；4B Ext easy-cont-24K 当日启动</p>
+          <p>长度消融 eval 队列 + 4B from150-24K eval/agent 脚本落地</p>
+        </div>
+      </div>
+    </article>
+
+    <article class="feed-item">
+      <div class="feed-marker" aria-hidden="true"></div>
+      <div class="feed-head">
+        <span class="feed-date">2026-08-10</span>
+        <span class="feed-label">训练进展：</span>
+      </div>
+      <div class="feed-row">
+        <span class="feed-time">03:35</span>
+        <div class="feed-content">
+          <p>DAPO × easy × 32K 从 base 冷启动（<span class="mono">e2_dapo_2b_easy_32k</span>，<span class="mono">RESP_LEN=32768</span>）</p>
+          <p>Ext easy-cont-24K 午后续训（<span class="mono">train_20260810_150753</span>）</p>
+          <p>2B 看板 parse/gen；offline 同步脚本更新</p>
+        </div>
+      </div>
+    </article>
+
+    <article class="feed-item">
+      <div class="feed-marker" aria-hidden="true"></div>
+      <div class="feed-head">
+        <span class="feed-date">2026-08-09</span>
+        <span class="feed-label">评测结果：</span>
+      </div>
+      <div class="feed-row">
+        <span class="feed-time">19:10</span>
+        <div class="feed-content">
+          <p>V2 E1 补评 step 150→300（<span class="mono">run_v2_s1_150_300_supplement.sh</span>）；260–300 仍缺 offline</p>
+          <p>Ext from150 评测公共库 <span class="mono">_dapo_from150_common.sh</span></p>
+        </div>
+      </div>
+    </article>
+
+    <article class="feed-item">
+      <div class="feed-marker" aria-hidden="true"></div>
+      <div class="feed-head">
+        <span class="feed-date">2026-08-08</span>
+        <span class="feed-label">训练进展：</span>
+      </div>
+      <div class="feed-row">
+        <span class="feed-time">22:22</span>
+        <div class="feed-content">
+          <p>GRPO × easy × 24K × 100k 从 raw base 冷启动（<span class="mono">e1_grpo_2b_easy_raw_24k_100k</span>，GPU 2,0；<span class="mono">SAVE_FREQ=1</span>）</p>
+          <p>探针跑通后拉 watchdog；2B 对比总览面板更新</p>
+        </div>
+      </div>
+    </article>
+
+    <article class="feed-item">
+      <div class="feed-marker" aria-hidden="true"></div>
+      <div class="feed-head">
+        <span class="feed-date">2026-08-07</span>
+        <span class="feed-label">训练进展：</span>
+      </div>
+      <div class="feed-row">
+        <span class="feed-time">08:00</span>
+        <div class="feed-content">
+          <p>S1-24K 满 <strong>150/150</strong>（~28.61h，<span class="mono">e2_dapo_2b_s1_24k</span>）</p>
+          <p>Ext easy-cont-24K 开跑（easy@150 权重、24K 响应、目标 step 300）</p>
+          <p>共享 <span class="mono">chart-utils</span> 与多模态评测页刷新</p>
+        </div>
+      </div>
+    </article>
+
+    <article class="feed-item">
+      <div class="feed-marker" aria-hidden="true"></div>
+      <div class="feed-head">
+        <span class="feed-date">2026-08-06</span>
+        <span class="feed-label">训练进展：</span>
+      </div>
+      <div class="feed-row">
+        <span class="feed-time">11:16</span>
+        <div class="feed-content">
+          <p>Ext 两臂收口：easy-cont <strong>300/300</strong>（~20.97h）、S1-switch <strong>300/300</strong>（~18.56h）</p>
+          <p>S1-24K 冷启动开跑；独立 Easy-32K 实验目录落地（从 24K 目录拆出）</p>
+          <p>Ext eval 队列：merge 150→300 + easy/S1 并行评测</p>
+        </div>
+      </div>
+    </article>
+
+    <article class="feed-item">
+      <div class="feed-marker" aria-hidden="true"></div>
+      <div class="feed-head">
+        <span class="feed-date">2026-08-05</span>
+        <span class="feed-label">看板更新：</span>
+      </div>
+      <div class="feed-row">
+        <span class="feed-time">10:45</span>
+        <div class="feed-content">
+          <p>2B parse/gen 接入 Easy-24K / Ext 曲线，缺 stdout 时用 TensorBoard backfill；pass 仍优先 <span class="mono">critic/score/mean</span></p>
+          <p><span class="mono">finish_dapo_from150_dataset.sh</span> + step300 对比摘要</p>
+          <p>S1-switch 开跑；4B E5 S3 当日跑满；4B S3 agent serving 加 <span class="mono">language-model-only</span></p>
+        </div>
+      </div>
+    </article>
+
+    <article class="feed-item">
+      <div class="feed-marker" aria-hidden="true"></div>
+      <div class="feed-head">
+        <span class="feed-date">2026-08-04</span>
+        <span class="feed-label">训练进展：</span>
+      </div>
+      <div class="feed-row">
+        <span class="feed-time">15:53</span>
+        <div class="feed-content">
+          <p>2B V2 E1 停在 <strong>250/300</strong>（~13.96h）；4B E5 S3 启动并进入主日志</p>
+          <p>Ext easy-cont 开跑（DAPO easy@150 续 easy / 16K → 300）</p>
+          <p>Agent2 改 classic BFCL env + <span class="mono">vllm_safe_serve</span>；长度消融目标提到 32K；训练入口支持 <span class="mono">RAY_ADDRESS</span>；V2 对比轴 pad 过 150</p>
+        </div>
+      </div>
+    </article>
+
+    <article class="feed-item">
+      <div class="feed-marker" aria-hidden="true"></div>
+      <div class="feed-head">
         <span class="feed-date">2026-08-03</span>
         <span class="feed-label">看板更新：</span>
       </div>
       <div class="feed-row">
-        <span class="feed-time">11:30</span>
+        <span class="feed-time">20:22</span>
         <div class="feed-content">
-          <p>同步 <span class="mono">experiments_v2</span> 训练曲线到 2B / 4B 看板（对比总览新增 V2 区块；E1 详情叠加短虚线）</p>
-          <p>当前进度：2B E1 GRPO V2 续训 <strong>~250/300</strong>；4B E1 GRPO V2 ~61/150（日志 <span class="mono">e1_grpo_{2,4}b_v2_s1</span>）</p>
-          <p>刷新：<span class="mono">parse_*_logs.py && gen_*_js.py</span>；pass 口径用 <span class="mono">critic/score/mean</span>（shaped overlong）</p>
+          <p>路径统一到 <span class="mono">WORKSPACE_ROOT</span>；V2 曲线进 2B / 4B 看板（对比总览新增 V2 区块；E1 详情叠加短虚线，橙色 overlay）</p>
+          <p>2B E1 GRPO V2 当日续训；4B E1 GRPO V2 ~61/150。pass 口径用 <span class="mono">critic/score/mean</span>（shaped overlong）</p>
+          <p>DAPO easy 24K 冷启动 + Ext（easy-cont vs S1-switch）runner 落地；中段 eval 默认 <span class="mono">test_freq=-1</span></p>
         </div>
       </div>
     </article>
@@ -107,9 +265,9 @@
       <div class="feed-row">
         <span class="feed-time">23:59</span>
         <div class="feed-content">
-          <p>2B offline evalscope 同步（Stage-1 + Stage-3）</p>
-          <p>定盘看 aime25@150：RLOO(E4) 领先；mmlu@150 看 REINFORCE++(E5)</p>
-          <p>数据写入 <span class="mono">2b/js/data-eval-offline.js</span></p>
+          <p>2B offline evalscope 同步（Easy + S3）；定盘 aime25@150 看 RLOO(E4)，mmlu@150 看 REINFORCE++(E5)</p>
+          <p>4B S3 E1 凌晨满 150；E2 DAPO S3 17:30 开跑。V2 难度池 4B 探针（debug / OPD ladder）当日试跑</p>
+          <p>受控对比方案入仓：<span class="mono">plan/exp_plan.md</span> / <span class="mono">plan/4b_exp_plan.md</span>。M3 mix20% 02:40 启动</p>
         </div>
       </div>
     </article>
@@ -123,9 +281,9 @@
       <div class="feed-row">
         <span class="feed-time">16:47</span>
         <div class="feed-content">
-          <p>4B Easy-Boxed offline 全齐（E1–E5 · 75/75）</p>
+          <p>看板侧 4B Easy-Boxed offline 全齐（E1–E5 · 75/75）；Agent BFCL / tau-bench 同步。数学 RL 几乎不抬 MULTI_TURN</p>
           <p>峰值 aime24 <strong>E2@80 · 80.4%</strong>；峰值 aime25 <strong>E2@80 · 62.5%</strong></p>
-          <p>Agent 侧 BFCL / tau-bench 同步；数学 RL 几乎不抬 MULTI_TURN</p>
+          <p>native-FC BFCL 硬化：必须有 marker 才进看板；补 <span class="mono">math_500</span> / <span class="mono">macro_score</span></p>
         </div>
       </div>
     </article>
@@ -137,11 +295,11 @@
         <span class="feed-label">训练进展：</span>
       </div>
       <div class="feed-row">
-        <span class="feed-time">12:00</span>
+        <span class="feed-time">14:45</span>
         <div class="feed-content">
-          <p>2B Easy-Boxed E1–E5 与 S3 E1–E5 均已满 150/150</p>
-          <p>4B Easy-Boxed E1–E5 满 150；S3 监控接入（E1 已满，其余随队列）</p>
-          <p>E5-S3 stdout 日志被续训覆盖，曲线改由 TensorBoard event 重建</p>
+          <p>2B Easy-Boxed E1–E5 与 S3 E1–E5 均已满 150/150（E5-S3 stdout 被续训覆盖，曲线改 TensorBoard 重建）</p>
+          <p>4B Easy-Boxed E1–E5 满 150；4B S3 E1 续训中。2B/4B 看板接入 S3 E5、offline 改名与 agent 报告</p>
+          <p>2B/4B stage launcher + Easy-Boxed 中段 eval 队列落地；E5 S3 补评脚本</p>
         </div>
       </div>
     </article>
@@ -165,15 +323,299 @@
     <article class="feed-item">
       <div class="feed-marker" aria-hidden="true"></div>
       <div class="feed-head">
+        <span class="feed-date">2026-07-29</span>
+        <span class="feed-label">训练进展：</span>
+      </div>
+      <div class="feed-row">
+        <span class="feed-time">08:26</span>
+        <div class="feed-content">
+          <p>2B S3 E4 RLOO 满 150（~28h）；E5 REINFORCE++ S3 08:26 开跑</p>
+          <p>4B S3 队列 04:20 首发失败，04:38 重试：E1 GRPO S3 正式开跑（<span class="mono">train_20260729_043802</span>）</p>
+          <p>4B Easy-Boxed eval 队列多次 resume（17:06–17:34），补齐缺口 step</p>
+        </div>
+      </div>
+    </article>
+
+    <article class="feed-item">
+      <div class="feed-marker" aria-hidden="true"></div>
+      <div class="feed-head">
+        <span class="feed-date">2026-07-28</span>
+        <span class="feed-label">训练进展：</span>
+      </div>
+      <div class="feed-row">
+        <span class="feed-time">11:03</span>
+        <div class="feed-content">
+          <p>2B S3 E3 Dr.GRPO 满 150；E4 RLOO S3 04:18 开跑（首发空日志，04:18 重拉）</p>
+          <p>训练入口统一 <span class="mono">test_freq=-1</span>：中段验证改线下 eval 队列，避免占卡</p>
+          <p>2B 看板加 rollout acc / prompt length / S3 实验；agent + S3 eval 队列落地</p>
+        </div>
+      </div>
+    </article>
+
+    <article class="feed-item">
+      <div class="feed-marker" aria-hidden="true"></div>
+      <div class="feed-head">
+        <span class="feed-date">2026-07-27</span>
+        <span class="feed-label">训练进展：</span>
+      </div>
+      <div class="feed-row">
+        <span class="feed-time">03:33</span>
+        <div class="feed-content">
+          <p>2B S3 E3 Dr.GRPO 开跑（E2 刚满）。M2 mix50% 巡检已过 step100，GPU2/3 仍占满</p>
+          <p>M1 停在 ckpt130、GPU0 ~75G 残留 context，无干净双卡开 M3</p>
+          <p>2B/4B train·eval·setup 工具链一次性入仓（parse/gen/sync、stage launcher、smoke）</p>
+        </div>
+      </div>
+    </article>
+
+    <article class="feed-item">
+      <div class="feed-marker" aria-hidden="true"></div>
+      <div class="feed-head">
+        <span class="feed-date">2026-07-26</span>
+        <span class="feed-label">训练进展：</span>
+      </div>
+      <div class="feed-row">
+        <span class="feed-time">08:17</span>
+        <div class="feed-content">
+          <p>2B S3 E1 凌晨满 150；E2–E5 S3 串行队列 08:15 拉起，E2 DAPO S3 08:17 开跑（当日晚间推进，次日 03:31 满）</p>
+          <p>M2 过 step50 后继续；GPU0 残留 ~74.9G、GPU1 单卡空闲，M1/M3 仍无 2-GPU lane</p>
+          <p>评测 supervisor 仍在等 M1 step150 actor</p>
+        </div>
+      </div>
+    </article>
+
+    <article class="feed-item">
+      <div class="feed-marker" aria-hidden="true"></div>
+      <div class="feed-head">
+        <span class="feed-date">2026-07-25</span>
+        <span class="feed-label">训练进展：</span>
+      </div>
+      <div class="feed-row">
+        <span class="feed-time">23:17</span>
+        <div class="feed-content">
+          <p>M1 凌晨同步到 ckpt130；午后 step136 再 OOM，三次从 130 恢复均卡在 GPU0 CUDA 残留（非 root 无法 <span class="mono">gpu-reset</span>）</p>
+          <p>23:17 终止 M1 retry 树并暂停 <span class="mono">run_mm_training_pipeline.sh</span>，避免空转。可信进度停在 130</p>
+          <p>M2 同日从 step10 推到 ~40+（SAVE_FREQ=5）；2B S3 E1 仍在跑</p>
+        </div>
+      </div>
+    </article>
+
+    <article class="feed-item">
+      <div class="feed-marker" aria-hidden="true"></div>
+      <div class="feed-head">
+        <span class="feed-date">2026-07-24</span>
+        <span class="feed-label">训练进展：</span>
+      </div>
+      <div class="feed-row">
+        <span class="feed-time">19:10</span>
+        <div class="feed-content">
+          <p>M1 18:45 在 step105 后 Ray node memory OOM，回退 ckpt100 续训；未落盘 101–105 已归档</p>
+          <p>M2 mix50% 并行占 GPU2/3，step6 同样 OOM；18:47 用 <span class="mono">SAVE_FREQ=5</span> + Ray memory threshold 0.99 从头重拉</p>
+          <p>2B S3 开跑：E1 GRPO × <span class="mono">qwen3-4b-s3</span>（<span class="mono">e1_grpo_2b_s3</span>）。评测默认 GPU 从 2 改到 0，避开 M2</p>
+        </div>
+      </div>
+    </article>
+
+    <article class="feed-item">
+      <div class="feed-marker" aria-hidden="true"></div>
+      <div class="feed-head">
+        <span class="feed-date">2026-07-23</span>
+        <span class="feed-label">评测结果：</span>
+      </div>
+      <div class="feed-row">
+        <span class="feed-time">22:39</span>
+        <div class="feed-content">
+          <p>4B Easy-Boxed offline 队列收口：E1–E5 各 15/15，合计 <strong>75/75</strong>（mmlu + aime24 + aime25）</p>
+          <p>峰值 mmlu E3@120 <strong>92.47%</strong>；aime24 / aime25 峰值都在 E2@80（<strong>80.42%</strong> / <strong>62.50%</strong>）</p>
+          <p>Agent 容器类 bench（SWE/GAIA/Terminal）本机 Docker 无法建容器，标 FATAL。M1 当日续训中</p>
+        </div>
+      </div>
+    </article>
+
+    <article class="feed-item">
+      <div class="feed-marker" aria-hidden="true"></div>
+      <div class="feed-head">
+        <span class="feed-date">2026-07-22</span>
+        <span class="feed-label">训练进展：</span>
+      </div>
+      <div class="feed-row">
+        <span class="feed-time">17:06</span>
+        <div class="feed-content">
+          <p>M1（100% Geo3K）脱离会话后台重拉，进入正式长跑（日志 <span class="mono">train_20260722_170617</span>；此前 00:20 / 11:48 为短启动）</p>
+          <p>算法固定 GRPO、16K、2 卡；M0 直接复用 E1 不重跑</p>
+          <p>M2/M3 等空闲双卡</p>
+        </div>
+      </div>
+    </article>
+
+    <article class="feed-item">
+      <div class="feed-marker" aria-hidden="true"></div>
+      <div class="feed-head">
         <span class="feed-date">2026-07-21</span>
         <span class="feed-label">训练进展：</span>
       </div>
       <div class="feed-row">
-        <span class="feed-time">18:00</span>
+        <span class="feed-time">16:21</span>
         <div class="feed-content">
-          <p>多模态链路烟测通过（2 step）</p>
-          <p>验证：多模态生成、图文混训、mixed reward、双验证集指标</p>
-          <p>M0 正式基线：Geo3K <strong>57.3%</strong> · MATH-500 <strong>86.4%</strong> · MMLU <strong>78.3%</strong></p>
+          <p>2B E5 凌晨满 150；4B E5 16:21 满 150（~34h，<span class="mono">train_20260720_063429</span> 一次性跑完）。Easy-Boxed 2B/4B 五组至此齐</p>
+          <p>多模态链路烟测通过（2 step）：图文混训、mixed reward、双验证集</p>
+          <p>M0(=E1) 正式基线：Geo3K <strong>57.3%</strong> · MATH-500 <strong>86.4%</strong> · MMLU <strong>78.3%</strong> · AIME24 <strong>35.4%</strong>。2B 早期 evalscope 摘要落 <span class="mono">archive/eval_2b</span>。M1 23:59 试启动</p>
+        </div>
+      </div>
+    </article>
+
+    <article class="feed-item">
+      <div class="feed-marker" aria-hidden="true"></div>
+      <div class="feed-head">
+        <span class="feed-date">2026-07-20</span>
+        <span class="feed-label">训练进展：</span>
+      </div>
+      <div class="feed-row">
+        <span class="feed-time">13:47</span>
+        <div class="feed-content">
+          <p>4B E4 06:34 满 150（~35h47m）；4B E5 REINFORCE++ 同分钟接上。2B E5 仍在跑</p>
+          <p>静态看板首版入仓（算法介绍 + 2B/4B/MM 三赛道，<span class="mono">archive/dashboard</span>）</p>
+          <p>4B 训练 pass 已挤在 88–91% 窄带，后续必须看 offline 才能拉开</p>
+        </div>
+      </div>
+    </article>
+
+    <article class="feed-item">
+      <div class="feed-marker" aria-hidden="true"></div>
+      <div class="feed-head">
+        <span class="feed-date">2026-07-19</span>
+        <span class="feed-label">训练进展：</span>
+      </div>
+      <div class="feed-row">
+        <span class="feed-time">23:24</span>
+        <div class="feed-content">
+          <p>2B E5 REINFORCE++ 开跑（Easy-Boxed 最后一组）</p>
+          <p>4B E4 RLOO 跨夜续训中</p>
+        </div>
+      </div>
+    </article>
+
+    <article class="feed-item">
+      <div class="feed-marker" aria-hidden="true"></div>
+      <div class="feed-head">
+        <span class="feed-date">2026-07-18</span>
+        <span class="feed-label">训练进展：</span>
+      </div>
+      <div class="feed-row">
+        <span class="feed-time">21:00</span>
+        <div class="feed-content">
+          <p>2B E4 RLOO 满 150（~26h48m）；训练中 aime24@150 = <strong>40.0%</strong>（与 E3 并列当时最高）</p>
+          <p>4B E3 18:41 满 150（~31h39m）；4B E4 RLOO 18:41 接上</p>
+          <p>2B 侧 E3 熵收得最紧、长度反涨；4B 上同一现象方向相反（长度涨幅全场最小）</p>
+        </div>
+      </div>
+    </article>
+
+    <article class="feed-item">
+      <div class="feed-marker" aria-hidden="true"></div>
+      <div class="feed-head">
+        <span class="feed-date">2026-07-17</span>
+        <span class="feed-label">训练进展：</span>
+      </div>
+      <div class="feed-row">
+        <span class="feed-time">18:06</span>
+        <div class="feed-content">
+          <p>4B E2 DAPO 10:57 满 150（~32h33m，4B Easy 当时最快）；4B E3 Dr.GRPO 10:57 开跑</p>
+          <p>2B E4 RLOO 18:06 开跑。脚本改用 <span class="mono">run_e4_rloo_2b.sh</span>，避开 4B dispatcher 同名覆盖</p>
+        </div>
+      </div>
+    </article>
+
+    <article class="feed-item">
+      <div class="feed-marker" aria-hidden="true"></div>
+      <div class="feed-head">
+        <span class="feed-date">2026-07-16</span>
+        <span class="feed-label">训练进展：</span>
+      </div>
+      <div class="feed-row">
+        <span class="feed-time">14:01</span>
+        <div class="feed-content">
+          <p>4B E1 凌晨满 150（~37h12m）；4B E2 02:11 首发失败，02:19 重拉</p>
+          <p>2B E3 Dr.GRPO 14:01 满 150（~26h11m）；训练中 aime24@150 = <strong>40.0%</strong></p>
+          <p>E3 step133–140 有一次 PPO KL / grad 尖峰、熵骤降，已在归档标注</p>
+        </div>
+      </div>
+    </article>
+
+    <article class="feed-item">
+      <div class="feed-marker" aria-hidden="true"></div>
+      <div class="feed-head">
+        <span class="feed-date">2026-07-15</span>
+        <span class="feed-label">训练进展：</span>
+      </div>
+      <div class="feed-row">
+        <span class="feed-time">11:41</span>
+        <div class="feed-content">
+          <p>2B E2 DAPO 08:22 满 150（~21h12m，2B Easy 最快；overlong 把响应压短）</p>
+          <p>2B E3 Dr.GRPO 11:41 开跑。4B E1 仍在跑</p>
+          <p>DAPO 必须走 <span class="mono">reward.reward_manager.name=dapo</span>；overlong_buffer.len 取 2048（等于 16K cap 会从长度 0 就开始罚）</p>
+        </div>
+      </div>
+    </article>
+
+    <article class="feed-item">
+      <div class="feed-marker" aria-hidden="true"></div>
+      <div class="feed-head">
+        <span class="feed-date">2026-07-14</span>
+        <span class="feed-label">训练进展：</span>
+      </div>
+      <div class="feed-row">
+        <span class="feed-time">12:51</span>
+        <div class="feed-content">
+          <p>2B E2 DAPO 11:06 开跑。4B 放大线当日点火：offload / Triton 烟测后，E1 GRPO 12:51 正式开跑（4×A100、TP=4、关 offload）</p>
+          <p>4B 与 2B 共用统一配置块，只改规模与工程参数</p>
+        </div>
+      </div>
+    </article>
+
+    <article class="feed-item">
+      <div class="feed-marker" aria-hidden="true"></div>
+      <div class="feed-head">
+        <span class="feed-date">2026-07-13</span>
+        <span class="feed-label">训练进展：</span>
+      </div>
+      <div class="feed-row">
+        <span class="feed-time">21:24</span>
+        <div class="feed-content">
+          <p>2B E1 GRPO 一次性跑满 150/150（~26h21m，<span class="mono">train_20260712_185929</span>）</p>
+          <p>pass ~43% → 后段 60–70%；长度 10.6k→~8–9k；熵 0.45→0.22。训练中 aime24 acc@1：25/50/75/100/125/150 = 26.7 / 30.0 / 33.3 / <strong>40.0</strong> / 30.0 / 33.3</p>
+          <p>作为后续 E2–E5 的可行性证据：16K 非思考 + <span class="mono">reward_boxed</span> 链路可学</p>
+        </div>
+      </div>
+    </article>
+
+    <article class="feed-item">
+      <div class="feed-marker" aria-hidden="true"></div>
+      <div class="feed-head">
+        <span class="feed-date">2026-07-12</span>
+        <span class="feed-label">训练进展：</span>
+      </div>
+      <div class="feed-row">
+        <span class="feed-time">18:59</span>
+        <div class="feed-content">
+          <p>奖励接线修好后 E1 正式长跑启动。此前 01:02 / 11:24 两次 16K 试跑仍 <span class="mono">score≈−0.96</span>，顶层 <span class="mono">custom_reward_function.path</span> 被 verl-main 静默忽略</p>
+          <p>改为 <span class="mono">reward.custom_reward_function.*</span> + <span class="mono">scripts/reward_boxed.py</span> 后 pass 从 ~43% 起跳</p>
+          <p>同日长度烟测 14:59–23:14（12 组 / 3072 条）：100K 思考模式单 step 过慢，阶段二长 CoT 收缩为事后单组验证，主实验锁定 16K 非思考</p>
+        </div>
+      </div>
+    </article>
+
+    <article class="feed-item">
+      <div class="feed-marker" aria-hidden="true"></div>
+      <div class="feed-head">
+        <span class="feed-date">2026-07-11</span>
+        <span class="feed-label">环境固化：</span>
+      </div>
+      <div class="feed-row">
+        <span class="feed-time">14:30</span>
+        <div class="feed-content">
+          <p>Qwen3-1.7B 对照烟测（<span class="mono">smoke_qwen3_1_7b</span>）连续短启动，确认栈不是 3.5 专属才能跑</p>
+          <p>E1 16K 试跑跨夜推进到 step~20 后中断；4K 档截断仍 &gt;80%，主实验必须 16K</p>
         </div>
       </div>
     </article>
@@ -185,11 +627,26 @@
         <span class="feed-label">方案锁定：</span>
       </div>
       <div class="feed-row">
-        <span class="feed-time">09:01</span>
+        <span class="feed-time">15:31</span>
         <div class="feed-content">
-          <p>统一不变量：non-thinking · 16K response · batch=32 · n=8 · 150 step</p>
-          <p>算法谱系：GRPO / DAPO / Dr.GRPO / RLOO / REINFORCE++（PPO 本轮未训）</p>
-          <p>三条赛道：2B 主赛道 · 4B 放大复验 · 多模态固定 GRPO 改图文配比</p>
+          <p>统一不变量：non-thinking · 16K response · batch=32 · n=8 · 150 step。算法：GRPO / DAPO / Dr.GRPO / RLOO / REINFORCE++（PPO 本轮未训）</p>
+          <p>三条赛道：2B 主赛道 · 4B 放大复验 · 多模态固定 GRPO 只改图文配比。数据改用 <span class="mono">polaris_easy_boxed</span>（4B 筛出的 s1/s2/s3 对 2B 过难）</p>
+          <p>当日探路翻车：14:41 logits OOM（<span class="mono">entropy_from_logits</span> ~18GB）；15:19 <span class="mono">max_token_len=2048 &lt; seq=4665</span>；15:31 关掉 dynamic_bsz、micro=1 后跑到 step10，但 4K 截断 ~90% 且 reward 仍 ≈−1</p>
+        </div>
+      </div>
+    </article>
+
+    <article class="feed-item">
+      <div class="feed-marker" aria-hidden="true"></div>
+      <div class="feed-head">
+        <span class="feed-date">2026-07-09</span>
+        <span class="feed-label">环境固化：</span>
+      </div>
+      <div class="feed-row">
+        <span class="feed-time">18:51</span>
+        <div class="feed-content">
+          <p>首条 GRPO 探路（<span class="mono">e1_grpo</span>，4K 响应）：step1 即 <span class="mono">score/mean=−1.0</span>、截断 <strong>99.6%</strong>，val aime24 acc=0</p>
+          <p>确认两件事：思考模式写不出 <span class="mono">\boxed{}</span>；默认 <span class="mono">math_dapo</span> 打分器不认 boxed。CUDA 13 forward-compat 用户态库已能让 torch/vLLM 在 12.4 驱动上跑通</p>
         </div>
       </div>
     </article>
