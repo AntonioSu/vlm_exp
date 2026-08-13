@@ -256,6 +256,20 @@ function yRangeFromSeries(series, { padRatio = 0.1, floor = 0, ceil = null } = {
   return [min, max];
 }
 
+// Offline eval % axes: locked so legend toggles / new checkpoints do not rescale.
+const EVAL_Y = {
+  mmlu:    { yMin: 70, yMax: 90 },
+  math500: { yMin: 50, yMax: 100 },
+  aime24:  { yMin: 0,  yMax: 50 },
+  aime25:  { yMin: 0,  yMax: 50 },
+};
+
+const AGENT_Y = {
+  bfcl:    { yMin: 0, yMax: 60 },
+  bfcl_mt: { yMin: 0, yMax: 20 },
+  tau:     { yMin: 0, yMax: 100 },
+};
+
 function drawLineChart(canvasId, tipId, { categories, series, yMin, yMax, valueSuffix = "", height = 260, referenceLines = [] }) {
   const canvas = document.getElementById(canvasId);
   const tip = document.getElementById(tipId);
@@ -1236,10 +1250,9 @@ function renderExpPanel(key) {
         extS1Series, EXT_S1_ALT[key] || COLORS.extS1);
       const mmluLegendEl = document.getElementById(`legend-${key}-eval-mmlu`);
       const drawMmlu = (visible) => {
-        const [yMin, yMax] = yRangeFromSeries(visible);
         drawLineChart(`chart-${key}-eval-mmlu`, `tip-${key}-eval-mmlu`, {
           categories: plotSteps, series: visible,
-          valueSuffix: "%", yMin, yMax, height: 200,
+          valueSuffix: "%", ...EVAL_Y.mmlu, height: 200,
         });
       };
       if (mmluLegendEl) {
@@ -1276,11 +1289,10 @@ function renderExpPanel(key) {
           (typeof EVAL_EXT_S1_STEPS !== "undefined") ? EVAL_EXT_S1_STEPS : plotSteps,
           extS1Series, EXT_S1_ALT[key] || COLORS.extS1);
         renderLegend(legendEl, items, (visible) => {
-          const [yMin, yMax] = yRangeFromSeries(visible);
           drawLineChart(`chart-${key}-eval-${metric}`, `tip-${key}-eval-${metric}`, {
             categories: plotSteps,
             series: visible,
-            valueSuffix: "%", yMin, yMax, height: 200,
+            valueSuffix: "%", ...EVAL_Y[metric], height: 200,
           });
         });
       };
@@ -1305,10 +1317,9 @@ function renderExpPanel(key) {
           extS1Series, EXT_S1_ALT[key] || COLORS.extS1);
         const mathLegendEl = document.getElementById(`legend-${key}-eval-math500`);
         const drawMath = (visible) => {
-          const [yMin, yMax] = yRangeFromSeries(visible);
           drawLineChart(`chart-${key}-eval-math500`, `tip-${key}-eval-math500`, {
             categories: plotSteps, series: visible,
-            valueSuffix: "%", yMin, yMax, height: 200,
+            valueSuffix: "%", ...EVAL_Y.math500, height: 200,
           });
         };
         if (mathLegendEl) {
@@ -1347,7 +1358,7 @@ function renderExpPanel(key) {
       { row: extE24Ag, steps: extE24AgSteps, metrics: ["bfcl", "bfcl_mt", "tau"] },
       { row: extS1Ag, steps: (typeof AGENT_EXT_S1_STEPS !== "undefined") ? AGENT_EXT_S1_STEPS : null, metrics: ["bfcl", "bfcl_mt", "tau"] },
     ]);
-    const drawAgent = (metric, suffix, floor, ceil) => {
+    const drawAgent = (metric, suffix) => {
       const legendEl = document.getElementById(`legend-${key}-agent-${suffix}`);
       if (!document.getElementById(`chart-${key}-agent-${suffix}`)) return;
       const items = [];
@@ -1400,18 +1411,17 @@ function renderExpPanel(key) {
       }
       if (!items.length) return;
       const draw = (visible) => {
-        const [yMin, yMax] = yRangeFromSeries(visible, { floor, ceil });
         drawLineChart(`chart-${key}-agent-${suffix}`, `tip-${key}-agent-${suffix}`, {
           categories: agSteps, series: visible,
-          valueSuffix: "%", yMin, yMax, height: 200,
+          valueSuffix: "%", ...AGENT_Y[metric], height: 200,
         });
       };
       if (legendEl) renderLegend(legendEl, items, draw);
       else draw(items);
     };
-    drawAgent("bfcl", "bfcl", 0, 60);
-    drawAgent("bfcl_mt", "mt", 0, 20);
-    drawAgent("tau", "tau", 0, 100);
+    drawAgent("bfcl", "bfcl");
+    drawAgent("bfcl_mt", "mt");
+    drawAgent("tau", "tau");
   }
 }
 
@@ -1522,22 +1532,20 @@ function renderEvalPanel() {
 
   renderLegend(document.getElementById("legend-eval-mmlu"), seriesWithOverlays("mmlu"),
     (visible) => {
-      const [yMin, yMax] = yRangeFromSeries(visible);
       drawLineChart("chart-eval-mmlu", "tip-eval-mmlu", {
         categories: steps,
         series: visible,
-        valueSuffix: "%", yMin, yMax, height: 240,
+        valueSuffix: "%", ...EVAL_Y.mmlu, height: 240,
       });
     });
 
   if (document.getElementById("legend-eval-math500")) {
     renderLegend(document.getElementById("legend-eval-math500"), seriesWithOverlays("math500"),
       (visible) => {
-        const [yMin, yMax] = yRangeFromSeries(visible);
         drawLineChart("chart-eval-math500", "tip-eval-math500", {
           categories: steps,
           series: visible,
-          valueSuffix: "%", yMin, yMax, height: 240,
+          valueSuffix: "%", ...EVAL_Y.math500, height: 240,
         });
       });
   }
@@ -1545,22 +1553,20 @@ function renderEvalPanel() {
   if (document.getElementById("legend-eval-aime24")) {
     renderLegend(document.getElementById("legend-eval-aime24"), seriesWithOverlays("aime24"),
       (visible) => {
-        const [yMin, yMax] = yRangeFromSeries(visible);
         drawLineChart("chart-eval-aime24", "tip-eval-aime24", {
           categories: steps,
           series: visible,
-          valueSuffix: "%", yMin, yMax, height: 240,
+          valueSuffix: "%", ...EVAL_Y.aime24, height: 240,
         });
       });
   }
 
   renderLegend(document.getElementById("legend-eval-aime25"), seriesWithOverlays("aime25"),
     (visible) => {
-      const [yMin, yMax] = yRangeFromSeries(visible);
       drawLineChart("chart-eval-aime25", "tip-eval-aime25", {
         categories: steps,
         series: visible,
-        valueSuffix: "%", yMin, yMax, height: 240,
+        valueSuffix: "%", ...EVAL_Y.aime25, height: 240,
       });
     });
 
@@ -1701,21 +1707,13 @@ function renderEvalPanel() {
       });
       return out;
     };
-    const yPad = (series, loPad, hiPad, floor, ceil) => {
-      const vals = series.flatMap((s) => (s.data || []).filter((v) => v != null));
-      if (!vals.length) return [floor, ceil];
-      const lo = Math.max(floor, Math.floor(Math.min(...vals) - loPad));
-      const hi = Math.min(ceil, Math.ceil(Math.max(...vals) + hiPad));
-      return [lo, Math.max(lo + 2, hi)];
-    };
     const bfclItems = items("bfcl");
     if (bfclItems.length && document.getElementById("legend-agent-bfcl")) {
     renderLegend(document.getElementById("legend-agent-bfcl"), bfclItems,
       (visible) => {
-        const [yMin, yMax] = yPad(visible, 1, 2, 0, 60);
         drawLineChart("chart-agent-bfcl", "tip-agent-bfcl", {
           categories: steps, series: visible,
-          valueSuffix: "%", yMin, yMax, height: 240,
+          valueSuffix: "%", ...AGENT_Y.bfcl, height: 240,
         });
       });
     }
@@ -1723,10 +1721,9 @@ function renderEvalPanel() {
     if (document.getElementById("legend-agent-mt")) {
       renderLegend(document.getElementById("legend-agent-mt"), mtItems,
         (visible) => {
-          const [yMin, yMax] = yPad(visible, 0.5, 1, 0, 20);
           drawLineChart("chart-agent-mt", "tip-agent-mt", {
             categories: steps, series: visible,
-            valueSuffix: "%", yMin, yMax, height: 240,
+            valueSuffix: "%", ...AGENT_Y.bfcl_mt, height: 240,
           });
         });
     }
@@ -1734,10 +1731,9 @@ function renderEvalPanel() {
     if (document.getElementById("legend-agent-tau")) {
       renderLegend(document.getElementById("legend-agent-tau"), tauItems,
         (visible) => {
-          const [yMin, yMax] = yPad(visible, 5, 5, 0, 100);
           drawLineChart("chart-agent-tau", "tip-agent-tau", {
             categories: steps, series: visible,
-            valueSuffix: "%", yMin, yMax, height: 240,
+            valueSuffix: "%", ...AGENT_Y.tau, height: 240,
           });
         });
     }

@@ -4,12 +4,46 @@
         <p class="toc-heading">目录</p>
         <ol class="toc-list">
           <li><a href="#e1-sec-overview"><span class="toc-num">0</span><span class="toc-title">概览</span></a></li>
-          <li><a href="#e1-sec-learning"><span class="toc-num">1</span><span class="toc-title">学习曲线</span></a></li>
-          <li><a href="#e1-sec-stability"><span class="toc-num">2</span><span class="toc-title">稳定性</span></a></li>
-          <li><a href="#e1-sec-efficiency"><span class="toc-num">3</span><span class="toc-title">效率</span></a></li>
-          <li><a href="#e1-sec-timing"><span class="toc-num">4</span><span class="toc-title">耗时拆解</span></a></li>
-          <li><a href="#e1-sec-eval"><span class="toc-num">5</span><span class="toc-title">评测</span></a></li>
-          <li><a href="#e1-sec-agent"><span class="toc-num">6</span><span class="toc-title">Agent / 工具调用</span></a></li>
+          <li>
+            <a href="#e1-sec-learning"><span class="toc-num">1</span><span class="toc-title">学习曲线</span></a>
+            <ol class="toc-sub">
+              <li><a href="#e1-sec-learn-acc"><span class="toc-num">1.1</span><span class="toc-title">准确率</span></a></li>
+              <li><a href="#e1-sec-learn-len"><span class="toc-num">1.2</span><span class="toc-title">长度</span></a></li>
+              <li><a href="#e1-sec-learn-loss"><span class="toc-num">1.3</span><span class="toc-title">损失</span></a></li>
+              <li><a href="#e1-sec-learn-ent"><span class="toc-num">1.4</span><span class="toc-title">熵</span></a></li>
+            </ol>
+          </li>
+          <li>
+            <a href="#e1-sec-stability"><span class="toc-num">2</span><span class="toc-title">稳定性</span></a>
+            <ol class="toc-sub">
+              <li><a href="#e1-sec-stab-grad"><span class="toc-num">2.1</span><span class="toc-title">梯度</span></a></li>
+              <li><a href="#e1-sec-stab-update"><span class="toc-num">2.2</span><span class="toc-title">更新幅度</span></a></li>
+              <li><a href="#e1-sec-stab-cons"><span class="toc-num">2.3</span><span class="toc-title">一致性</span></a></li>
+            </ol>
+          </li>
+          <li>
+            <a href="#e1-sec-efficiency"><span class="toc-num">3</span><span class="toc-title">效率</span></a>
+            <ol class="toc-sub">
+              <li><a href="#e1-sec-eff-mfu"><span class="toc-num">3.1</span><span class="toc-title">MFU</span></a></li>
+              <li><a href="#e1-sec-eff-thru"><span class="toc-num">3.2</span><span class="toc-title">吞吐</span></a></li>
+            </ol>
+          </li>
+          <li>
+            <a href="#e1-sec-timing"><span class="toc-num">4</span><span class="toc-title">耗时拆解</span></a>
+            <ol class="toc-sub">
+              <li><a href="#e1-sec-time-step"><span class="toc-num">4.1</span><span class="toc-title">单步耗时</span></a></li>
+              <li><a href="#e1-sec-time-stage"><span class="toc-num">4.2</span><span class="toc-title">Stage 拆解</span></a></li>
+            </ol>
+          </li>
+          <li>
+            <a href="#e1-sec-eval"><span class="toc-num">5</span><span class="toc-title">评测</span></a>
+            <ol class="toc-sub">
+              <li><a href="#e1-sec-eval-mmlu"><span class="toc-num">5.1</span><span class="toc-title">MMLU 通识</span></a></li>
+              <li><a href="#e1-sec-eval-math"><span class="toc-num">5.2</span><span class="toc-title">Math 数学</span></a></li>
+              <li><a href="#e1-sec-eval-agent"><span class="toc-num">5.3</span><span class="toc-title">Agent 智能体</span></a></li>
+              <li><a href="#e1-sec-eval-tools"><span class="toc-num">5.4</span><span class="toc-title">Function tools 工具调用</span></a></li>
+            </ol>
+          </li>
         </ol>
       </nav>
       <div class="detail-main">
@@ -31,13 +65,21 @@
         <section class="detail-sec" id="e1-sec-learning">
           <h2 class="sec-title">学习曲线</h2>
           <p class="sec-sub">pass rate · 响应长度 · 截断 · loss · entropy · kl_loss</p>
+        </section>
+
+        <section class="detail-sub" id="e1-sec-learn-acc">
+          <h2 class="sec-title">准确率</h2>
           <h2>Pass rate（%）</h2>
           <div class="chart-card">
             <div class="legend" id="legend-e1-pass"></div>
             <div class="chart-wrap"><canvas id="chart-e1-pass" height="240"></canvas><div class="tooltip" id="tip-e1-pass"></div></div>
           </div>
           <p class="caption">细线=逐 step；粗线=5-step 移动平均。</p>
-          <section class="grid2" style="margin-top:16px">
+        </section>
+
+        <section class="detail-sub" id="e1-sec-learn-len">
+          <h2 class="sec-title">长度</h2>
+          <section class="grid2" style="margin-top:12px">
             <div>
               <h2>平均响应长度（tokens）</h2>
               <div class="chart-card"><div class="legend" id="legend-e1-len"></div><div class="chart-wrap"><canvas id="chart-e1-len" height="200"></canvas><div class="tooltip" id="tip-e1-len"></div></div></div>
@@ -49,21 +91,21 @@
               <p class="caption"><code>response_length/clip_ratio</code>。</p>
             </div>
           </section>
-          <section class="grid2" style="margin-top:16px">
+          <div style="margin-top:12px">
             <div>
               <h2>平均输入长度（tokens）</h2>
               <div class="chart-card"><div class="legend" id="legend-e1-promptlen"></div><div class="chart-wrap"><canvas id="chart-e1-promptlen" height="200"></canvas><div class="tooltip" id="tip-e1-promptlen"></div></div></div>
               <p class="caption"><code>prompt_length/mean</code>。</p>
             </div>
+          </div>
+        </section>
+
+        <section class="detail-sub" id="e1-sec-learn-loss">
+          <h2 class="sec-title">损失</h2>
+          <section class="grid2" style="margin-top:12px">
             <div>
               <h2>整体损失 actor/loss</h2>
               <div class="chart-card"><div class="legend" id="legend-e1-loss"></div><div class="chart-wrap"><canvas id="chart-e1-loss" height="220"></canvas><div class="tooltip" id="tip-e1-loss"></div></div></div>
-            </div>
-          </section>
-          <section class="grid2" style="margin-top:16px">
-            <div>
-              <h2>策略熵 entropy</h2>
-              <div class="chart-card"><div class="legend" id="legend-e1-ent"></div><div class="chart-wrap"><canvas id="chart-e1-ent" height="200"></canvas><div class="tooltip" id="tip-e1-ent"></div></div></div>
             </div>
             <div>
               <h2>KL 散度 loss（×100，对参考模型）</h2>
@@ -72,36 +114,73 @@
             </div>
           </section>
         </section>
+
+        <section class="detail-sub" id="e1-sec-learn-ent">
+          <h2 class="sec-title">熵</h2>
+          <div style="margin-top:12px">
+            <div>
+              <h2>策略熵 entropy</h2>
+              <div class="chart-card"><div class="legend" id="legend-e1-ent"></div><div class="chart-wrap"><canvas id="chart-e1-ent" height="200"></canvas><div class="tooltip" id="tip-e1-ent"></div></div></div>
+            </div>
+          </div>
+        </section>
+
         <section class="detail-sec" id="e1-sec-stability">
           <h2 class="sec-title">稳定性</h2>
           <p class="sec-sub">grad_norm · ppo_kl · pg_clipfrac · rollout↔训练一致性</p>
-          <section class="grid2" style="margin-top:12px">
+        </section>
+
+        <section class="detail-sub" id="e1-sec-stab-grad">
+          <h2 class="sec-title">梯度</h2>
+          <div style="margin-top:12px">
             <div><h2>梯度范数 grad_norm</h2><div class="chart-card"><div class="legend" id="legend-e1-grad"></div><div class="chart-wrap"><canvas id="chart-e1-grad" height="200"></canvas><div class="tooltip" id="tip-e1-grad"></div></div></div></div>
-            <div><h2>rollout↔训练概率偏离度（(1−corr)×1e4）</h2><div class="chart-card"><div class="legend" id="legend-e1-corr"></div><div class="chart-wrap"><canvas id="chart-e1-corr" height="200"></canvas><div class="tooltip" id="tip-e1-corr"></div></div></div></div>
-          </section>
-          <section class="grid2" style="margin-top:16px">
+          </div>
+        </section>
+
+        <section class="detail-sub" id="e1-sec-stab-update">
+          <h2 class="sec-title">更新幅度</h2>
+          <section class="grid2" style="margin-top:12px">
             <div><h2>策略更新位移 ppo_kl（×1e5）</h2><div class="chart-card"><div class="legend" id="legend-e1-ppokl"></div><div class="chart-wrap"><canvas id="chart-e1-ppokl" height="200"></canvas><div class="tooltip" id="tip-e1-ppokl"></div></div></div></div>
             <div><h2>PPO 裁剪比例 pg_clipfrac（%）</h2><div class="chart-card"><div class="legend" id="legend-e1-clip"></div><div class="chart-wrap"><canvas id="chart-e1-clip" height="200"></canvas><div class="tooltip" id="tip-e1-clip"></div></div></div></div>
           </section>
+        </section>
+
+        <section class="detail-sub" id="e1-sec-stab-cons">
+          <h2 class="sec-title">一致性</h2>
+          <div style="margin-top:12px">
+            <div><h2>rollout↔训练概率偏离度（(1−corr)×1e4）</h2><div class="chart-card"><div class="legend" id="legend-e1-corr"></div><div class="chart-wrap"><canvas id="chart-e1-corr" height="200"></canvas><div class="tooltip" id="tip-e1-corr"></div></div></div></div>
+          </div>
           <section style="margin-top:16px">
             <h2>rollout_corr/kl（×1e4）</h2>
             <div class="chart-card"><div class="legend" id="legend-e1-rollkl"></div><div class="chart-wrap"><canvas id="chart-e1-rollkl" height="200"></canvas><div class="tooltip" id="tip-e1-rollkl"></div></div></div>
           </section>
         </section>
+
         <section class="detail-sec" id="e1-sec-efficiency">
           <h2 class="sec-title">效率</h2>
           <p class="sec-sub">MFU · throughput</p>
-          <section class="grid2">
+        </section>
+
+        <section class="detail-sub" id="e1-sec-eff-mfu">
+          <h2 class="sec-title">MFU</h2>
+          <div style="margin-top:12px">
             <div>
               <h2>MFU（actor，%）</h2>
               <div class="chart-card"><div class="legend" id="legend-e1-mfu"></div><div class="chart-wrap"><canvas id="chart-e1-mfu" height="200"></canvas><div class="tooltip" id="tip-e1-mfu"></div></div></div>
             </div>
+          </div>
+        </section>
+
+        <section class="detail-sub" id="e1-sec-eff-thru">
+          <h2 class="sec-title">吞吐</h2>
+          <div style="margin-top:12px">
             <div>
               <h2>吞吐 throughput（tokens/s）</h2>
               <div class="chart-card"><div class="legend" id="legend-e1-thru"></div><div class="chart-wrap"><canvas id="chart-e1-thru" height="200"></canvas><div class="tooltip" id="tip-e1-thru"></div></div></div>
             </div>
-          </section>
+          </div>
         </section>
+
         <section class="detail-sec" id="e1-sec-timing">
           <h2 class="sec-title">耗时拆解</h2>
           <p class="sec-sub">单步墙钟 · gen / update_actor / ref / old_log_prob 等 stage</p>
@@ -121,19 +200,16 @@
               </ul>
             </details>
           </div>
+        </section>
+
+        <section class="detail-sub" id="e1-sec-time-step">
+          <h2 class="sec-title">单步耗时</h2>
           <section style="margin-top:12px">
             <h2>单步耗时（分钟）</h2>
             <div class="chart-card"><div class="legend" id="legend-e1-stepmin"></div><div class="chart-wrap"><canvas id="chart-e1-stepmin" height="200"></canvas><div class="tooltip" id="tip-e1-stepmin"></div></div></div>
             <p class="caption"><code>timing_s/step</code>/60；均值约 10.4 min/step。</p>
           </section>
-          <section class="grid2" style="margin-top:12px">
-            <div>
-              <h2>主要 stage 曲线（秒）</h2>
-              <div class="chart-card">
-                <div class="legend" id="legend-e1-timing"></div>
-                <div class="chart-wrap"><canvas id="chart-e1-timing" height="240"></canvas><div class="tooltip" id="tip-e1-timing"></div></div>
-              </div>
-            </div>
+          <div style="margin-top:12px">
             <div>
               <h2>整步耗时 timing_s/step（秒）</h2>
               <div class="chart-card">
@@ -142,7 +218,20 @@
               </div>
               <p class="caption">均值约 626.4s；与总训练 26h21m 一致。</p>
             </div>
-          </section>
+          </div>
+        </section>
+
+        <section class="detail-sub" id="e1-sec-time-stage">
+          <h2 class="sec-title">Stage 拆解</h2>
+          <div style="margin-top:12px">
+            <div>
+              <h2>主要 stage 曲线（秒）</h2>
+              <div class="chart-card">
+                <div class="legend" id="legend-e1-timing"></div>
+                <div class="chart-wrap"><canvas id="chart-e1-timing" height="240"></canvas><div class="tooltip" id="tip-e1-timing"></div></div>
+              </div>
+            </div>
+          </div>
           <section class="grid2" style="margin-top:12px">
             <div>
               <h2>次要 stage（秒）</h2>
@@ -161,65 +250,63 @@
             </div>
           </section>
         </section>
+
         <section class="detail-sec" id="e1-sec-eval">
           <h2 class="sec-title">评测</h2>
           <p class="sec-sub">evalscope offline · Easy-Boxed / S3 / V2 · mmlu_temp / aime24 / aime25 / math_500</p>
           <p class="tertiary">Easy/S3：step 10→150；V2（<code>e1_grpo_2b_v2_s1</code>）：step 10→300（短虚线，缺报告断点）。数据见 <code>js/data-eval-offline.js</code>（<code>EVAL_FULL_V2</code>）。刷新：<code>python3 scripts/monitoring/2b/sync_2b_eval_dashboard.py</code>。</p>
-          <section class="grid2" style="margin-top:10px">
-            <div><h2>mmlu_temp（%）</h2><div class="chart-card"><div class="legend" id="legend-e1-eval-mmlu"></div><div class="chart-wrap"><canvas id="chart-e1-eval-mmlu" height="200"></canvas><div class="tooltip" id="tip-e1-eval-mmlu"></div></div></div></div>
-            <div>
-              <h2>math_500（%）</h2>
-              <div class="chart-card"><div class="legend" id="legend-e1-eval-math500"></div><div class="chart-wrap"><canvas id="chart-e1-eval-math500" height="200"></canvas><div class="tooltip" id="tip-e1-eval-math500"></div></div></div>
-            </div>
-          </section>
+        </section>
+
+        <section class="detail-sub" id="e1-sec-eval-mmlu">
+          <h2 class="sec-title">MMLU 通识</h2>
+          <div style="margin-top:10px">
+            <h2>mmlu_temp（%）</h2>
+            <div class="chart-card"><div class="legend" id="legend-e1-eval-mmlu"></div><div class="chart-wrap"><canvas id="chart-e1-eval-mmlu" height="200"></canvas><div class="tooltip" id="tip-e1-eval-mmlu"></div></div></div>
+          </div>
+        </section>
+
+        <section class="detail-sub" id="e1-sec-eval-math">
+          <h2 class="sec-title">Math 数学</h2>
+          <div style="margin-top:12px">
+            <h2>MATH-500（%）</h2>
+            <div class="chart-card"><div class="legend" id="legend-e1-eval-math500"></div><div class="chart-wrap"><canvas id="chart-e1-eval-math500" height="200"></canvas><div class="tooltip" id="tip-e1-eval-math500"></div></div></div>
+          </div>
           <section class="grid2" style="margin-top:12px">
             <div>
               <h2>aime24（%）</h2>
-              <div class="chart-card">
-                <div class="legend" id="legend-e1-eval-aime24"></div>
-                <div class="chart-wrap"><canvas id="chart-e1-eval-aime24" height="200"></canvas><div class="tooltip" id="tip-e1-eval-aime24"></div></div>
-              </div>
+              <div class="chart-card"><div class="legend" id="legend-e1-eval-aime24"></div><div class="chart-wrap"><canvas id="chart-e1-eval-aime24" height="200"></canvas><div class="tooltip" id="tip-e1-eval-aime24"></div></div></div>
             </div>
             <div>
               <h2>aime25（%）</h2>
-              <div class="chart-card">
-                <div class="legend" id="legend-e1-eval-aime25"></div>
-                <div class="chart-wrap"><canvas id="chart-e1-eval-aime25" height="200"></canvas><div class="tooltip" id="tip-e1-eval-aime25"></div></div>
-              </div>
+              <div class="chart-card"><div class="legend" id="legend-e1-eval-aime25"></div><div class="chart-wrap"><canvas id="chart-e1-eval-aime25" height="200"></canvas><div class="tooltip" id="tip-e1-eval-aime25"></div></div></div>
             </div>
           </section>
         </section>
 
-        <section class="detail-sec" id="e1-sec-agent">
-          <h2 class="sec-title">Agent / 工具调用能力</h2>
-          <p class="sec-sub">Easy / S3 / V2 · BFCL-v3 + tau-bench</p>
+        <section class="detail-sub" id="e1-sec-eval-agent">
+          <h2 class="sec-title">Agent 智能体</h2>
+          <p class="sec-sub">Easy / S3 / V2 · tau-bench</p>
           <p class="tertiary">Source: <code>evalscope/outputs/agent2</code>。Easy/S3 step 10→150；V2（<code>e1_grpo_2b_v2_s1</code>）短虚线、轴 10→300。数据见 <code>js/data-eval-offline.js</code>（<code>AGENT_EASY</code> / <code>AGENT_S3</code> / <code>AGENT_V2</code>）。刷新：<code>python3 scripts/monitoring/2b/sync_2b_agent_dashboard.py</code>。</p>
           <div style="margin-top:12px">
+            <h2>tau-bench（%）</h2>
+            <div class="chart-card"><div class="legend" id="legend-e1-agent-tau"></div><div class="chart-wrap"><canvas id="chart-e1-agent-tau" height="200"></canvas><div class="tooltip" id="tip-e1-agent-tau"></div></div></div>
+            <p class="caption">X: step（有 V2 时 10–300） · Y: tau-bench mean_acc（%，40 条）。短虚线=V2；缺报告为断点。</p>
+          </div>
+        </section>
+
+        <section class="detail-sub" id="e1-sec-eval-tools">
+          <h2 class="sec-title">Function tools 工具调用</h2>
+          <p class="sec-sub">BFCL-v3 · OVERALL + MULTI_TURN</p>
+          <div style="margin-top:12px">
             <h2>BFCL-v3 OVERALL（%）</h2>
-            <div class="chart-card">
-              <div class="legend" id="legend-e1-agent-bfcl"></div>
-              <div class="chart-wrap"><canvas id="chart-e1-agent-bfcl" height="200"></canvas><div class="tooltip" id="tip-e1-agent-bfcl"></div></div>
-            </div>
+            <div class="chart-card"><div class="legend" id="legend-e1-agent-bfcl"></div><div class="chart-wrap"><canvas id="chart-e1-agent-bfcl" height="200"></canvas><div class="tooltip" id="tip-e1-agent-bfcl"></div></div></div>
             <p class="caption">X: checkpoint step（有 V2 时 10–300） · Y: BFCL-v3 OVERALL acc（%）。虚线=S3，短虚线=V2；缺报告为断点。</p>
           </div>
-          <section class="grid2" style="margin-top:12px">
-            <div>
-              <h2>BFCL-v3 MULTI_TURN（%）</h2>
-              <div class="chart-card">
-                <div class="legend" id="legend-e1-agent-mt"></div>
-                <div class="chart-wrap"><canvas id="chart-e1-agent-mt" height="200"></canvas><div class="tooltip" id="tip-e1-agent-mt"></div></div>
-              </div>
-              <p class="caption">X: step · Y: MULTI_TURN acc（%）。短虚线=V2。</p>
-            </div>
-            <div>
-              <h2>tau-bench（%）</h2>
-              <div class="chart-card">
-                <div class="legend" id="legend-e1-agent-tau"></div>
-                <div class="chart-wrap"><canvas id="chart-e1-agent-tau" height="200"></canvas><div class="tooltip" id="tip-e1-agent-tau"></div></div>
-              </div>
-              <p class="caption">X: step（有 V2 时 10–300） · Y: tau-bench mean_acc（%，40 条）。短虚线=V2；缺报告为断点。</p>
-            </div>
-          </section>
+          <div style="margin-top:12px">
+            <h2>BFCL-v3 MULTI_TURN（%）</h2>
+            <div class="chart-card"><div class="legend" id="legend-e1-agent-mt"></div><div class="chart-wrap"><canvas id="chart-e1-agent-mt" height="200"></canvas><div class="tooltip" id="tip-e1-agent-mt"></div></div></div>
+            <p class="caption">X: step · Y: MULTI_TURN acc（%）。短虚线=V2。</p>
+          </div>
         </section>
       </div>
     </div>

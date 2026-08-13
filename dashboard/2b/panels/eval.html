@@ -3,10 +3,15 @@
         <p class="toc-heading">目录</p>
         <ol class="toc-list">
           <li><a href="#eval-sec-overview"><span class="toc-num">0</span><span class="toc-title">概览</span></a></li>
-          <li><a href="#eval-sec-aime"><span class="toc-num">1</span><span class="toc-title">数学推理 AIME</span></a></li>
-          <li><a href="#eval-sec-math500"><span class="toc-num">2</span><span class="toc-title">MATH-500</span></a></li>
-          <li><a href="#eval-sec-mmlu"><span class="toc-num">3</span><span class="toc-title">通识 MMLU</span></a></li>
-          <li><a href="#eval-sec-agent"><span class="toc-num">4</span><span class="toc-title">Agent / 工具调用</span></a></li>
+          <li>
+            <a href="#eval-sec-eval"><span class="toc-num">1</span><span class="toc-title">评测</span></a>
+            <ol class="toc-sub">
+              <li><a href="#eval-sec-mmlu"><span class="toc-num">1.1</span><span class="toc-title">MMLU 通识</span></a></li>
+              <li><a href="#eval-sec-math"><span class="toc-num">1.2</span><span class="toc-title">Math 数学</span></a></li>
+              <li><a href="#eval-sec-agent"><span class="toc-num">1.3</span><span class="toc-title">Agent 智能体</span></a></li>
+              <li><a href="#eval-sec-tools"><span class="toc-num">1.4</span><span class="toc-title">Function tools 工具调用</span></a></li>
+            </ol>
+          </li>
         </ol>
       </nav>
 
@@ -24,9 +29,9 @@
             <strong>S3</strong> 整体低于 Easy（aime25 step150 约 22–26%）。
             <strong>V2 E1</strong>：mmlu/aime/math 均 25/30（10–250）；260–300 待评测。
             <strong>Easy-32K E2</strong>：offline + agent 均已满 15/15（10–150）。
-            <strong>Easy-24K E2</strong>：10–150 + step230 均齐（offline/agent）；轴 10–300。
+            <strong>Easy-24K E2</strong>：offline 近满（mmlu/aime 30/30，math 29/30）；agent 18/30；轴 10–300。
             <strong>Ext easy-cont E2</strong>：offline 15/30（150–300，缺 270）；agent 仍仅@150。
-            <strong>Ext easy-cont-24K E2</strong>：offline 四任务@150–170（3/30）；agent BFCL@150 + tau@150–190。
+            <strong>Ext easy-cont-24K E2</strong>：offline mmlu/aime 15/30（150–280+300），math 13/30（150–270；280/290/300 补跑中）；agent BFCL@150 + tau@150–190。
             <strong>Ext S1-switch E2</strong>：offline + agent 均 16/30（150–300 全点）。
             Agent 柱状图取 step150，缺报告则为空。
           </div>
@@ -64,9 +69,27 @@
           </section>
         </section>
 
-        <section class="detail-sec" id="eval-sec-aime">
-          <h2 class="sec-title">数学推理（AIME）</h2>
-          <p class="sec-sub">aime24 / aime25 · Easy-Boxed 实线 / S3 虚线 · n=8</p>
+        <section class="detail-sec" id="eval-sec-eval">
+          <h2 class="sec-title">评测</h2>
+          <p class="sec-sub">MMLU 通识 · Math 数学 · Agent 智能体 · Function tools 工具调用 · Easy 实线 / S3 虚线 / V2 短虚线</p>
+        </section>
+
+        <section class="detail-sub" id="eval-sec-mmlu">
+          <h2 class="sec-title">MMLU 通识</h2>
+          <p class="sec-sub">mmlu_temp · n=2 · Easy-Boxed 实线 / S3 虚线 / V2 短虚线</p>
+          <div style="margin-top:12px">
+            <h2>mmlu_temp（Easy + S3 + V2）</h2>
+            <div class="chart-card">
+              <div class="legend" id="legend-eval-mmlu"></div>
+              <div class="chart-wrap"><canvas id="chart-eval-mmlu" height="240"></canvas><div class="tooltip" id="tip-eval-mmlu"></div></div>
+            </div>
+            <p class="caption">X: checkpoint step（有 V2 时 10–300） · Y: mmlu_temp acc（%）。虚线=S3，短虚线=V2。</p>
+          </div>
+        </section>
+
+        <section class="detail-sub" id="eval-sec-math">
+          <h2 class="sec-title">Math 数学</h2>
+          <p class="sec-sub">aime24 / aime25 / MATH-500 · Easy-Boxed 实线 / S3 虚线 / V2 短虚线 · n=8</p>
           <section class="grid2" style="margin-top:12px">
             <div>
               <h2>aime24（Easy + S3 + V2）</h2>
@@ -85,12 +108,7 @@
               <p class="caption">X: checkpoint step（有 V2 时 10–300） · Y: aime25 mean_acc（%，n=8）。虚线=S3，短虚线=V2。</p>
             </div>
           </section>
-        </section>
-
-        <section class="detail-sec" id="eval-sec-math500">
-          <h2 class="sec-title">MATH-500</h2>
-          <p class="sec-sub">Easy-Boxed 实线 / S3 虚线 / V2 短虚线 · 缺报告为断点</p>
-          <div style="margin-top:12px">
+          <div style="margin-top:16px">
             <h2>MATH-500（Easy + S3 + V2）</h2>
             <div class="chart-card">
               <div class="legend" id="legend-eval-math500"></div>
@@ -100,28 +118,32 @@
           </div>
         </section>
 
-        <section class="detail-sec" id="eval-sec-mmlu">
-          <h2 class="sec-title">通识（MMLU）</h2>
-          <p class="sec-sub">mmlu_temp · n=2 · Easy-Boxed 实线 / S3 虚线 / V2 短虚线</p>
-          <div style="margin-top:12px">
-            <h2>mmlu_temp（Easy + S3 + V2）</h2>
+        <section class="detail-sub" id="eval-sec-agent">
+          <h2 class="sec-title">Agent 智能体</h2>
+          <p class="sec-sub">tau-bench · Easy 实线 / S3 虚线 / V2 短虚线</p>
+          <p class="tertiary">Source: <code>evalscope/outputs/agent2</code>（<code>run_agent2_queue_2b.sh</code> / <code>run_agent2_s3_queue_2b.sh</code>，vLLM <code>qwen3_xml</code>）。tau-bench：retail+airline 共 40、user-sim=<code>gpt-5p5-apipro</code>。Agent2 Easy：BFCL 75/75，tau-bench 75/75（非空 step：10/20/30/40/50/60/70/80/90/100/110/120/130/140/150）。S3：BFCL native-FC 75/75，tau-bench 75/75（非空 step：10/20/30/40/50/60/70/80/90/100/110/120/130/140/150）。V2：BFCL 15/150，tau-bench 25/150（非空 step：10/20/30/40/50/60/70/80/90/100/110/120/130/140/150/160/170/180/190/200/210/220/230/240/250）。刷新：<code>python3 scripts/monitoring/2b/sync_2b_agent_dashboard.py</code>。协议说明见 <a href="../benchmark/index.html">Benchmark 介绍</a>。</p>
+          <div class="callout" style="margin-top:10px">
+            <div class="title">tau 噪声大，step 间抖动需谨慎解读</div>
+            <strong>tau-bench</strong> step150：E1 55% · E5 52.5% · E2 42.5% · E3 40% · E4 37.5%；每点仅 40 条、噪声约 ±8pt。
+          </div>
+          <div style="margin-top:16px">
+            <h2>tau-bench（E1–E5 + V2）</h2>
             <div class="chart-card">
-              <div class="legend" id="legend-eval-mmlu"></div>
-              <div class="chart-wrap"><canvas id="chart-eval-mmlu" height="240"></canvas><div class="tooltip" id="tip-eval-mmlu"></div></div>
+              <div class="legend" id="legend-agent-tau"></div>
+              <div class="chart-wrap"><canvas id="chart-agent-tau" height="240"></canvas><div class="tooltip" id="tip-agent-tau"></div></div>
             </div>
-            <p class="caption">X: checkpoint step（有 V2 时 10–300） · Y: mmlu_temp acc（%）。虚线=S3，短虚线=V2。</p>
+            <p class="caption">X: step（有 V2 时 10–300） · Y: tau-bench mean_acc（%，40 条）。短虚线=V2；缺报告为断点；每点噪声约 ±8pt。</p>
           </div>
         </section>
 
-        <section class="detail-sec" id="eval-sec-agent">
-          <h2 class="sec-title">Agent / 工具调用能力</h2>
-          <p class="sec-sub">BFCL-v3 + tau-bench · Easy 实线 / S3 虚线 / V2 短虚线</p>
-          <p class="tertiary">Source: <code>evalscope/outputs/agent2</code>（<code>run_agent2_queue_2b.sh</code> / <code>run_agent2_s3_queue_2b.sh</code>，vLLM <code>qwen3_xml</code>）。BFCL-v3：10 subset × 30、prompt/native-FC 兼容报告；tau-bench：retail+airline 共 40、user-sim=<code>gpt-5p5-apipro</code>。Agent2 Easy：BFCL 75/75，tau-bench 75/75（非空 step：10/20/30/40/50/60/70/80/90/100/110/120/130/140/150）。S3：BFCL native-FC 75/75，tau-bench 75/75（非空 step：10/20/30/40/50/60/70/80/90/100/110/120/130/140/150）。V2：BFCL 15/150，tau-bench 25/150（非空 step：10/20/30/40/50/60/70/80/90/100/110/120/130/140/150/160/170/180/190/200/210/220/230/240/250）。刷新：<code>python3 scripts/monitoring/2b/sync_2b_agent_dashboard.py</code>。协议说明见 <a href="../benchmark/index.html">Benchmark 介绍</a>。</p>
+        <section class="detail-sub" id="eval-sec-tools">
+          <h2 class="sec-title">Function tools 工具调用</h2>
+          <p class="sec-sub">BFCL-v3 · OVERALL + MULTI_TURN · Easy 实线 / S3 虚线 / V2 短虚线</p>
+          <p class="tertiary">Source: <code>evalscope/outputs/agent2</code>（<code>run_agent2_queue_2b.sh</code> / <code>run_agent2_s3_queue_2b.sh</code>，vLLM <code>qwen3_xml</code>）。BFCL-v3：10 subset × 30、prompt/native-FC 兼容报告。Agent2 Easy：BFCL 75/75。S3：BFCL native-FC 75/75。V2：BFCL 15/150。刷新：<code>python3 scripts/monitoring/2b/sync_2b_agent_dashboard.py</code>。协议说明见 <a href="../benchmark/index.html">Benchmark 介绍</a>。</p>
           <div class="callout" style="margin-top:10px">
-            <div class="title">S3 agent：BFCL 有区分度，MULTI_TURN 仍弱，tau 噪声大</div>
+            <div class="title">S3 BFCL 有区分度，MULTI_TURN 仍弱</div>
             <strong>BFCL OVERALL</strong>：E1/E2/E3 多数 step 落在 50–60%；E1 若干 step 掉到 ~38%（随后回升）；E5 仅有 step120–150，落在 36–40%。
             <strong>MULTI_TURN</strong> 普遍 5–14%，E1@150 摸到 17.2%——仍是最弱环。
-            <strong>tau-bench</strong> step150：E1 55% · E5 52.5% · E2 42.5% · E3 40% · E4 37.5%；每点仅 40 条、噪声约 ±8pt。
           </div>
           <div style="margin-top:16px">
             <h2>BFCL-v3 OVERALL（E1–E5）</h2>
@@ -131,24 +153,14 @@
             </div>
             <p class="caption">X: checkpoint step（有 V2 时 10–300） · Y: BFCL-v3 OVERALL acc（%）。虚线=S3，短虚线=V2；可点图例显隐。</p>
           </div>
-          <section class="grid2" style="margin-top:16px">
-            <div>
-              <h2>BFCL-v3 MULTI_TURN（多轮 agentic）</h2>
-              <div class="chart-card">
-                <div class="legend" id="legend-agent-mt"></div>
-                <div class="chart-wrap"><canvas id="chart-agent-mt" height="240"></canvas><div class="tooltip" id="tip-agent-mt"></div></div>
-              </div>
-              <p class="caption">X: step · Y: MULTI_TURN acc（%，4 subset × 30）。短虚线=V2；多轮会 exec 工具；数学 RL 普遍偏低。</p>
+          <div style="margin-top:16px">
+            <h2>BFCL-v3 MULTI_TURN（多轮 agentic）</h2>
+            <div class="chart-card">
+              <div class="legend" id="legend-agent-mt"></div>
+              <div class="chart-wrap"><canvas id="chart-agent-mt" height="240"></canvas><div class="tooltip" id="tip-agent-mt"></div></div>
             </div>
-            <div>
-              <h2>tau-bench（E1–E5 + V2）</h2>
-              <div class="chart-card">
-                <div class="legend" id="legend-agent-tau"></div>
-                <div class="chart-wrap"><canvas id="chart-agent-tau" height="240"></canvas><div class="tooltip" id="tip-agent-tau"></div></div>
-              </div>
-              <p class="caption">X: step（有 V2 时 10–300） · Y: tau-bench mean_acc（%，40 条）。短虚线=V2；缺报告为断点；每点噪声约 ±8pt。</p>
-            </div>
-          </section>
+            <p class="caption">X: step · Y: MULTI_TURN acc（%，4 subset × 30）。短虚线=V2；多轮会 exec 工具；数学 RL 普遍偏低。</p>
+          </div>
         </section>
 
       </div><!-- /.detail-main -->

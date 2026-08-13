@@ -13,7 +13,12 @@
         links.forEach((a) => a.classList.toggle("is-active", a.getAttribute("href") === "#" + id));
       }
       const observer = new IntersectionObserver((entries) => {
-        const visible = entries.filter((e) => e.isIntersecting).sort((a, b) => b.intersectionRatio - a.intersectionRatio);
+        const visible = entries.filter((e) => e.isIntersecting).sort((a, b) => {
+          const aSub = a.target.classList.contains("detail-sub") ? 1 : 0;
+          const bSub = b.target.classList.contains("detail-sub") ? 1 : 0;
+          if (aSub !== bSub) return bSub - aSub;
+          return b.intersectionRatio - a.intersectionRatio;
+        });
         if (visible[0]) setActive(visible[0].target.id);
       }, { rootMargin: "-20% 0px -60% 0px", threshold: [0, 0.25, 0.5, 1] });
       sections.forEach((s) => observer.observe(s));
@@ -40,7 +45,7 @@
 
   async function loadPanel(tab) {
     if (!cache[tab]) {
-      const resp = await fetch("panels/" + tab + ".html?v=20260806103605");
+      const resp = await fetch("panels/" + tab + ".html?v=20260813141036");
       cache[tab] = await resp.text();
     }
     container.innerHTML = cache[tab];

@@ -1,5 +1,5 @@
 // =============================================================================
-// data-eval-offline.js — Offline evalscope scores (Stage-1 + Stage-3 + V2 + extras); auto-synced 2026-08-11
+// data-eval-offline.js — Offline evalscope scores (Stage-1 + Stage-3 + V2 + extras); auto-synced 2026-08-13
 // NOT training-log metrics (those live in data-easy-boxed-e*.js / data-s3-e*.js / data-v2-e*.js).
 //
 //   EVAL_EASY_BOXED*  → Stage-1 offline (e*_2b_<step>)
@@ -131,10 +131,10 @@ const EVAL_E24K_STEPS = ["10", "20", "30", "40", "50", "60", "70", "80", "90", "
 const EVAL_FULL_E24K = {
   e2: {
     label: "Easy-24K E2 DAPO", color: COLORS.e2,
-    mmlu:   [76.33, 77.14, 77.97, 77.23, 80.87, 77.88, 80.15, 79.58, 81.04, 81.60, 81.36, 81.85, 82.66, 81.61, 81.28, 80.95, 79.25, 80.39, 78.69, 79.10, 80.47, 76.50, 80.71, 82.50, 78.53, 79.41, null, null, null, null],
-    aime24: [13.75, 21.25, 20.83, 22.08, 19.58, 21.67, 21.67, 19.17, 45.42, 22.08, 22.50, 45.42, 45.83, 38.75, 36.67, 34.58, 11.25, 7.92, 3.75, 3.75, 4.17, 3.33, 26.67, 27.92, 7.08, 8.33, null, null, null, null],
-    aime25: [17.09, 21.25, 21.25, 21.67, 25.00, 25.41, 22.08, 27.50, 37.09, 29.17, 22.50, 30.42, 33.33, 31.66, 28.75, 27.92, 18.75, 14.58, 13.75, 8.34, 12.91, 7.08, 27.91, 25.41, 12.91, 15.41, null, null, null, null],
-    math500:[75.00, 77.63, 78.75, 79.00, 80.10, 79.98, 80.52, 79.70, 89.18, 82.70, 89.05, 88.77, 88.87, 87.88, 88.50, 87.03, 75.28, 73.25, 67.00, 64.55, 69.63, null, 81.17, 83.00, null, null, null, null, null, null],
+    mmlu:   [76.33, 77.14, 77.97, 77.23, 80.87, 77.88, 80.15, 79.58, 81.04, 81.60, 81.36, 81.85, 82.66, 81.61, 81.28, 80.95, 79.25, 80.39, 78.69, 79.10, 80.47, 76.50, 80.71, 82.50, 78.53, 79.41, 78.93, 78.36, 77.88, 80.23],
+    aime24: [13.75, 21.25, 20.83, 22.08, 19.58, 21.67, 21.67, 19.17, 45.42, 22.08, 22.50, 45.42, 45.83, 38.75, 36.67, 34.58, 11.25, 7.92, 3.75, 3.75, 4.17, 3.33, 26.67, 27.92, 7.08, 8.33, 6.25, 4.58, 2.08, 4.58],
+    aime25: [17.09, 21.25, 21.25, 21.67, 25.00, 25.41, 22.08, 27.50, 37.09, 29.17, 22.50, 30.42, 33.33, 31.66, 28.75, 27.92, 18.75, 14.58, 13.75, 8.34, 12.91, 7.08, 27.91, 25.41, 12.91, 15.41, 13.33, 11.25, 5.42, 9.58],
+    math500:[75.00, 77.63, 78.75, 79.00, 80.10, 79.98, 80.52, 79.70, 89.18, 82.70, 89.05, 88.77, 88.87, 87.88, 88.50, 87.03, 75.28, 73.25, 67.00, 64.55, 69.63, 56.25, 81.17, 83.00, 67.05, 70.85, 66.65, 64.70, 56.67, null],
   },
 };
 
@@ -176,10 +176,10 @@ const EVAL_EXT_E24K_STEPS = ["10", "20", "30", "40", "50", "60", "70", "80", "90
 const EVAL_FULL_EXT_E24K = {
   e2: {
     label: "Ext easy-cont-24K E2 DAPO", color: COLORS.e2,
-    mmlu:   [null, null, null, null, null, null, null, null, null, null, null, null, null, null, 80.71, 80.87, 81.04, null, null, null, null, null, null, null, null, null, null, null, null, null],
-    aime24: [null, null, null, null, null, null, null, null, null, null, null, null, null, null, 34.17, 37.50, 33.75, null, null, null, null, null, null, null, null, null, null, null, null, null],
-    aime25: [null, null, null, null, null, null, null, null, null, null, null, null, null, null, 28.75, 28.75, 31.67, null, null, null, null, null, null, null, null, null, null, null, null, null],
-    math500:[null, null, null, null, null, null, null, null, null, null, null, null, null, null, 86.13, 86.30, 86.25, null, null, null, null, null, null, null, null, null, null, null, null, null],
+    mmlu:   [null, null, null, null, null, null, null, null, null, null, null, null, null, null, 80.71, 80.87, 81.04, 80.79, 82.49, 81.28, 81.69, 81.52, 80.15, 83.38, 82.18, 82.25, 82.17, 82.50, null, 82.33],
+    aime24: [null, null, null, null, null, null, null, null, null, null, null, null, null, null, 34.17, 37.50, 33.75, 37.08, 39.58, 34.17, 28.75, 30.42, 30.42, 31.25, 37.92, 33.75, 36.67, 37.50, null, 35.42],
+    aime25: [null, null, null, null, null, null, null, null, null, null, null, null, null, null, 28.75, 28.75, 31.67, 27.92, 28.75, 32.91, 31.25, 28.75, 26.25, 26.67, 27.50, 28.34, 32.50, 33.75, null, 33.33],
+    math500:[null, null, null, null, null, null, null, null, null, null, null, null, null, null, 86.13, 86.30, 86.25, 87.25, 87.02, 87.30, 86.62, 85.90, 85.23, 87.15, 87.78, 88.55, 87.40, 87.62, null, null],
   },
 };
 
@@ -220,7 +220,7 @@ const EVAL_STAGE_S3_150 = {
   ],
 };
 
-// ---- Agent BFCL / tool-use benchmarks (evalscope, auto-synced 2026-08-11) ----
+// ---- Agent BFCL / tool-use benchmarks (evalscope, auto-synced 2026-08-13) ----
 // Source: /data/juicefs-white/5281-gpu-a100/lijunyi/evalscope/outputs/agent2/<ts>/reports/<exp>_2b[<stage>]_<step>/{bfcl_v3,tau_bench}.json
 // Coverage Easy: bfcl=75/75 · tau=75/75 · steps with any report: 10/20/30/40/50/60/70/80/90/100/110/120/130/140/150
 // Coverage S3: bfcl=75/75 · tau=75/75 · steps with any report: 10/20/30/40/50/60/70/80/90/100/110/120/130/140/150
@@ -235,31 +235,31 @@ const AGENT_EASY_STEPS = ["10", "20", "30", "40", "50", "60", "70", "80", "90", 
 const AGENT_EASY = {
   e1: {
     label: "E1 GRPO Easy",     color: COLORS.e1,
-    bfcl:   [38.2, 41.0, 38.2, 41.0, 37.8, 39.9, 38.5, 42.0, 39.6, 41.0, 42.4, 41.0, 41.7, 39.6, 38.5],
+    bfcl:   [49.8, 53.2, 51.9, 54.3, 48.8, 54.1, 49.6, 54.4, 51.6, 56.6, 53.3, 52.8, 54.1, 56.9, 53.0],
     bfcl_mt:[9.4, 5.6, 3.3, 8.9, 5.6, 11.1, 8.9, 12.2, 7.2, 6.7, 10.0, 9.4, 8.3, 10.0, 8.3],
     tau:    [37.5, 50.0, 45.0, 45.0, 52.5, 57.5, 45.0, 52.5, 45.0, 55.0, 32.5, 0.0, 50.0, 40.0, 45.0],
   },
   e2: {
     label: "E2 DAPO Easy",     color: COLORS.e2,
-    bfcl:   [38.2, 41.3, 39.2, 39.9, 38.2, 40.3, 42.7, 42.0, 43.4, 39.2, 41.0, 39.9, 43.8, 45.5, 42.0],
+    bfcl:   [52.6, 55.7, 51.2, 52.3, 50.8, 52.5, 55.3, 53.1, 55.7, 53.0, 51.9, 51.4, 53.1, 55.9, 51.8],
     bfcl_mt:[5.6, 13.9, 6.7, 10.0, 7.8, 10.0, 12.2, 10.0, 11.1, 10.0, 7.8, 13.3, 16.1, 11.1, 11.1],
     tau:    [45.0, 52.5, 52.5, 42.5, 42.5, 42.5, 57.5, 42.5, 47.5, 52.5, 52.5, 55.0, 35.0, 42.5, 42.5],
   },
   e3: {
     label: "E3 Dr.GRPO Easy",  color: COLORS.e3,
-    bfcl:   [40.6, 38.2, 42.7, 41.7, 43.4, 40.3, 43.8, 44.4, 41.7, 41.7, 43.8, 45.8, 46.5, 41.0, 40.3],
+    bfcl:   [55.9, 50.7, 57.3, 51.7, 52.8, 53.6, 53.8, 53.6, 53.8, 52.2, 57.7, 57.0, 57.6, 56.1, 54.1],
     bfcl_mt:[12.8, 6.7, 11.1, 12.2, 13.3, 8.3, 10.6, 9.4, 10.0, 9.4, 12.8, 13.9, 14.4, 11.7, 9.4],
     tau:    [42.5, 45.0, 40.0, 47.5, 40.0, 47.5, 45.0, 50.0, 45.0, 45.0, 65.0, 47.5, 50.0, 42.5, 52.5],
   },
   e4: {
     label: "E4 RLOO Easy",     color: COLORS.e4,
-    bfcl:   [39.2, 44.5, 44.1, 41.7, 44.4, 43.8, 44.8, 42.4, 45.5, 47.6, 45.5, 46.9, 44.5, 43.1, 42.7],
+    bfcl:   [53.6, 55.0, 52.8, 55.8, 56.5, 54.3, 58.7, 54.4, 53.6, 58.4, 58.3, 58.9, 53.6, 51.4, 54.3],
     bfcl_mt:[10.0, 7.8, 6.7, 6.7, 12.2, 6.7, 15.6, 6.1, 6.1, 8.9, 3.9, 12.2, 7.8, 8.9, 8.3],
     tau:    [47.5, 40.0, 42.5, 52.5, 50.0, 42.5, 52.5, 32.5, 45.0, 60.0, 37.5, 42.5, 35.0, 37.5, 47.5],
   },
   e5: {
     label: "E5 REINFORCE++ Easy", color: COLORS.e5,
-    bfcl:   [37.5, 40.3, 39.6, 42.4, 41.3, 46.2, 39.9, 39.9, 38.9, 36.8, 41.3, 43.1, 42.0, 45.5, 43.0],
+    bfcl:   [52.5, 54.6, 55.1, 54.6, 54.0, 58.3, 52.3, 53.3, 52.1, 48.8, 54.1, 55.7, 53.1, 54.6, 53.1],
     bfcl_mt:[7.2, 12.2, 8.3, 8.9, 6.7, 11.1, 10.0, 5.6, 9.4, 7.8, 7.8, 12.8, 10.0, 11.7, 8.3],
     tau:    [37.5, 50.0, 40.0, 50.0, 45.0, 40.0, 55.0, 52.5, 37.5, 50.0, 35.0, 35.0, 40.0, 50.0, 52.5],
   },
@@ -272,31 +272,31 @@ const AGENT_S3_RAW_STEPS = ["10", "20", "30", "40", "50", "60", "70", "80", "90"
 const AGENT_S3_RAW = {
   e1: {
     label: "E1 GRPO S3",       color: COLORS.e1,
-    bfcl:   [41.3, 38.2, 39.2, 37.5, 38.2, 38.9, 39.2, 37.9, 40.3, 39.9, 43.4, 42.4, 41.7, 39.2, 42.7],
+    bfcl:   [54.5, 38.2, 39.2, 37.5, 51.2, 38.9, 52.4, 37.9, 54.2, 39.9, 55.5, 56.7, 53.1, 55.4, 56.5],
     bfcl_mt:[10.0, 7.5, 7.5, 9.2, 8.3, 9.2, 6.7, 7.5, 10.6, 9.2, 11.7, 10.0, 11.1, 9.4, 17.2],
     tau:    [32.5, 40.0, 35.0, 35.0, 37.5, 47.5, 40.0, 40.0, 37.5, 40.0, 55.0, 35.0, 42.5, 50.0, 55.0],
   },
   e2: {
     label: "E2 DAPO S3",       color: COLORS.e2,
-    bfcl:   [40.3, 42.0, 42.4, 39.9, 40.6, 43.1, 40.6, 41.0, 42.7, 39.9, 39.2, 39.9, 44.1, 38.5, 37.1],
+    bfcl:   [55.4, 56.6, 54.5, 51.4, 56.7, 57.7, 54.7, 56.6, 56.9, 51.8, 54.1, 55.3, 59.6, 52.6, 54.2],
     bfcl_mt:[7.8, 10.6, 7.8, 6.1, 11.7, 5.6, 6.1, 7.2, 10.6, 7.8, 11.1, 8.9, 13.3, 7.2, 10.0],
     tau:    [35.0, 50.0, 27.5, 42.5, 45.0, 40.0, 37.5, 37.5, 40.0, 40.0, 40.0, 40.0, 45.0, 40.0, 42.5],
   },
   e3: {
     label: "E3 Dr.GRPO S3",    color: COLORS.e3,
-    bfcl:   [39.6, 40.6, 41.3, 40.3, 40.6, 40.6, 40.3, 38.2, 42.4, 41.0, 41.7, 42.4, 44.1, 40.6, 42.0],
+    bfcl:   [53.4, 52.1, 54.5, 51.1, 54.2, 51.2, 53.6, 52.0, 55.9, 51.9, 53.4, 52.1, 57.9, 53.3, 56.5],
     bfcl_mt:[8.3, 9.4, 9.4, 11.7, 8.9, 11.7, 7.8, 7.8, 13.3, 7.2, 12.2, 13.9, 13.3, 5.6, 9.4],
     tau:    [27.5, 35.0, 32.5, 35.0, 42.5, 52.5, 50.0, 32.5, 42.5, 52.5, 52.5, 40.0, 42.5, 37.5, 40.0],
   },
   e4: {
     label: "E4 RLOO S3",       color: COLORS.e4,
-    bfcl:   [38.9, 42.0, 40.6, 40.3, 40.3, 36.8, 37.5, 40.3, 39.6, 44.1, 38.9, 41.3, 39.9, 37.9, 37.5],
+    bfcl:   [49.4, 53.1, 50.5, 52.0, 50.2, 51.0, 49.2, 52.5, 53.0, 53.6, 50.6, 49.5, 49.1, 52.7, 50.0],
     bfcl_mt:[9.4, 10.0, 11.1, 8.9, 7.2, 9.4, 8.3, 12.8, 15.6, 11.1, 11.7, 12.8, 13.3, 15.0, 12.2],
     tau:    [30.0, 50.0, 50.0, 32.5, 32.5, 37.5, 42.5, 40.0, 40.0, 42.5, 50.0, 42.5, 47.5, 37.5, 37.5],
   },
   e5: {
     label: "E5 REINFORCE++ S3", color: COLORS.e5,
-    bfcl:   [39.9, 40.6, 40.3, 44.1, 42.0, 36.5, 38.2, 35.1, 36.5, 38.2, 37.5, 39.2, 37.1, 39.6, 36.1],
+    bfcl:   [53.1, 50.0, 52.7, 54.0, 52.0, 50.3, 51.9, 48.1, 52.2, 52.7, 50.5, 39.2, 37.1, 39.6, 36.1],
     bfcl_mt:[6.7, 10.0, 10.5, 11.1, 6.7, 6.7, 9.4, 7.2, 8.9, 6.7, 6.7, 9.2, 5.0, 10.8, 5.0],
     tau:    [37.5, 57.5, 42.5, 35.0, 37.5, 42.5, 37.5, 52.5, 35.0, 45.0, 47.5, 47.5, 25.0, 32.5, 52.5],
   },
@@ -314,7 +314,7 @@ const AGENT_V2_STEPS = ["10", "20", "30", "40", "50", "60", "70", "80", "90", "1
 const AGENT_V2 = {
   e1: {
     label: "E1 GRPO V2",       color: COLORS.e1,
-    bfcl:   [38.9, 40.3, 37.5, 38.5, 40.3, 39.9, 41.3, 40.6, 42.7, 41.0, 43.0, 41.3, 42.7, 43.8, 40.6, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
+    bfcl:   [43.9, 47.9, 45.1, 43.0, 45.8, 43.1, 48.8, 46.8, 47.6, 47.8, 50.7, 49.2, 50.6, 49.8, 48.1, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
     bfcl_mt:[0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
     tau:    [47.5, 57.5, 42.5, 52.5, 50.0, 45.0, 35.0, 50.0, 62.5, 47.5, 42.5, 55.0, 50.0, 57.5, 55.0, 47.5, 50.0, 47.5, 47.5, 50.0, 47.5, 42.5, 47.5, 40.0, 47.5, null, null, null, null, null],
   },
@@ -322,70 +322,70 @@ const AGENT_V2 = {
 
 const AGENT_V2_ORDER = ["e1"];
 
-// ---- Agent Easy-24K (e*_2b_easy_24k_<step>; bfcl=16 tau=16; steps 10/20/30/40/50/60/70/80/90/100/110/120/130/140/150/230) ----
+// ---- Agent Easy-24K (e*_2b_easy_24k_<step>; bfcl=15 tau=24; steps 10/20/30/40/50/60/70/80/90/100/110/120/130/140/150/160/170/180/190/200/210/220/230/240) ----
 const AGENT_E24K_STEPS = ["10", "20", "30", "40", "50", "60", "70", "80", "90", "100", "110", "120", "130", "140", "150", "160", "170", "180", "190", "200", "210", "220", "230", "240", "250", "260", "270", "280", "290", "300"];
 
 const AGENT_E24K = {
   e2: {
     label: "E2 DAPO Easy-24K", color: COLORS.e2,
-    bfcl:   [12.2, 12.5, 13.2, 12.2, 12.2, 11.8, 12.8, 13.5, 12.8, 12.2, 11.8, 10.4, 10.4, 11.1, 13.5, null, null, null, null, null, null, null, 12.5, null, null, null, null, null, null, null],
-    bfcl_mt:[2.8, 6.7, 7.8, 3.9, 3.9, 3.3, 8.3, 7.2, 6.1, 6.1, 3.3, 0.0, 0.0, 2.2, 10.6, null, null, null, null, null, null, null, 7.8, null, null, null, null, null, null, null],
-    tau:    [40.0, 35.0, 35.0, 37.5, 60.0, 37.5, 47.5, 37.5, 37.5, 42.5, 40.0, 37.5, 35.0, 40.0, 50.0, null, null, null, null, null, null, null, 47.5, null, null, null, null, null, null, null],
+    bfcl:   [47.0, null, 46.5, 47.9, 49.6, 45.5, 49.2, 47.1, 45.6, 47.3, 45.3, 43.5, 42.4, 43.5, 42.1, null, 42.7, null, null, null, null, null, null, null, null, null, null, null, null, null],
+    bfcl_mt:[6.7, null, 8.9, 8.9, 10.0, 8.9, 10.0, 6.1, 7.2, 7.8, 8.3, 11.7, 5.0, 11.7, 5.0, null, 12.8, null, null, null, null, null, null, null, null, null, null, null, null, null],
+    tau:    [40.0, 35.0, 35.0, 37.5, 60.0, 37.5, 47.5, 37.5, 37.5, 42.5, 40.0, 37.5, 35.0, 40.0, 50.0, 47.5, 30.0, 45.0, 42.5, 42.5, 50.0, 57.5, 47.5, 42.5, null, null, null, null, null, null],
   },
 };
 
 const AGENT_E24K_ORDER = ["e2"];
 
-// ---- Agent Easy-32K (e*_2b_easy_32k_<step>; bfcl=15 tau=15; steps 10/20/30/40/50/60/70/80/90/100/110/120/130/140/150) ----
+// ---- Agent Easy-32K (e*_2b_easy_32k_<step>; bfcl=14 tau=15; steps 10/20/30/40/50/60/70/80/90/100/110/120/130/140/150) ----
 const AGENT_E32K_STEPS = ["10", "20", "30", "40", "50", "60", "70", "80", "90", "100", "110", "120", "130", "140", "150"];
 
 const AGENT_E32K = {
   e2: {
     label: "E2 DAPO Easy-32K", color: COLORS.e2,
-    bfcl:   [11.5, 12.8, 11.8, 12.8, 11.5, 13.2, 12.8, 12.5, 11.8, 12.5, 10.4, 10.4, 10.8, 10.4, 12.8],
-    bfcl_mt:[2.8, 7.2, 4.4, 7.2, 1.7, 7.8, 6.1, 7.8, 4.4, 6.7, 0.0, 0.0, 0.6, 0.0, 9.4],
+    bfcl:   [49.1, 46.4, null, 46.2, 47.1, 45.6, 45.9, 50.8, 49.4, 48.4, 49.7, 48.7, 48.4, 47.7, 47.0],
+    bfcl_mt:[12.8, 5.6, null, 7.2, 9.4, 8.3, 10.0, 13.3, 13.3, 11.7, 9.4, 15.0, 11.7, 11.1, 6.7],
     tau:    [32.5, 0.0, 47.5, 35.0, 35.0, 47.5, 42.5, 40.0, 45.0, 42.5, 42.5, 47.5, 52.5, 42.5, 57.5],
   },
 };
 
 const AGENT_E32K_ORDER = ["e2"];
 
-// ---- Agent Ext easy-cont (e*_2b_easy_cont150_<step>; bfcl=1 tau=1; steps 150) ----
+// ---- Agent Ext easy-cont (e*_2b_easy_cont150_<step>; bfcl=0 tau=1; steps 150) ----
 const AGENT_EXT_EASY_STEPS = ["10", "20", "30", "40", "50", "60", "70", "80", "90", "100", "110", "120", "130", "140", "150", "160", "170", "180", "190", "200", "210", "220", "230", "240", "250", "260", "270", "280", "290", "300"];
 
 const AGENT_EXT_EASY = {
   e2: {
     label: "E2 DAPO Ext easy-cont", color: COLORS.e2,
-    bfcl:   [null, null, null, null, null, null, null, null, null, null, null, null, null, null, 10.4, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
-    bfcl_mt:[null, null, null, null, null, null, null, null, null, null, null, null, null, null, 0.0, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
+    bfcl:   [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
+    bfcl_mt:[null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
     tau:    [null, null, null, null, null, null, null, null, null, null, null, null, null, null, 45.0, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
   },
 };
 
 const AGENT_EXT_EASY_ORDER = ["e2"];
 
-// ---- Agent Ext Easy-24K (e*_2b_easy_cont150_24k_<step>; bfcl=1 tau=5; steps 150/160/170/180/190) ----
+// ---- Agent Ext Easy-24K (e*_2b_easy_cont150_24k_<step>; bfcl=0 tau=5; steps 150/160/170/180/190) ----
 const AGENT_EXT_E24K_STEPS = ["10", "20", "30", "40", "50", "60", "70", "80", "90", "100", "110", "120", "130", "140", "150", "160", "170", "180", "190", "200", "210", "220", "230", "240", "250", "260", "270", "280", "290", "300"];
 
 const AGENT_EXT_E24K = {
   e2: {
     label: "E2 DAPO Ext Easy-24K", color: COLORS.e2,
-    bfcl:   [null, null, null, null, null, null, null, null, null, null, null, null, null, null, 10.4, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
-    bfcl_mt:[null, null, null, null, null, null, null, null, null, null, null, null, null, null, 0.0, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
+    bfcl:   [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
+    bfcl_mt:[null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
     tau:    [null, null, null, null, null, null, null, null, null, null, null, null, null, null, 47.5, 45.0, 45.0, 42.5, 40.0, null, null, null, null, null, null, null, null, null, null, null],
   },
 };
 
 const AGENT_EXT_E24K_ORDER = ["e2"];
 
-// ---- Agent Ext S1-switch (e*_2b_s1_from_easy150_<step>; bfcl=16 tau=16; steps 150/160/170/180/190/200/210/220/230/240/250/260/270/280/290/300) ----
+// ---- Agent Ext S1-switch (e*_2b_s1_from_easy150_<step>; bfcl=0 tau=16; steps 150/160/170/180/190/200/210/220/230/240/250/260/270/280/290/300) ----
 const AGENT_EXT_S1_STEPS = ["10", "20", "30", "40", "50", "60", "70", "80", "90", "100", "110", "120", "130", "140", "150", "160", "170", "180", "190", "200", "210", "220", "230", "240", "250", "260", "270", "280", "290", "300"];
 
 const AGENT_EXT_S1 = {
   e2: {
     label: "E2 DAPO Ext S1-switch", color: COLORS.e2,
-    bfcl:   [null, null, null, null, null, null, null, null, null, null, null, null, null, null, 10.4, 10.4, 10.4, 10.4, 10.4, 10.4, 10.4, 10.4, 10.4, 10.4, 10.4, 10.4, 10.4, 10.4, 10.4, 13.2],
-    bfcl_mt:[null, null, null, null, null, null, null, null, null, null, null, null, null, null, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 7.8],
+    bfcl:   [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
+    bfcl_mt:[null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
     tau:    [null, null, null, null, null, null, null, null, null, null, null, null, null, null, 50.0, 50.0, 40.0, 50.0, 42.5, 57.5, 52.5, 45.0, 57.5, 52.5, 40.0, 42.5, 30.0, 55.0, 50.0, 55.0],
   },
 };
