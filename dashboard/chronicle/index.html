@@ -38,6 +38,37 @@
     <article class="feed-item">
       <div class="feed-marker" aria-hidden="true"></div>
       <div class="feed-head">
+        <span class="feed-date">2026-08-15</span>
+        <span class="feed-label">训练完成：</span>
+      </div>
+      <div class="feed-row">
+        <span class="feed-time">10:13</span>
+        <div class="feed-content">
+          <p>On-Policy Distillation 满 150/150（~17.33h）。<span class="mono">opd_distill_2b_from_4b_easy_24k</span>：2B student 冷启动，冻结 4B teacher 在学生轨迹上给 top-k（k1 + PG）；easy boxed × 24K；4×A100（学生 2 + 教师 TP=2）</p>
+          <p>教师 logprob 用 <span class="mono">max_num_batched_tokens=8192</span> + chunked prefill，窗口对齐 25601。ckpt <span class="mono">global_step_150</span>。曲线已叠进 2B E2 页（金色短点 = OPD）</p>
+        </div>
+      </div>
+    </article>
+
+    <article class="feed-item">
+      <div class="feed-marker" aria-hidden="true"></div>
+      <div class="feed-head">
+        <span class="feed-date">2026-08-14</span>
+        <span class="feed-label">评测结果：</span>
+      </div>
+      <div class="feed-row">
+        <span class="feed-time">10:54</span>
+        <div class="feed-content">
+          <p>2B / 4B offline + agent 全量同步进看板。Easy-32K offline 轴扩到 10–300：新增 @160/@170（aime24 <strong>26.67→32.92%</strong>，aime25 <strong>32.50/30.42%</strong>），mmlu 至 @180 <strong>79.99%</strong></p>
+          <p>Easy-32K agent BFCL 23/30（峰值 @220 <strong>54.3%</strong>）；Easy-24K agent BFCL 29/30（缺 180）；Ext easy-cont-24K math@290/300 已齐</p>
+          <p>E1 S3@150 详情卡 BFCL 改为 native-FC <strong>56.50%</strong>（不再用空 AST 的 10.42%）</p>
+        </div>
+      </div>
+    </article>
+
+    <article class="feed-item">
+      <div class="feed-marker" aria-hidden="true"></div>
+      <div class="feed-head">
         <span class="feed-date">2026-08-13</span>
         <span class="feed-label">看板更新：</span>
       </div>
