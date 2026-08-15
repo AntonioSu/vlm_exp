@@ -1,4 +1,4 @@
-  <p class="tertiary">Sources: logs/exp2card/e*_2b{,_s3,_v2_s1}（<code>parse_2b_logs.py</code> + <code>gen_2b_js.py</code>）。Easy-Boxed / S3 五组均 150/150；V2 E1 GRPO 续训中（~250/300），E2 尚无 step。pass rate = (critic/score/mean + 1)/2（shaped 下不用 rewards）。</p>
+  <p class="tertiary">Sources: logs/exp2card/e*_2b{,_s3,_v2_s1} 与 <code>opd_distill_2b_from_4b_easy_24k</code>（<code>parse_2b_logs.py</code> + <code>gen_2b_js.py</code>）。Easy-Boxed / S3 五组均 150/150；OPD 蒸馏 150 已满、正在续到 500；V2 E1 GRPO 续训中（~250/300），E2 尚无 step。pass rate = (critic/score/mean + 1)/2（shaped 下不用 rewards）。</p>
   <div class="detail-layout">
     <nav class="detail-toc" aria-label="目录" id="compare-toc">
       <p class="toc-heading">目录</p>
@@ -20,17 +20,17 @@
       <section class="detail-sec" id="cmp-sec-overview">
         <h2 class="sec-title">概览</h2>
         <div class="callout">
-          <div class="title">Easy-Boxed / S3 五组已满 150；V2 E1 GRPO 续训 ~250/300，E2 尚无 step</div>
-          V1 两块（Easy-Boxed / S3）保持原结论。V2 改三项：难度池 <code>mix_2b_band</code>、全算法统一 overlong shaped、KL/ref 关掉（见 <code>scripts/train/experiments_v2/</code>）。下方三块各自独立图。
+          <div class="title">Easy-Boxed / S3 五组已满 150；OPD 蒸馏 150 已跑完，正在续到 500；V2 E1 GRPO 续训 ~250/300</div>
+          V1 两块（Easy-Boxed / S3）保持原结论。V2 改三项：难度池 <code>mix_2b_band</code>、全算法统一 overlong shaped、KL/ref 关掉。OPD 是另一条线：2B 学生 on-policy 采样，冻结 4B 教师给 top-k（见 <code>scripts/train/experiments_opd_distill/</code>）。下方三块各自独立图；OPD 曲线叠在 E2 页。
         </div>
       </section>
 
       <section class="detail-sec" id="cmp-sec-hp">
         <h2 class="sec-title">超参（各训练）</h2>
-        <p class="sec-sub">共享训练超参 + 各家族的<strong>数据</strong>与<strong>继承关系</strong>；算法定义见 <a href="../algo/index.html">算法介绍</a> · 数据池见 <a href="../dataset/index.html">数据集介绍</a>。脚本：<code>experiments_2b/</code> · <code>experiments_v2/</code> · <code>experiments_dapo_easy_{24,32}k/</code> · <code>experiments_dapo_s1_24k/</code> · <code>experiments_extend/</code></p>
+        <p class="sec-sub">共享训练超参 + 各家族的<strong>数据</strong>与<strong>继承关系</strong>；算法定义见 <a href="../algo/index.html">算法介绍</a> · 数据池见 <a href="../dataset/index.html">数据集介绍</a>。脚本：<code>experiments_2b/</code> · <code>experiments_v2/</code> · <code>experiments_dapo_easy_{24,32}k/</code> · <code>experiments_dapo_s1_24k/</code> · <code>experiments_extend/</code> · <code>experiments_opd_distill/</code></p>
 
         <h3 class="cpt">V1 vs V2 共享块</h3>
-        <p class="cpt-p">Easy / S3 共用 V1 配置块（只换 <code>STAGE</code> 数据）；V2 独立配置块。Easy-24K / Easy-32K / S1-24K / Ext 继承 V1 E2，见下「家族」表。</p>
+        <p class="cpt-p">Easy / S3 共用 V1 配置块（只换 <code>STAGE</code> 数据）；V2 独立配置块。Easy-24K / Easy-32K / S1-24K / Ext 继承 V1 E2；OPD 独立配置块，对照对象是 Easy-24K DAPO，见下表。</p>
         <div class="table-wrap" style="margin-top:10px; overflow-x:auto">
           <table class="hp-table">
             <thead>
@@ -111,7 +111,7 @@
         </div>
 
         <h3 class="cpt">V1 KL（E1–E5）</h3>
-        <p class="cpt-p">V1 唯一按算法分叉的训练超参是 KL；V2 / Easy-24K / Easy-32K / S1-24K / Ext 中 E2 系一律关 KL。</p>
+        <p class="cpt-p">V1 唯一按算法分叉的训练超参是 KL；V2 / Easy-24K / Easy-32K / S1-24K / Ext / OPD 一律关 KL。</p>
         <div class="table-wrap" style="margin-top:10px; overflow-x:auto">
           <table class="hp-table">
             <thead>
@@ -132,6 +132,107 @@
                 <td>关</td>
                 <td>开 · low_var_kl · 1e-3</td>
                 <td>开 · mse · 1e-3</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3 class="cpt">OPD 蒸馏 vs Easy-24K DAPO</h3>
+        <p class="cpt-p">同数据（easy boxed）同 24K 窗口；OPD 换算法：学生自己采样，冻结 4B 教师在整段轨迹上给 top-k。脚本 <code>experiments_opd_distill/run_opd_easy_24k_2b.sh</code>。第一段 1–150 已满；当前 <code>TOTAL_STEPS=500</code> + <code>resume_mode=auto</code> 从 <code>global_step_150</code> 续。</p>
+        <div class="table-wrap" style="margin-top:10px; overflow-x:auto">
+          <table class="hp-table">
+            <thead>
+              <tr>
+                <th>Param</th>
+                <th>Easy-24K E2 DAPO</th>
+                <th>OPD 2B←4B</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>EXP</td>
+                <td class="mono">e2_dapo_2b_easy_24k</td>
+                <td class="mono">opd_distill_2b_from_4b_easy_24k</td>
+              </tr>
+              <tr>
+                <td>算法 / 损失</td>
+                <td>DAPO（Clip-Higher + 动态采样 + overlong shaped）</td>
+                <td>On-Policy Distill：<span class="mono">k1</span> + <span class="mono">use_policy_gradient=True</span>；<span class="mono">use_task_rewards=False</span></td>
+              </tr>
+              <tr>
+                <td>学生 / 教师</td>
+                <td>2B actor（无教师）</td>
+                <td>2B student 可训 · 冻结 4B teacher（<span class="mono">qwen35_4b/train-model</span>）打 top-k=64</td>
+              </tr>
+              <tr>
+                <td>train data</td>
+                <td><span class="mono">polaris_easy_boxed</span>（13688）</td>
+                <td>同左</td>
+              </tr>
+              <tr>
+                <td>start / resume</td>
+                <td>base 冷启动（独立目录）</td>
+                <td>base 冷启动到 150；现 <span class="mono">resume_mode=auto</span> 从 @150 续到 500</td>
+              </tr>
+              <tr>
+                <td>GPU</td>
+                <td>2×A100（actor TP 视脚本）</td>
+                <td>4×A100：学生 2（TP=1）+ 教师 2（TP=2）</td>
+              </tr>
+              <tr>
+                <td>lr</td>
+                <td class="mono">1e-6</td>
+                <td class="mono">1e-6</td>
+              </tr>
+              <tr>
+                <td>train_batch_size</td>
+                <td class="mono">32</td>
+                <td class="mono">32</td>
+              </tr>
+              <tr>
+                <td>ppo_mini_batch_size / epochs</td>
+                <td class="mono">16 / 1</td>
+                <td class="mono">16 / 1</td>
+              </tr>
+              <tr>
+                <td>rollout.n</td>
+                <td class="mono">8</td>
+                <td class="mono">1</td>
+              </tr>
+              <tr>
+                <td>temperature</td>
+                <td class="mono">1.0</td>
+                <td class="mono">1.0</td>
+              </tr>
+              <tr>
+                <td>max_response_length</td>
+                <td class="mono">24576</td>
+                <td><span class="mono">24576</span>（教师窗口 <span class="mono">max_model_len=25601</span>）</td>
+              </tr>
+              <tr>
+                <td>教师 logprob</td>
+                <td>—</td>
+                <td><span class="mono">enable_chunked_prefill=True</span> · <span class="mono">max_num_batched_tokens=8192</span>（避免整段词表 softmax OOM）</td>
+              </tr>
+              <tr>
+                <td>KL / ref</td>
+                <td>关</td>
+                <td>关</td>
+              </tr>
+              <tr>
+                <td>entropy_coeff</td>
+                <td class="mono">0</td>
+                <td class="mono">0</td>
+              </tr>
+              <tr>
+                <td>total_training_steps</td>
+                <td>已跑过 150，后续续到 321</td>
+                <td>第一段 150 已满；当前目标 <span class="mono">500</span></td>
+              </tr>
+              <tr>
+                <td>save_freq</td>
+                <td>视 DAPO 脚本</td>
+                <td class="mono">10</td>
               </tr>
             </tbody>
           </table>
@@ -208,6 +309,15 @@
                 <td class="mono">150</td>
               </tr>
               <tr>
+                <td>OPD 蒸馏</td>
+                <td class="mono">opd_distill_2b_from_4b_easy_24k</td>
+                <td>On-Policy Distill<br>（k1 + PG）</td>
+                <td><span class="mono">stage1/polaris_easy_boxed.parquet</span><br>同 Easy</td>
+                <td>2B student 冷启动<br>冻结 4B teacher 打 top-k<br><span class="mono">experiments_opd_distill/</span></td>
+                <td>学生 24K 采样；教师分块 logprob（batched=8192）；<span class="mono">n=1</span>；4 卡（学生 2 + 教师 2）</td>
+                <td class="mono">150→500</td>
+              </tr>
+              <tr>
                 <td>Ext · easy-cont</td>
                 <td class="mono">e2_dapo_2b_easy_cont150</td>
                 <td class="hp-e2">E2 DAPO</td>
@@ -276,6 +386,10 @@
                 <li class="hp-branch-dash">
                   <span class="hp-node">S1-24K E2</span>
                   <span class="hp-meta">换 s1 · RESP_LEN=24576 · base 冷启动</span>
+                </li>
+                <li class="hp-branch-dash">
+                  <span class="hp-node">OPD 2B←4B</span>
+                  <span class="hp-meta">easy · 24K · 冻结 4B teacher · 冷启动 150 · resume→500</span>
                 </li>
               </ul>
             </li>

@@ -1,4 +1,4 @@
-const COLORS = { e1: "#2563eb", e2: "#d97706", e3: "#059669", e4: "#9333ea", e5: "#db2777", neutral: "#6b7280", danger: "#dc2626", grid: "#eef0f2", axis: "#9ca3af", s3: "#65a30d", v2: "#ea580c", e24k: "#7c3aed", e32k: "#6366f1", s124k: "#0284c7", extEasy: "#0e7490", extE24k: "#b45309", extS1: "#be123c" };
+const COLORS = { e1: "#2563eb", e2: "#d97706", e3: "#059669", e4: "#9333ea", e5: "#db2777", neutral: "#6b7280", danger: "#dc2626", grid: "#eef0f2", axis: "#9ca3af", s3: "#65a30d", v2: "#ea580c", e24k: "#7c3aed", e32k: "#6366f1", s124k: "#0284c7", extEasy: "#0e7490", extE24k: "#b45309", extS1: "#be123c", opd: "#ca8a04" };
 
 // ---- 2B 数据：来自 logs/exp2card/e*_2b{,_s3,_v2_s1,_easy_24k,_easy_32k,_s1_24k,_easy_cont150,_easy_cont150_24k,_s1_from_easy150}/train_*.log ----
 const N = 150;

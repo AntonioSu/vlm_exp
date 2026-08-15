@@ -1,4 +1,4 @@
-    <p class="tertiary">Easy-Boxed（e2_dapo_2b）· S3（e2_dapo_2b_s3）· Easy-24K（e2_dapo_2b_easy_24k）· Easy-32K（e2_dapo_2b_easy_32k）· S1-24K（e2_dapo_2b_s1_24k）· Ext（easy@150 续训：<code>e2_dapo_2b_easy_cont150</code> / <code>e2_dapo_2b_easy_cont150_24k</code> / <code>e2_dapo_2b_s1_from_easy150</code>，目标 300）。虚线=S3，点线=Easy-24K，点划点=Easy-32K，点划线=S1-24K / Ext easy-cont，长点划线=Ext easy-cont-24K，长虚线=Ext S1-switch。有 Ext 时横轴自动拉长。图例可点击切换显示/隐藏。</p>
+    <p class="tertiary">Easy-Boxed（e2_dapo_2b）· S3（e2_dapo_2b_s3）· Easy-24K（e2_dapo_2b_easy_24k）· Easy-32K（e2_dapo_2b_easy_32k）· S1-24K（e2_dapo_2b_s1_24k）· Ext（easy@150 续训：<code>e2_dapo_2b_easy_cont150</code> / <code>e2_dapo_2b_easy_cont150_24k</code> / <code>e2_dapo_2b_s1_from_easy150</code>，目标 300）· OPD 蒸馏（<code>opd_distill_2b_from_4b_easy_24k</code>，2B student ← 冻结 4B teacher · easy × 24K · 150）。虚线=S3，点线=Easy-24K，点划点=Easy-32K，点划线=S1-24K / Ext easy-cont，长点划线=Ext easy-cont-24K，长虚线=Ext S1-switch，短点=OPD。有 Ext 时横轴自动拉长。图例可点击切换显示/隐藏。</p>
     <div class="detail-layout">
       <nav class="detail-toc" aria-label="目录" id="e2-toc">
         <p class="toc-heading">目录</p>
@@ -89,7 +89,7 @@
             <div>
               <h2>平均响应长度（tokens）</h2>
               <div class="chart-card"><div class="legend" id="legend-e2-len"></div><div class="chart-wrap"><canvas id="chart-e2-len" height="200"></canvas><div class="tooltip" id="tip-e2-len"></div></div></div>
-              <p class="caption">红虚线 = 16K cap；灰虚线 = 24K / 32K cap（Easy-24K / S1-24K / Easy-32K）。</p>
+              <p class="caption">红虚线 = 16K cap；灰虚线 = 24K / 32K cap（Easy-24K / S1-24K / Easy-32K / OPD）。</p>
             </div>
             <div>
               <h2>截断率 clip@cap（%）</h2>
@@ -261,7 +261,7 @@
         <section class="detail-sec" id="e2-sec-eval">
           <h2 class="sec-title">评测</h2>
           <p class="sec-sub">evalscope offline · Easy / S3 / Easy-32K / Ext · mmlu_temp / aime24 / aime25 / math_500</p>
-          <p class="tertiary">offline：Easy/S3 step 10→150；Easy-32K / Ext 有报告时叠加（Ext X 轴可到 300）。缺报告断点。数据见 <code>js/data-eval-offline.js</code>。刷新：<code>python3 scripts/monitoring/2b/sync_2b_eval_dashboard.py</code>。</p>
+          <p class="tertiary">offline：Easy/S3 step 10→150；Easy-24K / Easy-32K / Ext 有报告时叠加（X 轴可到 300）。缺报告断点。数据见 <code>js/data-eval-offline.js</code>。刷新：<code>python3 scripts/monitoring/2b/sync_2b_eval_dashboard.py</code>。</p>
         </section>
 
         <section class="detail-sub" id="e2-sec-eval-mmlu">
