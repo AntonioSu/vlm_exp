@@ -127,13 +127,20 @@ PY
 # Text retention and general-capability evaluation. Put the verl environment's
 # vLLM-capable Python first; the evalscope CLI itself remains /usr/local/bin/evalscope.
 export PATH=${ENVBIN}:${PATH}
-cd "${EVALSCOPE}"
+export PORT="${PORT:-8082}"
+export TP_SIZE="${TP_SIZE:-1}"
+export NO_PROXY="${NO_PROXY:-127.0.0.1,localhost,::1}"
+export no_proxy="${no_proxy:-127.0.0.1,localhost,::1}"
+# Isolate eval.sh's relative server.log so GPU2/GPU3 queues can run in parallel.
+eval_cwd=${VLM_EXP}/logs/exp2card_mm/eval_queue/cwd_${EXP}_s${EVAL_STEP}_g${CUDA_VISIBLE_DEVICES//,/_}
+mkdir -p "${eval_cwd}"
+cd "${eval_cwd}"
 cleanup_eval_server() {
   pkill -f "vllm.entrypoints.openai.api_server --model ${MERGED_DIR} " 2>/dev/null || true
 }
 trap cleanup_eval_server EXIT
 set +e
-bash eval.sh \
+bash "${EVALSCOPE}/eval.sh" \
   --model-name "exp2card_mm/${EXP}_step${EVAL_STEP}" \
   --model-path "${MERGED_DIR}" \
   --batch-size 10 \
