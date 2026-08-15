@@ -1,4 +1,4 @@
-// ---- Evaluation results (evalscope offline, auto-synced 2026-08-06) ----
+// ---- Evaluation results (evalscope offline, auto-synced 2026-08-14) ----
 // Source: evalscope/outputs/exp2card/<exp>_4b_<step>/*/reports/<model>/*.json
 // 评测配置: eval_exp4b.sh + verl_qwen35 vLLM 0.24；
 // aime24/aime25 temperature=0.6 top_p=0.95 max_tokens=16384 n=8（30题×n8=240 采样）；
@@ -89,7 +89,7 @@ const EVAL_FULL_S3 = {
     math500:[92.18, 91.35, 90.95, 90.90, 89.70, null, null, null, null, null, null, null, null, null, null],
   },
 };
-// ---- Agent / tool-use benchmarks (evalscope, auto-synced 2026-08-06) ----
+// ---- Agent / tool-use benchmarks (evalscope, auto-synced 2026-08-14) ----
 // Source: /data/juicefs-white/5281-gpu-a100/lijunyi/evalscope/outputs/agent2/<ts>/reports/<exp>_4b_<step>/{bfcl_v3,tau_bench}.json
 // Coverage: bfcl=75 · tau=75 · steps with any report: 10/20/30/40/50/60/70/80/90/100/110/120/130/140/150
 // BFCL-v3: 10 subset ×30；bfcl=OVERALL（新版无聚合项时用 macro_score）；bfcl_mt=MULTI_TURN。
@@ -133,7 +133,7 @@ const AGENT = {
 
 const AGENT_ORDER = ["e1", "e2", "e3", "e4", "e5"];
 
-// ---- Agent / tool-use benchmarks (S3) (evalscope, auto-synced 2026-08-06) ----
+// ---- Agent / tool-use benchmarks (S3) (evalscope, auto-synced 2026-08-14) ----
 // Source: /data/juicefs-white/5281-gpu-a100/lijunyi/evalscope/outputs/agent2/<ts>/reports/<exp>_4b_s3_<step>/{bfcl_v3,tau_bench}.json
 // Coverage: bfcl=50 · tau=50 · steps with any report: 10/20/30/40/50/60/70/80/90/100/110/120/130/140/150
 // BFCL-v3: 10 subset ×30；bfcl=OVERALL（新版无聚合项时用 macro_score）；bfcl_mt=MULTI_TURN。

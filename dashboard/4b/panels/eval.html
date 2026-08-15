@@ -22,8 +22,10 @@
           <p class="sec-sub">评测配置 · Easy-Boxed 实线 / S3 虚线 · step150 汇总对比</p>
           <p class="tertiary">Source: <code>evalscope</code>（<code>run_queue_4b.sh</code> + <code>eval_exp4b.sh</code>，verl_qwen35 vLLM 0.24 serving）。评测配置：aime25 <code>temperature=0.6, top_p=0.95, max_tokens=16384, n=8</code>；mmlu_temp <code>n=2</code>；<code>enable_thinking=False</code>。权重路径 <code>model/exp2card/&lt;exp&gt;/merged_&lt;step&gt;</code>。S3 offline 报告目录 <code>outputs/exp2card/&lt;exp&gt;_4b_s3_&lt;step&gt;{,_manual}</code>。刷新：<code>python3 scripts/monitoring/4b/sync_4b_eval_dashboard.py</code>。</p>
           <div class="callout" style="margin-top:10px">
-            <div class="title">Easy-Boxed 75/75 已齐；S3 offline 已同步 E1/E2/E3@step10</div>
-            <strong>Easy mmlu_temp</strong> 全程 90–92%；峰值 <strong>E3@120 = 92.47%</strong>。<strong>Easy aime24</strong> 峰值 <strong>E2@80 = 80.42%</strong>；<strong>aime25</strong> 峰值 <strong>E2@80 = 62.50%</strong>。<strong>S3@step10</strong>：aime24 E2 74.58% · E1 69.17% · E3 67.50%；aime25 E2 46.25% · E3 45.84% · E1 44.17%。E2 math_500 / E1@20 仍在跑。曲线异色虚线 = S3。
+            <div class="title">Easy-Boxed 75/75 已齐；S3 offline E1/E2 15/15、E3 7/15、E4 5/15</div>
+            <strong>Easy mmlu_temp</strong> 全程 90–92%；峰值 <strong>E3@120 = 92.47%</strong>。<strong>Easy aime24</strong> 峰值 <strong>E2@80 = 80.42%</strong>；<strong>aime25</strong> 峰值 <strong>E2@80 = 62.50%</strong>。
+            <strong>S3</strong>：E1/E2 全 step 已齐（math 仍部分缺失）；E3 至 step 70；E4 至 step 50；E5 尚无 offline。
+            Agent Easy 75/75；S3 agent E1/E2/E4 15/15，E3 4/15，E5 仅@30。曲线异色虚线 = S3。
           </div>
           <section class="grid2" style="margin-top:20px">
             <div>
