@@ -238,13 +238,10 @@ function drawLineChart(canvasId, tipId, { categories, series, yMin, yMax, valueS
     }
   });
 
-  // x labels
+  // x labels (skip overlapping ticks; hover still shows every step)
   ctx.fillStyle = COLORS.axis;
-  ctx.textAlign = "center";
-  ctx.textBaseline = "top";
-  categories.forEach((c, i) => {
-    if (c) ctx.fillText(c, xAt(i), padT + plotH + 6);
-  });
+  ctx.font = "11px -apple-system, sans-serif";
+  ChartAxis.drawSparseXLabels(ctx, categories, xAt, padT + plotH + 6);
 
   // series lines (optional s.dash = [6, 4] for dashed overlay, e.g. S3)
   series.forEach(s => {
