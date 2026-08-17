@@ -127,6 +127,8 @@ PY
 # Text retention and general-capability evaluation. Put the verl environment's
 # vLLM-capable Python first; the evalscope CLI itself remains /usr/local/bin/evalscope.
 export PATH=${ENVBIN}:${PATH}
+# vLLM serving needs verl_qwen35 on PATH; evalscope CLI lives in the system python.
+export EVAL_PYTHON="${EVAL_PYTHON:-/usr/bin/python3}"
 export PORT="${PORT:-8082}"
 export TP_SIZE="${TP_SIZE:-1}"
 export NO_PROXY="${NO_PROXY:-127.0.0.1,localhost,::1}"
