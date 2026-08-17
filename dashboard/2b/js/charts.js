@@ -347,13 +347,10 @@ function drawLineChart(canvasId, tipId, { categories, series, yMin, yMax, valueS
     }
   });
 
-  // x labels
+  // x labels (skip overlapping ticks; hover still shows every step)
   ctx.fillStyle = COLORS.axis;
-  ctx.textAlign = "center";
-  ctx.textBaseline = "top";
-  categories.forEach((c, i) => {
-    if (c) ctx.fillText(c, xAt(i), padT + plotH + 6);
-  });
+  ctx.font = "11px -apple-system, sans-serif";
+  ChartAxis.drawSparseXLabels(ctx, categories, xAt, padT + plotH + 6);
 
   // series lines (optional s.dash = [6, 4] for dashed overlay, e.g. S3)
   series.forEach(s => {
@@ -1237,12 +1234,14 @@ function renderExpPanel(key) {
     const extEasyEv = (typeof EVAL_FULL_EXT_EASY !== "undefined" && EVAL_FULL_EXT_EASY[key]) ? EVAL_FULL_EXT_EASY[key] : null;
     const extE24Ev = (typeof EVAL_FULL_EXT_E24K !== "undefined" && EVAL_FULL_EXT_E24K[key]) ? EVAL_FULL_EXT_E24K[key] : null;
     const extS1Ev = (typeof EVAL_FULL_EXT_S1 !== "undefined" && EVAL_FULL_EXT_S1[key]) ? EVAL_FULL_EXT_S1[key] : null;
+    const opdev = (typeof EVAL_FULL_OPD !== "undefined" && EVAL_FULL_OPD[key]) ? EVAL_FULL_OPD[key] : null;
     if (ev && steps) {
       const baseSteps = steps;
       const e32Steps = (typeof EVAL_E32K_STEPS !== "undefined") ? EVAL_E32K_STEPS : baseSteps;
       const s124Steps = (typeof EVAL_S124K_STEPS !== "undefined") ? EVAL_S124K_STEPS : e32Steps;
       const e24Steps = (typeof EVAL_E24K_STEPS !== "undefined") ? EVAL_E24K_STEPS : e32Steps;
       const extE24Steps = (typeof EVAL_EXT_E24K_STEPS !== "undefined") ? EVAL_EXT_E24K_STEPS : e24Steps;
+      const opdSteps = (typeof EVAL_OPD_STEPS !== "undefined") ? EVAL_OPD_STEPS : e24Steps;
       const plotSteps = pickEvalPlotSteps(baseSteps, [
         { row: v2ev, steps: (typeof EVAL_V2_STEPS !== "undefined") ? EVAL_V2_STEPS : null },
         { row: e24ev, steps: e24Steps },
@@ -1251,6 +1250,7 @@ function renderExpPanel(key) {
         { row: extEasyEv, steps: (typeof EVAL_EXT_EASY_STEPS !== "undefined") ? EVAL_EXT_EASY_STEPS : null },
         { row: extE24Ev, steps: extE24Steps },
         { row: extS1Ev, steps: (typeof EVAL_EXT_S1_STEPS !== "undefined") ? EVAL_EXT_S1_STEPS : null },
+        { row: opdev, steps: opdSteps },
       ]);
       const pushAligned = (items, name, row, metric, fromSteps, seriesFn, color) => {
         if (!evalHasMetric(row, metric)) return;
@@ -1265,7 +1265,7 @@ function renderExpPanel(key) {
       const s3Aime24 = s3ev ? alignEvalSeries(s3ev.aime24, baseSteps, plotSteps) : null;
       const s3Aime25 = s3ev ? alignEvalSeries(s3ev.aime25, baseSteps, plotSteps) : null;
       const s3Math = s3ev ? alignEvalSeries(s3ev.math500, baseSteps, plotSteps) : null;
-      const hasExtra = !!(e24ev || e32ev || s124ev || extEasyEv || extE24Ev || extS1Ev);
+      const hasExtra = !!(e24ev || e32ev || s124ev || extEasyEv || extE24Ev || extS1Ev || opdev);
 
       const mmluItems = [{ name: "Easy-Boxed", data: easyMmlu, color: ev.color }];
       if (s3Mmlu) mmluItems.push(s3o("S3", s3Mmlu));
@@ -1281,6 +1281,8 @@ function renderExpPanel(key) {
       pushAligned(mmluItems, "Ext S1-switch", extS1Ev, "mmlu",
         (typeof EVAL_EXT_S1_STEPS !== "undefined") ? EVAL_EXT_S1_STEPS : plotSteps,
         extS1Series, EXT_S1_ALT[key] || COLORS.extS1);
+      pushAligned(mmluItems, "OPD 2B←4B", opdev, "mmlu", opdSteps,
+        opdSeries, OPD_ALT[key] || COLORS.opd);
       const mmluLegendEl = document.getElementById(`legend-${key}-eval-mmlu`);
       const drawMmlu = (visible) => {
         drawLineChart(`chart-${key}-eval-mmlu`, `tip-${key}-eval-mmlu`, {
@@ -1321,6 +1323,8 @@ function renderExpPanel(key) {
         pushAligned(items, "Ext S1-switch", extS1Ev, metric,
           (typeof EVAL_EXT_S1_STEPS !== "undefined") ? EVAL_EXT_S1_STEPS : plotSteps,
           extS1Series, EXT_S1_ALT[key] || COLORS.extS1);
+        pushAligned(items, "OPD 2B←4B", opdev, metric, opdSteps,
+          opdSeries, OPD_ALT[key] || COLORS.opd);
         renderLegend(legendEl, items, (visible) => {
           drawLineChart(`chart-${key}-eval-${metric}`, `tip-${key}-eval-${metric}`, {
             categories: plotSteps,
@@ -1333,7 +1337,7 @@ function renderExpPanel(key) {
       bindAimeMetric("aime24", easyAime24, s3Aime24, COLORS.e1);
       bindAimeMetric("aime25", easyAime25, s3Aime25, ev.color === COLORS.e1 ? COLORS.e5 : ev.color);
       const mathEl = document.getElementById(`chart-${key}-eval-math500`);
-      if (mathEl && (ev.math500 || evalHasMetric(v2ev, "math500") || evalHasMetric(e32ev, "math500") || evalHasMetric(extS1Ev, "math500") || evalHasMetric(extE24Ev, "math500"))) {
+      if (mathEl && (ev.math500 || evalHasMetric(v2ev, "math500") || evalHasMetric(e32ev, "math500") || evalHasMetric(extS1Ev, "math500") || evalHasMetric(extE24Ev, "math500") || evalHasMetric(opdev, "math500"))) {
         const mathItems = [{ name: "Easy-Boxed", data: easyMath, color: ev.color }];
         if (s3Math && s3Math.some((v) => v != null)) mathItems.push(s3o("S3", s3Math));
         if (evalHasMetric(v2ev, "math500")) mathItems.push(v2o("V2", v2ev.math500));
@@ -1348,6 +1352,8 @@ function renderExpPanel(key) {
         pushAligned(mathItems, "Ext S1-switch", extS1Ev, "math500",
           (typeof EVAL_EXT_S1_STEPS !== "undefined") ? EVAL_EXT_S1_STEPS : plotSteps,
           extS1Series, EXT_S1_ALT[key] || COLORS.extS1);
+        pushAligned(mathItems, "OPD 2B←4B", opdev, "math500", opdSteps,
+          opdSeries, OPD_ALT[key] || COLORS.opd);
         const mathLegendEl = document.getElementById(`legend-${key}-eval-math500`);
         const drawMath = (visible) => {
           drawLineChart(`chart-${key}-eval-math500`, `tip-${key}-eval-math500`, {
@@ -1490,10 +1496,12 @@ function renderEvalPanel() {
   const extEasySrc = (typeof EVAL_FULL_EXT_EASY !== "undefined") ? EVAL_FULL_EXT_EASY : {};
   const extE24Src = (typeof EVAL_FULL_EXT_E24K !== "undefined") ? EVAL_FULL_EXT_E24K : {};
   const extS1Src = (typeof EVAL_FULL_EXT_S1 !== "undefined") ? EVAL_FULL_EXT_S1 : {};
+  const opdSrc = (typeof EVAL_FULL_OPD !== "undefined") ? EVAL_FULL_OPD : {};
   const e32Steps = (typeof EVAL_E32K_STEPS !== "undefined") ? EVAL_E32K_STEPS : baseSteps;
   const s124Steps = (typeof EVAL_S124K_STEPS !== "undefined") ? EVAL_S124K_STEPS : e32Steps;
   const e24Steps = (typeof EVAL_E24K_STEPS !== "undefined") ? EVAL_E24K_STEPS : e32Steps;
   const extE24Steps = (typeof EVAL_EXT_E24K_STEPS !== "undefined") ? EVAL_EXT_E24K_STEPS : e24Steps;
+  const opdSteps = (typeof EVAL_OPD_STEPS !== "undefined") ? EVAL_OPD_STEPS : e24Steps;
   const steps = pickEvalPlotSteps(baseSteps, [
     ...Object.keys(v2src).map((k) => ({ row: v2src[k], steps: (typeof EVAL_V2_STEPS !== "undefined") ? EVAL_V2_STEPS : null })),
     ...Object.keys(e24src).map((k) => ({ row: e24src[k], steps: e24Steps })),
@@ -1502,6 +1510,7 @@ function renderEvalPanel() {
     ...Object.keys(extEasySrc).map((k) => ({ row: extEasySrc[k], steps: (typeof EVAL_EXT_EASY_STEPS !== "undefined") ? EVAL_EXT_EASY_STEPS : null })),
     ...Object.keys(extE24Src).map((k) => ({ row: extE24Src[k], steps: extE24Steps })),
     ...Object.keys(extS1Src).map((k) => ({ row: extS1Src[k], steps: (typeof EVAL_EXT_S1_STEPS !== "undefined") ? EVAL_EXT_S1_STEPS : null })),
+    ...Object.keys(opdSrc).map((k) => ({ row: opdSrc[k], steps: opdSteps })),
   ]);
 
   // Easy-Boxed 实线 / S3 虚线 / V2 短虚线 / Easy-24K·32K·Ext overlays（长跑存在时 X 轴扩到 10–300）。
@@ -1516,9 +1525,10 @@ function renderEvalPanel() {
       const extEasyEv = extEasySrc[k];
       const extE24Ev = extE24Src[k];
       const extS1Ev = extS1Src[k];
+      const opdev = opdSrc[k];
       const hasS3 = evalHasMetric(s3ev, metric);
       const hasV2k = evalHasMetric(v2ev, metric);
-      const hasExtra = [e24ev, e32ev, s124ev, extEasyEv, extE24Ev, extS1Ev].some((r) => evalHasMetric(r, metric));
+      const hasExtra = [e24ev, e32ev, s124ev, extEasyEv, extE24Ev, extS1Ev, opdev].some((r) => evalHasMetric(r, metric));
       const easyData = alignEvalSeries(src[k][metric], baseSteps, steps);
       const labelBase = (hasS3 || hasV2k || hasExtra) ? `${src[k].label} (Easy-Boxed)` : src[k].label;
       items.push({ name: labelBase, data: easyData, color: src[k].color });
@@ -1564,6 +1574,11 @@ function renderEvalPanel() {
           alignEvalSeries(extS1Ev[metric],
             (typeof EVAL_EXT_S1_STEPS !== "undefined") ? EVAL_EXT_S1_STEPS : steps, steps),
           EXT_S1_ALT[k] || COLORS.extS1));
+      }
+      if (evalHasMetric(opdev, metric)) {
+        items.push(opdSeries(opdev.label || `${src[k].label} OPD 2B←4B`,
+          alignEvalSeries(opdev[metric], opdSteps, steps),
+          OPD_ALT[k] || COLORS.opd));
       }
     });
     return items;

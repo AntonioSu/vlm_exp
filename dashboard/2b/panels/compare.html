@@ -1,4 +1,4 @@
-  <p class="tertiary">Sources: logs/exp2card/e*_2b{,_s3,_v2_s1} 与 <code>opd_distill_2b_from_4b_easy_24k</code>（<code>parse_2b_logs.py</code> + <code>gen_2b_js.py</code>）。Easy-Boxed / S3 五组均 150/150；OPD 蒸馏 150 已满、正在续到 500；V2 E1 GRPO 续训中（~250/300），E2 尚无 step。pass rate = (critic/score/mean + 1)/2（shaped 下不用 rewards）。</p>
+  <p class="tertiary">Sources: logs/exp2card/e*_2b{,_s3,_v2_s1} 与 <code>opd_distill_2b_from_4b_easy_24k</code>（<code>parse_2b_logs.py</code> + <code>gen_2b_js.py</code>）。Easy-Boxed / S3 五组均 150/150；OPD 蒸馏已满 500/500（~39.13h）；Easy-32K 903（~167.43h，仍在跑）；V2 E1 GRPO 续训中（~250/300），E2 尚无 step。pass rate = (critic/score/mean + 1)/2（shaped 下不用 rewards）。</p>
   <div class="detail-layout">
     <nav class="detail-toc" aria-label="目录" id="compare-toc">
       <p class="toc-heading">目录</p>
@@ -20,7 +20,7 @@
       <section class="detail-sec" id="cmp-sec-overview">
         <h2 class="sec-title">概览</h2>
         <div class="callout">
-          <div class="title">Easy-Boxed / S3 五组已满 150；OPD 蒸馏 150 已跑完，正在续到 500；V2 E1 GRPO 续训 ~250/300</div>
+          <div class="title">Easy-Boxed / S3 五组已满 150；OPD 蒸馏已满 500/500；Easy-32K 903 仍在跑；V2 E1 GRPO 续训 ~250/300</div>
           V1 两块（Easy-Boxed / S3）保持原结论。V2 改三项：难度池 <code>mix_2b_band</code>、全算法统一 overlong shaped、KL/ref 关掉。OPD 是另一条线：2B 学生 on-policy 采样，冻结 4B 教师给 top-k（见 <code>scripts/train/experiments_opd_distill/</code>）。下方三块各自独立图；OPD 曲线叠在 E2 页。
         </div>
       </section>
@@ -138,7 +138,7 @@
         </div>
 
         <h3 class="cpt">OPD 蒸馏 vs Easy-24K DAPO</h3>
-        <p class="cpt-p">同数据（easy boxed）同 24K 窗口；OPD 换算法：学生自己采样，冻结 4B 教师在整段轨迹上给 top-k。脚本 <code>experiments_opd_distill/run_opd_easy_24k_2b.sh</code>。第一段 1–150 已满；当前 <code>TOTAL_STEPS=500</code> + <code>resume_mode=auto</code> 从 <code>global_step_150</code> 续。</p>
+        <p class="cpt-p">同数据（easy boxed）同 24K 窗口；OPD 换算法：学生自己采样，冻结 4B 教师在整段轨迹上给 top-k。脚本 <code>experiments_opd_distill/run_opd_easy_24k_2b.sh</code>。已从 <code>global_step_150</code> 续满 <strong>500/500</strong>（~39.13h）。</p>
         <div class="table-wrap" style="margin-top:10px; overflow-x:auto">
           <table class="hp-table">
             <thead>
@@ -172,7 +172,7 @@
               <tr>
                 <td>start / resume</td>
                 <td>base 冷启动（独立目录）</td>
-                <td>base 冷启动到 150；现 <span class="mono">resume_mode=auto</span> 从 @150 续到 500</td>
+                <td>base 冷启动到 150；<span class="mono">resume_mode=auto</span> 已从 @150 续满 500</td>
               </tr>
               <tr>
                 <td>GPU</td>
@@ -227,7 +227,7 @@
               <tr>
                 <td>total_training_steps</td>
                 <td>已跑过 150，后续续到 321</td>
-                <td>第一段 150 已满；当前目标 <span class="mono">500</span></td>
+                <td>已满 <span class="mono">500/500</span>（~39.13h）</td>
               </tr>
               <tr>
                 <td>save_freq</td>
@@ -315,7 +315,7 @@
                 <td><span class="mono">stage1/polaris_easy_boxed.parquet</span><br>同 Easy</td>
                 <td>2B student 冷启动<br>冻结 4B teacher 打 top-k<br><span class="mono">experiments_opd_distill/</span></td>
                 <td>学生 24K 采样；教师分块 logprob（batched=8192）；<span class="mono">n=1</span>；4 卡（学生 2 + 教师 2）</td>
-                <td class="mono">150→500</td>
+                <td class="mono">500 已满</td>
               </tr>
               <tr>
                 <td>Ext · easy-cont</td>
@@ -389,7 +389,7 @@
                 </li>
                 <li class="hp-branch-dash">
                   <span class="hp-node">OPD 2B←4B</span>
-                  <span class="hp-meta">easy · 24K · 冻结 4B teacher · 冷启动 150 · resume→500</span>
+                  <span class="hp-meta">easy · 24K · 冻结 4B teacher · 已满 500</span>
                 </li>
               </ul>
             </li>
