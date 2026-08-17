@@ -155,6 +155,49 @@ def discover_m1_light_geo() -> list[tuple[int, dict[str, Any]]]:
     return sorted(by_step.items())
 
 
+FORMAL_EXPS = {
+    "m1": ("m1_geo3k100_2b", "M1 · 100% 图文", "M1", "#d97706", 100),
+    "m2": ("m2_mix50_2b", "M2 · 50% 图文", "M2", "#059669", 50),
+    "m3": ("m3_mix20_2b", "M3 · 20% 图文", "M3", "#9333ea", 20),
+}
+
+
+def discover_formal_geo(exp_name: str) -> list[tuple[int, dict[str, Any]]]:
+    """Return sorted (step, geo3k_summary) for formal Geo3K (not light/quick)."""
+    found: dict[int, dict[str, Any]] = {}
+    for root in GEO3K_DIR_CANDIDATES:
+        if not root.is_dir():
+            continue
+        for path in root.glob(f"{exp_name}_step*.jsonl.summary.json"):
+            name = path.name
+            if "_light" in name or "_quick" in name:
+                continue
+            prefix = f"{exp_name}_step"
+            if not name.startswith(prefix):
+                continue
+            step_str = name[len(prefix):].split(".", 1)[0]
+            if not step_str.isdigit():
+                continue
+            data = load_geo3k(name)
+            if data and data.get("questions") == 601:
+                found.setdefault(int(step_str), data)
+    return sorted(found.items())
+
+
+def load_formal_text(exp_name: str, step: int) -> dict[str, Any]:
+    dirname = f"{exp_name}_step{step}"
+    text = load_text(
+        dirname,
+        {"mmlu": "mmlu_temp", "aime24": "aime24", "aime25": "aime25", "math500": "math_500"},
+    )
+    if text["scores"].get("mmlu") is None:
+        alt = load_text(dirname, {"mmlu": "mmlu"})
+        text["scores"]["mmlu"] = alt["scores"].get("mmlu")
+        if alt["sources"].get("mmlu"):
+            text["sources"]["mmlu"] = alt["sources"]["mmlu"]
+    return text
+
+
 def load_m1_text_light(step: int) -> tuple[dict[str, float | None], dict[str, str]]:
     text = load_text(
         f"m1_geo3k100_2b_step{step}_text_light",
@@ -174,35 +217,102 @@ def load_m1_text_light(step: int) -> tuple[dict[str, float | None], dict[str, st
     return scores, sources
 
 
+def build_mm_group(
+    key: str,
+    *,
+    formals: list[tuple[int, dict[str, Any]]],
+    lights: list[tuple[int, dict[str, Any]]] | None = None,
+    extra: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    exp, base_label, short, color, vision = FORMAL_EXPS[key]
+    lights = lights or []
+    extra = extra or {}
+    if formals:
+        step, geo = formals[-1]
+        text = load_formal_text(exp, step)
+        steps_str = "/".join(str(s) for s, _ in formals)
+        missing_text = all(v is None for v in text["scores"].values())
+        note = f"正式口径 Geo3K n=8 / 16K。已完成 step：{steps_str}。"
+        if missing_text:
+            note += " 文本 evalscope 尚未出报告。"
+        if lights:
+            note += " light 探查（n=1 / 512）保留作对照，不与 formal 横比绝对值。"
+        return {
+            "key": key,
+            "label": f"{base_label} (@{step} formal)",
+            "shortLabel": f"{short}@{step}",
+            "color": color,
+            "step": step,
+            "visionPct": vision,
+            "config": "formal",
+            "configNote": note,
+            "geo3k": geo,
+            "text": text["scores"],
+            "sources": {
+                "geo3k": geo.get("source"),
+                **text.get("sources", {}),
+                **{f"geo3k@{s}": g.get("source") for s, g in formals},
+            },
+            **extra,
+        }
+
+    if lights:
+        step, geo = lights[-1]
+        scores, sources = load_m1_text_light(step)
+        if all(v is None for v in scores.values()):
+            scores, sources = load_m1_text_light(70)
+        steps_str = "/".join(str(s) for s, _ in lights)
+        return {
+            "key": key,
+            "label": f"{base_label} (@{step} light)",
+            "shortLabel": f"{short}@{step} light",
+            "color": color,
+            "step": step,
+            "visionPct": vision,
+            "config": "light",
+            "configNote": (
+                f"轻量探查（Geo3K n=1 max_tokens=512）。已有 light Geo3K step：{steps_str}。"
+                "与 M0 正式结果不可直接比绝对值。"
+            ),
+            "geo3k": geo,
+            "text": scores,
+            "sources": {"geo3k": geo.get("source"), **sources, **{f"geo3k@{s}": g.get("source") for s, g in lights}},
+            **extra,
+        }
+
+    return {
+        "key": key,
+        "label": base_label,
+        "shortLabel": short,
+        "color": color,
+        "step": None,
+        "visionPct": vision,
+        "config": None,
+        "configNote": "尚无 checkpoint / 离线评测",
+        "geo3k": None,
+        "text": {"mmlu": None, "aime24": None, "aime25": None, "math500": None},
+        "sources": {},
+        **extra,
+    }
+
+
 def build_payload() -> dict[str, Any]:
     m0_geo = load_geo3k("m0_e1_grpo_2b_step150.jsonl.summary.json")
     m1_lights = discover_m1_light_geo()
     m1_geo_quick = load_geo3k("m1_geo3k100_2b_step70_quick.jsonl.summary.json")
+    m1_formals = discover_formal_geo("m1_geo3k100_2b")
+    m2_formals = discover_formal_geo("m2_mix50_2b")
+    m3_formals = discover_formal_geo("m3_mix20_2b")
 
     m0_text = load_text(
         "m0_e1_grpo_2b",
         {"mmlu": "mmlu", "aime24": "aime24", "aime25": "aime25", "math500": "math_500"},
     )
-    # M0 report file is mmlu.json but dashboard status treats it as mmlu_temp baseline.
     if m0_text["scores"].get("mmlu") is None:
         alt = load_text("m0_e1_grpo_2b", {"mmlu": "mmlu_temp"})
         m0_text["scores"]["mmlu"] = alt["scores"].get("mmlu")
         if alt["sources"].get("mmlu"):
             m0_text["sources"]["mmlu"] = alt["sources"]["mmlu"]
-
-    # Latest M1 light checkpoint is the headline group; earlier lights go into full curves.
-    latest_m1_step, latest_m1_geo = m1_lights[-1] if m1_lights else (None, None)
-    m1_scores, m1_sources = (
-        load_m1_text_light(latest_m1_step) if latest_m1_step is not None else (
-            {"mmlu": None, "aime24": None, "aime25": None, "math500": None},
-            {},
-        )
-    )
-    # Fall back to step70 text light if latest has no text reports yet.
-    if latest_m1_step is not None and all(v is None for v in m1_scores.values()):
-        m1_scores, m1_sources = load_m1_text_light(70)
-
-    m1_steps_str = "/".join(str(s) for s, _ in m1_lights) if m1_lights else "none"
 
     groups = [
         {
@@ -218,75 +328,22 @@ def build_payload() -> dict[str, Any]:
             "text": m0_text["scores"],
             "sources": {"geo3k": (m0_geo or {}).get("source"), **m0_text.get("sources", {})},
         },
-        {
-            "key": "m1",
-            "label": (
-                f"M1 · 100% 图文 (@{latest_m1_step} light)"
-                if latest_m1_step is not None
-                else "M1 · 100% 图文"
-            ),
-            "shortLabel": (
-                f"M1@{latest_m1_step} light" if latest_m1_step is not None else "M1"
-            ),
-            "color": "#d97706",
-            "step": latest_m1_step,
-            "visionPct": 100,
-            "config": "light" if latest_m1_geo else None,
-            "configNote": (
-                f"轻量探查（Geo3K n=1 max_tokens=512）。已有 light Geo3K step：{m1_steps_str}。"
-                "文本 light 仅在有对应 evalscope 产物时填入；与 M0 正式结果不可直接比绝对值。"
-                if latest_m1_geo
-                else "尚无 M1 light / formal 离线评测"
-            ),
-            "geo3k": latest_m1_geo,
-            "geo3kQuick": m1_geo_quick,
-            "text": m1_scores,
-            "sources": {
-                "geo3k": (latest_m1_geo or {}).get("source"),
-                **m1_sources,
-                **{f"geo3k@{step}": geo.get("source") for step, geo in m1_lights},
-            },
-        },
-        {
-            "key": "m2",
-            "label": "M2 · 50% 图文",
-            "shortLabel": "M2",
-            "color": "#059669",
-            "step": None,
-            "visionPct": 50,
-            "config": None,
-            "configNote": "尚无 checkpoint / 离线评测",
-            "geo3k": None,
-            "text": {"mmlu": None, "aime24": None, "aime25": None, "math500": None},
-            "sources": {},
-        },
-        {
-            "key": "m3",
-            "label": "M3 · 20% 图文",
-            "shortLabel": "M3",
-            "color": "#9333ea",
-            "step": None,
-            "visionPct": 20,
-            "config": None,
-            "configNote": "尚无 checkpoint / 离线评测",
-            "geo3k": None,
-            "text": {"mmlu": None, "aime24": None, "aime25": None, "math500": None},
-            "sources": {},
-        },
+        build_mm_group("m1", formals=m1_formals, lights=m1_lights, extra={"geo3kQuick": m1_geo_quick}),
+        build_mm_group("m2", formals=m2_formals),
+        build_mm_group("m3", formals=m3_formals),
     ]
 
-    # Dense mid-step series (4B E1 EVAL_FULL style). Missing checkpoints stay null.
     full: dict[str, dict[str, Any]] = {}
     for g in groups:
         series = empty_series()
-        entry: dict[str, Any] = {
+        short = {"m0": "M0", "m1": "M1", "m2": "M2", "m3": "M3"}[g["key"]]
+        full[g["key"]] = {
             "label": g["label"],
-            "shortLabel": g["shortLabel"],
+            "shortLabel": short,
             "color": g["color"],
-            "config": g["config"],
+            "config": "formal" if g["key"] == "m0" or g.get("config") == "formal" else g.get("config"),
             **series,
         }
-        full[g["key"]] = entry
 
     put_at(
         full["m0"],
@@ -300,22 +357,23 @@ def build_payload() -> dict[str, Any]:
             "aime25": m0_text["scores"].get("aime25"),
         },
     )
-    for step, geo in m1_lights:
-        text_scores, _ = load_m1_text_light(step)
-        put_at(
-            full["m1"],
-            step,
-            {
-                "geo3kAcc": geo.get("sampleAccuracy"),
-                "geo3kPass": geo.get("passAtN"),
-                "math500": text_scores.get("math500"),
-                "mmlu": text_scores.get("mmlu"),
-                "aime24": text_scores.get("aime24"),
-                "aime25": text_scores.get("aime25"),
-            },
-        )
+    for key, formals in (("m1", m1_formals), ("m2", m2_formals), ("m3", m3_formals)):
+        exp = FORMAL_EXPS[key][0]
+        for step, geo in formals:
+            text = load_formal_text(exp, step)
+            put_at(
+                full[key],
+                step,
+                {
+                    "geo3kAcc": geo.get("sampleAccuracy"),
+                    "geo3kPass": geo.get("passAtN"),
+                    "math500": text["scores"].get("math500"),
+                    "mmlu": text["scores"].get("mmlu"),
+                    "aime24": text["scores"].get("aime24"),
+                    "aime25": text["scores"].get("aime25"),
+                },
+            )
 
-    # Sparse summary steps (like 4B EVAL 50/100/150) for quick glance.
     summary_steps = [50, 100, 150]
     summary: dict[str, dict[str, list[float | None]]] = {}
     for key, series in full.items():
@@ -324,15 +382,23 @@ def build_payload() -> dict[str, Any]:
             for metric in ("geo3kAcc", "math500", "mmlu", "aime25")
         }
 
+    formal_bits = []
+    for key, formals in (("M1", m1_formals), ("M2", m2_formals), ("M3", m3_formals)):
+        if formals:
+            formal_bits.append(f"{key} formal @{'/'.join(str(s) for s, _ in formals)}")
+    light_steps = "/".join(str(s) for s, _ in m1_lights) if m1_lights else "none"
+    note = (
+        "M0 为正式基线。"
+        + (" " + "；".join(formal_bits) + "。" if formal_bits else "")
+        + f" M1 light Geo3K steps：{light_steps}（n=1 / 512，不与 formal 横比）。"
+        " 全 step 曲线只画 formal（10–150 /10）；缺测为 null。"
+        " 文本 evalscope 未出报告的 step 仅有 Geo3K。"
+    )
+
     return {
         "generatedAt": date.today().isoformat(),
         "generatedBy": "scripts/analysis/gen_mm_eval_dashboard_data.py",
-        "note": (
-            f"M0 为正式基线；M1 light Geo3K steps：{m1_steps_str}"
-            "（n=1 max_tokens=512，非 formal n=8/16K）。"
-            "全 step 曲线对齐 4B E1 EVAL_FULL（10–150 /10）；缺测为 null。"
-            "M2/M3 待 formal 评测完成后补齐。"
-        ),
+        "note": note,
         "metrics": [
             {"key": "geo3kAcc", "label": "Geo3K sample acc", "unit": "%"},
             {"key": "geo3kPass", "label": "Geo3K pass@n", "unit": "%"},
