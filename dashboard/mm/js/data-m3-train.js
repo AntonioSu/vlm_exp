@@ -1,8 +1,8 @@
 // ---- M3 train-log metrics (timing / stability / efficiency) ----
-// Auto-generated 2026-08-02 by scripts/analysis/gen_mm_train_dashboard_data.py
+// Auto-generated 2026-08-17 by scripts/analysis/gen_mm_train_dashboard_data.py
 // Refresh: python3 scripts/analysis/gen_mm_train_dashboard_data.py
 window.MM_M3_TRAIN = {
-  "generatedAt": "2026-08-02",
+  "generatedAt": "2026-08-17",
   "generatedBy": "scripts/analysis/gen_mm_train_dashboard_data.py",
   "source": "vlm_exp/logs/exp2card_mm/m3_mix20_2b",
   "logFiles": [
@@ -79,7 +79,7 @@ window.MM_M3_TRAIN = {
   ],
   "label": "M3 · 20% 图文",
   "shortLabel": "M3",
-  "color": "#0891b2",
+  "color": "#2563eb",
   "nSteps": 150,
   "coveredSteps": [
     1,

@@ -247,12 +247,8 @@
     });
 
     ctx.fillStyle = COLORS.axis;
-    ctx.textAlign = "center";
-    ctx.textBaseline = "top";
     ctx.font = "11px -apple-system, sans-serif";
-    categories.forEach((c, i) => {
-      if (c) ctx.fillText(c, xAt(i), padT + plotH + 6);
-    });
+    ChartAxis.drawSparseXLabels(ctx, categories, xAt, padT + plotH + 6);
 
     series.forEach((s) => {
       ctx.strokeStyle = s.color;
@@ -457,26 +453,38 @@
 
     const midBody = document.getElementById("mm-eval-mid-body");
     if (midBody) {
-      const rows = ready
-        .slice()
-        .sort((a, b) => (a.step ?? 1e9) - (b.step ?? 1e9));
+      const rows = [];
+      (evalData.fullOrder || []).forEach((key) => {
+        const g = (evalData.full || {})[key];
+        if (!g) return;
+        (evalData.fullSteps || []).forEach((step, i) => {
+          const geo = (g.geo3kAcc || [])[i];
+          const math = (g.math500 || [])[i];
+          const mmlu = (g.mmlu || [])[i];
+          const aime24 = (g.aime24 || [])[i];
+          const aime25 = (g.aime25 || [])[i];
+          if ([geo, math, mmlu, aime24, aime25].every((v) => v == null)) return;
+          rows.push({
+            label: g.shortLabel || g.label,
+            color: g.color,
+            step,
+            config: g.config || "—",
+            geo, math, mmlu, aime24, aime25,
+          });
+        });
+      });
       midBody.innerHTML = rows.length
-        ? rows.map((g) => {
-            const t = g.text || {};
-            const geo = g.geo3k || {};
-            const cfg = g.config || "—";
-            return `
+        ? rows.map((r) => `
               <tr>
-                <td><strong style="color:${g.color}">${g.shortLabel}</strong></td>
-                <td class="mono">${g.step == null ? "—" : g.step}</td>
-                <td>${cfg}</td>
-                <td>${fmt(geo.sampleAccuracy)}</td>
-                <td>${fmt(t.math500)}</td>
-                <td>${fmt(t.mmlu)}</td>
-                <td>${fmt(t.aime24)}</td>
-                <td>${fmt(t.aime25)}</td>
-              </tr>`;
-          }).join("")
+                <td><strong style="color:${r.color}">${r.label}</strong></td>
+                <td class="mono">${r.step}</td>
+                <td>${r.config}</td>
+                <td>${fmt(r.geo)}</td>
+                <td>${fmt(r.math)}</td>
+                <td>${fmt(r.mmlu)}</td>
+                <td>${fmt(r.aime24)}</td>
+                <td>${fmt(r.aime25)}</td>
+              </tr>`).join("")
         : `<tr><td colspan="8" style="color:#9ca3af">尚无离线评测结果</td></tr>`;
     }
   }
