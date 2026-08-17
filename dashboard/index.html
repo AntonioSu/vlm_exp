@@ -153,7 +153,7 @@
         <p class="desc">Qwen3.5-2B · 2×A100-80GB · 16K 非思考模式 · E1–E5 五组算法对比；V2 / 长度消融 / Ext 续训已接入看板。</p>
         <div class="stat-row">
           <span><b>E1–E5</b> Easy-Boxed / S3 完成 · V2 E1 250/300</span>
-          <span>Easy-24K 321 · Easy-32K 459 · Ext 三臂满 300</span>
+          <span>Easy-24K 321 · Easy-32K 903 · OPD 500 · Ext 三臂满 300</span>
           <span>峰值 aime25 <b>38.33%</b>（E5@130）</span>
         </div>
       </a>
@@ -163,9 +163,9 @@
         <div class="go">进入 →</div>
         <div class="kicker">Track 2 · Language Model</div>
         <h3>4B 训练监控</h3>
-        <p class="desc">Qwen3.5-4B · 4×A100-80GB · Easy-Boxed 完成；S3 E4 进行中；V2 难度池 E1 GRPO 进行中。</p>
+        <p class="desc">Qwen3.5-4B · 4×A100-80GB · Easy-Boxed 完成；S3 E4 ckpt 150（日志空）；V2 难度池 E1 GRPO 进行中。</p>
         <div class="stat-row">
-          <span><b>E1–E5</b> Easy-Boxed 完成 · S3 E4 ~75/150 · V2 E1 ~61/150</span>
+          <span><b>E1–E5</b> Easy-Boxed 完成 · S3 E4 曲线 ~111 · V2 E1 61/150</span>
           <span>峰值 aime24 <b>E2@80 · 80.4%</b></span>
           <span>峰值 aime25 <b>E2@80 · 62.5%</b></span>
         </div>
@@ -176,11 +176,11 @@
         <div class="go">进入 →</div>
         <div class="kicker">Track 3 · Multimodal</div>
         <h3>多模态训练</h3>
-        <p class="desc">固定 GRPO，只改图文占比（0/20/50/100%）。M1/M2/M3 训练曲线已同步；含 M0 正式评测与 M1 light 探查。</p>
+        <p class="desc">固定 GRPO，只改图文占比（0/20/50/100%）。M1/M2/M3 训练曲线已同步；formal 离线评测从 step10 起在 GPU2/GPU3 补齐。</p>
         <div class="stat-row">
           <span><b>M0 formal</b> Geo3K <b>57.3%</b> · MATH-500 <b>86.4%</b></span>
-          <span><b>M1 light</b> Geo3K @70 <b>13.6%</b> → @100 <b>14.8%</b></span>
-          <span>M1/M2/M3 <b>150/150</b></span>
+          <span><b>M1@30</b> Geo3K <b>68.3%</b> · <b>M2@40</b> Geo3K <b>71.6%</b></span>
+          <span>M1/M2/M3 <b>150/150</b> · 评测进行中</span>
         </div>
       </a>
 
@@ -204,8 +204,8 @@
         <h3>实验日志</h3>
         <p class="desc">时间线记录训练跑满、评测同步、看板与环境节点。空心绿圆 + 竖线，按日倒序追加。</p>
         <div class="stat-row">
-          <span><b>最新</b> 2026-08-14 评测全量同步</span>
-          <span>Easy-32K offline 160+ · BFCL 24K/32K 重跑</span>
+          <span><b>最新</b> 2026-08-17 训练曲线刷新</span>
+          <span>Easy-32K 903 · OPD 满 500</span>
         </div>
       </a>
 
