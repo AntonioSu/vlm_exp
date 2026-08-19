@@ -316,6 +316,7 @@
         name: g.shortLabel || g.label,
         color: g.color,
         data: g[metric] || [],
+        dash: key === "m0" ? [6, 4] : null,
       };
     }).filter((s) => s.data.some((v) => v != null));
   }
@@ -403,7 +404,7 @@
     const midCaption = document.getElementById("mm-eval-mid-caption");
     if (midCaption) {
       midCaption.innerHTML = canDrawCurves
-        ? "与 4B「E1 GRPO」离线曲线同一套 step 轴（10–150 /10）；缺测为断点。"
+        ? "M0 文本 = 2B E1 GRPO 全 step（10–150 /10，虚线）；Geo3K 仅 M0@150。M1–M3 为 MM formal。缺测为断点。"
         : "当前每组只有 <strong>1 个</strong>离线点，画不出曲线。上方柱状图 / 对照表是主视图；下面列出已完成 checkpoint。";
     }
     if (sparseEl) {
@@ -449,43 +450,6 @@
       bindFull("chart-mm-full-math500", fullSeries("math500"), 240);
       bindFull("chart-mm-full-mmlu", fullSeries("mmlu"), 220);
       bindFull("chart-mm-full-aime25", fullSeries("aime25"), 220);
-    }
-
-    const midBody = document.getElementById("mm-eval-mid-body");
-    if (midBody) {
-      const rows = [];
-      (evalData.fullOrder || []).forEach((key) => {
-        const g = (evalData.full || {})[key];
-        if (!g) return;
-        (evalData.fullSteps || []).forEach((step, i) => {
-          const geo = (g.geo3kAcc || [])[i];
-          const math = (g.math500 || [])[i];
-          const mmlu = (g.mmlu || [])[i];
-          const aime24 = (g.aime24 || [])[i];
-          const aime25 = (g.aime25 || [])[i];
-          if ([geo, math, mmlu, aime24, aime25].every((v) => v == null)) return;
-          rows.push({
-            label: g.shortLabel || g.label,
-            color: g.color,
-            step,
-            config: g.config || "—",
-            geo, math, mmlu, aime24, aime25,
-          });
-        });
-      });
-      midBody.innerHTML = rows.length
-        ? rows.map((r) => `
-              <tr>
-                <td><strong style="color:${r.color}">${r.label}</strong></td>
-                <td class="mono">${r.step}</td>
-                <td>${r.config}</td>
-                <td>${fmt(r.geo)}</td>
-                <td>${fmt(r.math)}</td>
-                <td>${fmt(r.mmlu)}</td>
-                <td>${fmt(r.aime24)}</td>
-                <td>${fmt(r.aime25)}</td>
-              </tr>`).join("")
-        : `<tr><td colspan="8" style="color:#9ca3af">尚无离线评测结果</td></tr>`;
     }
   }
 

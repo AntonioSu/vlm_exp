@@ -150,7 +150,7 @@
           <tr><td>Geo3K 601 题离线评测脚本</td><td><span class="badge"><span class="sdot" style="background:var(--e3)"></span>已完成</span></td><td><span class="mono">scripts/eval/eval_geo3k.py</span> 已通过端到端验证；M0 Geo3K 601 题正式基线评测已完成</td></tr>
           <tr><td>M0 正式基线评测</td><td><span class="badge"><span class="sdot" style="background:var(--e3)"></span>已完成</span></td><td>文本：MMLU=78.34%，AIME24=35.42%，AIME25=32.50%，MATH-500=86.35%；Geo3K：sample_accuracy=57.32%、pass@8=83.69%。已写入 done 标记，并进入看板「评测结果」页签</td></tr>
           <tr><td>M1 light 离线评测</td><td><span class="badge"><span class="sdot" style="background:var(--e3)"></span>@70 / @100</span></td><td>light 口径仅作对照，不与 formal 横比。正式评测见「评测结果」页签</td></tr>
-          <tr><td>M1–M3 自动评测接力 / 归档</td><td><span class="badge"><span class="sdot" style="background:var(--e2)"></span>进行中</span></td><td>GPU2=M1、GPU3=M2→M3，从 step10 起逐点 formal（Geo3K n=8）。刷新：<span class="mono">python3 scripts/analysis/gen_mm_eval_dashboard_data.py</span></td></tr>
+          <tr><td>M1–M3 自动评测接力 / 归档</td><td><span class="badge"><span class="sdot" style="background:var(--e2)"></span>进行中</span></td><td>formal 已到 M1@30 / M2@80 / M3@10（Geo3K n=8 + evalscope）。刷新：<span class="mono">python3 scripts/analysis/gen_mm_eval_dashboard_data.py</span></td></tr>
         </tbody>
       </table>
       <p class="caption">训练 2026-08-02 已满 150/150。离线 formal 从 step10 起补；看板数字以「评测结果」页签为准。</p>
@@ -191,7 +191,7 @@
                 <div class="legend" id="legend-mm-geo3k"></div>
                 <div class="chart-wrap"><canvas id="chart-mm-geo3k" height="220"></canvas><div class="tooltip" id="tip-mm-geo3k"></div></div>
         </div>
-        <p class="caption">视觉主判据。柱为每组最新 formal（n=8）；M3 尚未开始离线评测。</p>
+        <p class="caption">视觉主判据。柱为每组最新 formal（n=8）。M0 Geo3K 仅有 @150。</p>
       </div>
       <div>
         <h2>MATH-500（%）</h2>
@@ -199,7 +199,7 @@
                 <div class="legend" id="legend-mm-math500"></div>
                 <div class="chart-wrap"><canvas id="chart-mm-math500" height="220"></canvas><div class="tooltip" id="tip-mm-math500"></div></div>
         </div>
-        <p class="caption">文本保持主判据。当前 formal step 的文本 evalscope 尚未出报告。</p>
+        <p class="caption">文本保持主判据。曲线上 M0 为 E1 GRPO 全 step；柱为 @150 端点。</p>
       </div>
     </section>
 
@@ -210,7 +210,7 @@
                 <div class="legend" id="legend-mm-mmlu"></div>
                 <div class="chart-wrap"><canvas id="chart-mm-mmlu" height="220"></canvas><div class="tooltip" id="tip-mm-mmlu"></div></div>
         </div>
-        <p class="caption">M0 来自 mmlu report；M1/M2 formal 文本尚未出报告。</p>
+        <p class="caption">M0 柱为 MM 正式 @150；曲线复用 E1 GRPO 10–150。</p>
       </div>
       <div>
         <h2>AIME25（%）</h2>
@@ -218,7 +218,7 @@
                 <div class="legend" id="legend-mm-aime"></div>
                 <div class="chart-wrap"><canvas id="chart-mm-aime" height="220"></canvas><div class="tooltip" id="tip-mm-aime"></div></div>
         </div>
-        <p class="caption">M3 空柱表示尚无评测产物；M1/M2 文本栏暂空。</p>
+        <p class="caption">M0 虚线 = E1 GRPO。空柱表示该组尚无该指标。</p>
       </div>
     </section>
 
@@ -263,22 +263,6 @@
           </div>
         </section>
       </div>
-      <table style="margin-top:16px">
-        <thead>
-          <tr>
-            <th>组</th>
-            <th>step</th>
-            <th>配置</th>
-            <th>Geo3K acc</th>
-            <th>MATH-500</th>
-            <th>MMLU</th>
-            <th>AIME24</th>
-            <th>AIME25</th>
-          </tr>
-        </thead>
-        <tbody id="mm-eval-mid-body"></tbody>
-      </table>
-      <p class="caption">只显示已有离线结果的 checkpoint；M2/M3 与未测 mid step 不占行。</p>
     </section>
   </div>
 
@@ -454,7 +438,7 @@
 
 </div>
 
-<script src="js/data-eval.js?v=20260817102000"></script>
+<script src="js/data-eval.js?v=20260819103100"></script>
 <script src="js/data-m1-train.js?v=20260817111300"></script>
 <script src="js/data-m2-train.js?v=20260817111300"></script>
 <script src="js/data-m3-train.js?v=20260817111300"></script>
@@ -462,7 +446,7 @@
 <script src="js/data-m2-rollouts.js?v=20260802183000"></script>
 <script src="js/data-m3-rollouts.js?v=20260802183000"></script>
 <script src="../common/chart-utils.js?v=20260817110000"></script>
-<script src="js/charts-eval.js?v=20260817110000"></script>
+<script src="js/charts-eval.js?v=20260819103100"></script>
 <script>
   const tabBtns = document.querySelectorAll(".tab-btn");
   const panels = {
