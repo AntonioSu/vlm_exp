@@ -30,6 +30,8 @@ VLM_EXP_DATA = WORKSPACE_ROOT / "vlm_exp"
 EVALSCOPE_MM_CANDIDATES = [
     WORKSPACE_ROOT / "evalscope" / "outputs" / "exp2card_mm",
 ]
+EVALSCOPE_TEXT_ROOT = WORKSPACE_ROOT / "evalscope" / "outputs" / "exp2card"
+E1_GRPO_PREFIX = "e1_grpo_2b"
 GEO3K_DIR_CANDIDATES = [
     VLM_EXP_DATA / "evaluation" / "geo3k",
     REPO_ROOT / "evaluation" / "geo3k",
@@ -94,18 +96,36 @@ def load_geo3k(summary_name: str) -> dict[str, Any] | None:
     }
 
 
-def load_text(exp_dirname: str, tasks: dict[str, str]) -> dict[str, Any]:
+def load_text_from(base: Path, tasks: dict[str, str]) -> dict[str, Any]:
     """tasks maps dashboard key -> report filename stem (without .json)."""
-    base = evalscope_mm_root() / exp_dirname
     out: dict[str, Any] = {"sourceDir": str(base), "scores": {}, "sources": {}}
     for key, stem in tasks.items():
-        path = latest_report(base, stem)
+        path = latest_report(base, stem) if base.exists() else None
         if path is None:
             out["scores"][key] = None
             continue
         out["scores"][key] = pct(score_of(path))
         out["sources"][key] = str(path)
     return out
+
+
+def load_text(exp_dirname: str, tasks: dict[str, str]) -> dict[str, Any]:
+    return load_text_from(evalscope_mm_root() / exp_dirname, tasks)
+
+
+def load_e1_grpo_text(step: int) -> dict[str, Any]:
+    """M0 text curve: reuse Stage-1 E1 GRPO offline reports (e1_grpo_2b_<step>)."""
+    base = EVALSCOPE_TEXT_ROOT / f"{E1_GRPO_PREFIX}_{step}"
+    text = load_text_from(
+        base,
+        {"mmlu": "mmlu_temp", "aime24": "aime24", "aime25": "aime25", "math500": "math_500"},
+    )
+    if text["scores"].get("mmlu") is None:
+        alt = load_text_from(base, {"mmlu": "mmlu"})
+        text["scores"]["mmlu"] = alt["scores"].get("mmlu")
+        if alt["sources"].get("mmlu"):
+            text["sources"]["mmlu"] = alt["sources"]["mmlu"]
+    return text
 
 
 FULL_STEPS = list(range(10, 160, 10))  # same cadence as 4B E1 EVAL_FULL
@@ -317,13 +337,16 @@ def build_payload() -> dict[str, Any]:
     groups = [
         {
             "key": "m0",
-            "label": "M0 · 0% 图文 (E1@150)",
-            "shortLabel": "M0@150",
+            "label": "M0 · 0% 图文 (E1 GRPO)",
+            "shortLabel": "M0 GRPO",
             "color": "#2563eb",
             "step": 150,
             "visionPct": 0,
             "config": "formal",
-            "configNote": "正式口径：Geo3K n=8 max_tokens=16384；文本 evalscope 正式配置",
+            "configNote": (
+                "文本曲线复用 e1_grpo_2b 全 step（10–150 /10）正式 evalscope；"
+                "Geo3K 仅有 @150 正式基线（n=8 / 16K）。柱状图取 @150 端点。"
+            ),
             "geo3k": m0_geo,
             "text": m0_text["scores"],
             "sources": {"geo3k": (m0_geo or {}).get("source"), **m0_text.get("sources", {})},
@@ -336,7 +359,7 @@ def build_payload() -> dict[str, Any]:
     full: dict[str, dict[str, Any]] = {}
     for g in groups:
         series = empty_series()
-        short = {"m0": "M0", "m1": "M1", "m2": "M2", "m3": "M3"}[g["key"]]
+        short = {"m0": "M0 GRPO", "m1": "M1", "m2": "M2", "m3": "M3"}[g["key"]]
         full[g["key"]] = {
             "label": g["label"],
             "shortLabel": short,
@@ -345,16 +368,24 @@ def build_payload() -> dict[str, Any]:
             **series,
         }
 
+    for step in FULL_STEPS:
+        grpo = load_e1_grpo_text(step)
+        put_at(
+            full["m0"],
+            step,
+            {
+                "math500": grpo["scores"].get("math500"),
+                "mmlu": grpo["scores"].get("mmlu"),
+                "aime24": grpo["scores"].get("aime24"),
+                "aime25": grpo["scores"].get("aime25"),
+            },
+        )
     put_at(
         full["m0"],
         150,
         {
             "geo3kAcc": (m0_geo or {}).get("sampleAccuracy"),
             "geo3kPass": (m0_geo or {}).get("passAtN"),
-            "math500": m0_text["scores"].get("math500"),
-            "mmlu": m0_text["scores"].get("mmlu"),
-            "aime24": m0_text["scores"].get("aime24"),
-            "aime25": m0_text["scores"].get("aime25"),
         },
     )
     for key, formals in (("m1", m1_formals), ("m2", m2_formals), ("m3", m3_formals)):
@@ -388,7 +419,7 @@ def build_payload() -> dict[str, Any]:
             formal_bits.append(f"{key} formal @{'/'.join(str(s) for s, _ in formals)}")
     light_steps = "/".join(str(s) for s, _ in m1_lights) if m1_lights else "none"
     note = (
-        "M0 为正式基线。"
+        "M0 文本曲线 = 2B E1 GRPO（e1_grpo_2b，10–150 /10）；Geo3K 仅 @150。"
         + (" " + "；".join(formal_bits) + "。" if formal_bits else "")
         + f" M1 light Geo3K steps：{light_steps}（n=1 / 512，不与 formal 横比）。"
         " 全 step 曲线只画 formal（10–150 /10）；缺测为 null。"
