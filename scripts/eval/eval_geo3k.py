@@ -17,6 +17,7 @@ import hashlib
 import io
 import json
 import os
+import signal
 from pathlib import Path
 from typing import Any
 
@@ -176,6 +177,39 @@ def summarize(records: list[dict[str, Any]], n: int) -> dict[str, Any]:
     }
 
 
+def _force_kill_children() -> None:
+    """SIGKILL vLLM EngineCore descendants before os._exit, else they orphan on PID 1."""
+    my_pid = os.getpid()
+    children_of: dict[int, list[int]] = {}
+    try:
+        for entry in os.listdir("/proc"):
+            if not entry.isdigit():
+                continue
+            pid = int(entry)
+            try:
+                with open(f"/proc/{pid}/stat", encoding="utf-8") as handle:
+                    stat = handle.read()
+                ppid = int(stat[stat.rfind(")") + 2 :].split()[1])
+            except (OSError, IndexError, ValueError):
+                continue
+            children_of.setdefault(ppid, []).append(pid)
+    except OSError:
+        return
+    stack = list(children_of.get(my_pid, []))
+    seen: set[int] = set()
+    while stack:
+        pid = stack.pop()
+        if pid in seen:
+            continue
+        seen.add(pid)
+        stack.extend(children_of.get(pid, []))
+        try:
+            os.kill(pid, signal.SIGKILL)
+            print(f"killed leftover vLLM child pid={pid}", flush=True)
+        except OSError:
+            pass
+
+
 def main() -> None:
     args = parse_args()
     os.environ.setdefault("HF_HUB_OFFLINE", "1")
@@ -247,6 +281,11 @@ def main() -> None:
     summary_path.write_text(json.dumps(summary, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(f"Wrote {args.output} and {summary_path}")
     print(json.dumps(summary, ensure_ascii=False, indent=2))
+    # vLLM EngineCore teardown can hang in do_wait after a finished run
+    # (M1@30 wrote this summary, then never returned). Kill children first so
+    # os._exit does not leave an orphan EngineCore holding the GPU.
+    _force_kill_children()
+    os._exit(0)
 
 
 if __name__ == "__main__":

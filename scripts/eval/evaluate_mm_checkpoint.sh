@@ -109,12 +109,28 @@ fi
 source "${POLARIS}/scripts/verl_env.sh"
 export HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1
 export PYTHONPATH=${VLM_EXP}/scripts:${ROOT}/verl-main:${PYTHONPATH:-}
-"${ENVBIN}/python" "${VLM_EXP}/scripts/eval/eval_geo3k.py" \
-  --model "${MERGED_DIR}" \
-  --output "${GEO_OUT}" \
-  --temperature 0.6 --top-p 0.95 --n 8 --max-tokens 16384 \
-  --enforce-eager
-"${ENVBIN}/python" - "${GEO_OUT}.summary.json" <<'PY'
+geo_skip=0
+if [[ -f "${GEO_OUT}.summary.json" ]]; then
+  if "${ENVBIN}/python" - "${GEO_OUT}.summary.json" <<'PY'
+import json
+import sys
+
+with open(sys.argv[1], encoding="utf-8") as handle:
+    summary = json.load(handle)
+raise SystemExit(0 if summary.get("questions") == 601 else 1)
+PY
+  then
+    echo "Skipping Geo3K; already complete: ${GEO_OUT}.summary.json"
+    geo_skip=1
+  fi
+fi
+if [[ "${geo_skip}" -eq 0 ]]; then
+  "${ENVBIN}/python" "${VLM_EXP}/scripts/eval/eval_geo3k.py" \
+    --model "${MERGED_DIR}" \
+    --output "${GEO_OUT}" \
+    --temperature 0.6 --top-p 0.95 --n 8 --max-tokens 16384 \
+    --enforce-eager
+  "${ENVBIN}/python" - "${GEO_OUT}.summary.json" <<'PY'
 import json
 import sys
 
@@ -123,6 +139,49 @@ with open(sys.argv[1], encoding='utf-8') as handle:
 if summary.get('questions') != 601:
     raise SystemExit(f"Geo3K evaluation incomplete: {summary.get('questions')}/601 questions")
 PY
+fi
+
+# Geo3K's EngineCore can survive os._exit and keep this GPU occupied at 0% util.
+# Kill only vLLM processes whose CUDA_VISIBLE_DEVICES matches this worker.
+kill_vllm_on_this_gpu() {
+  local gpu="${CUDA_VISIBLE_DEVICES%%,*}"
+  "${ENVBIN}/python" - "${gpu}" <<'PY'
+import os
+import signal
+import sys
+
+gpu = sys.argv[1]
+markers = (b"VLLM::EngineCore", b"vllm.entrypoints.openai.api_server")
+killed = []
+for entry in os.listdir("/proc"):
+    if not entry.isdigit():
+        continue
+    pid = int(entry)
+    try:
+        env = open(f"/proc/{pid}/environ", "rb").read().split(b"\0")
+        cmd = open(f"/proc/{pid}/cmdline", "rb").read()
+    except OSError:
+        continue
+    env_ok = False
+    for item in env:
+        if item == f"CUDA_VISIBLE_DEVICES={gpu}".encode() or item.startswith(
+            f"CUDA_VISIBLE_DEVICES={gpu},".encode()
+        ):
+            env_ok = True
+            break
+    if not env_ok or not any(marker in cmd for marker in markers):
+        continue
+    try:
+        os.kill(pid, signal.SIGKILL)
+        killed.append(pid)
+    except OSError:
+        pass
+if killed:
+    print(f"killed leftover vLLM on GPU {gpu}: {killed}", flush=True)
+PY
+}
+kill_vllm_on_this_gpu
+sleep 3
 
 # Text retention and general-capability evaluation. Put the verl environment's
 # vLLM-capable Python first; the evalscope CLI itself remains /usr/local/bin/evalscope.
@@ -139,6 +198,7 @@ mkdir -p "${eval_cwd}"
 cd "${eval_cwd}"
 cleanup_eval_server() {
   pkill -f "vllm.entrypoints.openai.api_server --model ${MERGED_DIR} " 2>/dev/null || true
+  kill_vllm_on_this_gpu
 }
 trap cleanup_eval_server EXIT
 set +e

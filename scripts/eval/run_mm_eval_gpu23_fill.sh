@@ -114,6 +114,10 @@ run_worker() {
   local exps=("$@")
   local label="gpu${gpu}"
   local fail=0 skip=0 ok=0
+  local steps=("${STEPS[@]}")
+  if [[ -n "${STEPS_OVERRIDE:-}" ]]; then
+    read -r -a steps <<< "${STEPS_OVERRIDE}"
+  fi
   export CUDA_VISIBLE_DEVICES="${gpu}"
   export PORT="${port}"
   export TP_SIZE
@@ -121,9 +125,9 @@ run_worker() {
   export no_proxy="${no_proxy:-127.0.0.1,localhost,::1}"
   export WORKSPACE_ROOT POLARIS VLM_EXP EVALSCOPE
 
-  log "${label}: start PORT=${port} EXPS=${exps[*]}"
+  log "${label}: start PORT=${port} EXPS=${exps[*]} STEPS=${steps[*]}"
   for exp in "${exps[@]}"; do
-    for step in "${STEPS[@]}"; do
+    for step in "${steps[@]}"; do
       local actor="${MODEL_DIR}/${exp}/global_step_${step}/actor"
       if [[ ! -d "${actor}" ]]; then
         log "${label}: [skip] missing actor ${exp} step ${step}"
@@ -132,6 +136,13 @@ run_worker() {
       if [[ "${SKIP_EXISTING}" == "1" ]] && eval_complete "${exp}" "${step}"; then
         log "${label}: [skip] already complete ${exp} step ${step}"
         skip=$((skip + 1))
+        continue
+      fi
+      local lockf=${LOCK_DIR}/${exp}_step${step}.eval.lock
+      exec 9>"${lockf}"
+      if ! flock -n 9; then
+        log "${label}: [skip] locked ${exp} step ${step}"
+        exec 9>&-
         continue
       fi
       local run_log=${LOG_DIR}/${label}_${exp}_step${step}_$(date +%Y%m%d_%H%M%S).log
@@ -145,6 +156,7 @@ run_worker() {
         bash "${EVAL_SH}" "${exp}" >"${run_log}" 2>&1
       local exit_code=$?
       set -e
+      exec 9>&-
       if [[ "${exit_code}" -eq 0 ]] && eval_complete "${exp}" "${step}"; then
         ok=$((ok + 1))
         log "${label}: completed ${exp} step ${step}"
