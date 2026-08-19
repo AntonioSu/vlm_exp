@@ -28,7 +28,7 @@
 
 <div class="page">
   <h1>2B 训练监控 — Qwen3.5-2B（E1–E5 + S3 + V2 + Easy-24K/32K + S1-24K + Ext + OPD）</h1>
-  <p class="subtitle">2×A100-80GB · non-thinking · 16K response · Easy-Boxed / S3 E1–E5 均 150/150；V2（难度池）E1 GRPO 250/300（~13.96h），E2–E5 尚无 step；GRPO-24K（<code>e1_grpo_2b_easy_raw_24k_100k</code>）47/47（~39.6h）；Easy-24K（<code>e2_dapo_2b_easy_24k</code>）321/321（~41.82h）；Easy-32K（<code>e2_dapo_2b_easy_32k</code>）903（~167.43h，仍在跑）；S1-24K（<code>e2_dapo_2b_s1_24k</code>）150/150（~28.61h）；Ext easy-cont <code>e2_dapo_2b_easy_cont150</code> 300/300（~20.97h），Ext easy-cont-24K <code>e2_dapo_2b_easy_cont150_24k</code> 300/300（~29.24h），S1-switch <code>e2_dapo_2b_s1_from_easy150</code> 300/300（~18.56h）；OPD 蒸馏（<code>opd_distill_2b_from_4b_easy_24k</code>，2B student ← 冻结 4B teacher · easy × 24K）500/500（~39.13h）。训练曲线由 <code>scripts/monitoring/2b/parse_2b_logs.py</code> + <code>gen_2b_js.py</code> 刷新；offline / agent 评测由 <code>sync_2b_eval_dashboard.py</code> / <code>sync_2b_agent_dashboard.py</code> 同步。算法定义见 <a href="../algo/index.html">算法介绍</a> · 数据池见 <a href="../dataset/index.html">数据集介绍</a> · 评测协议见 <a href="../benchmark/index.html">Benchmark 介绍</a>。</p>
+  <p class="subtitle">2×A100-80GB · non-thinking · 16K response · Easy-Boxed / S3 E1–E5 均 150/150；V2（难度池）E1 GRPO 250/300（~13.96h），E2–E5 尚无 step；GRPO-24K（<code>e1_grpo_2b_easy_raw_24k_100k</code>）47/47（~39.6h）；Easy-24K（<code>e2_dapo_2b_easy_24k</code>）321/321（~41.82h）；Easy-32K（<code>e2_dapo_2b_easy_32k</code>）1053（~191.14h，仍在跑）；S1-24K（<code>e2_dapo_2b_s1_24k</code>）150/150（~28.61h）；Ext easy-cont <code>e2_dapo_2b_easy_cont150</code> 300/300（~20.97h），Ext easy-cont-24K <code>e2_dapo_2b_easy_cont150_24k</code> 300/300（~29.24h），S1-switch <code>e2_dapo_2b_s1_from_easy150</code> 300/300（~18.56h）；OPD 蒸馏（<code>opd_distill_2b_from_4b_easy_24k</code>，2B student ← 冻结 4B teacher · easy × 24K）500/500（~39.13h）。训练曲线由 <code>scripts/monitoring/2b/parse_2b_logs.py</code> + <code>gen_2b_js.py</code> 刷新；offline / agent 评测由 <code>sync_2b_eval_dashboard.py</code> / <code>sync_2b_agent_dashboard.py</code> 同步。算法定义见 <a href="../algo/index.html">算法介绍</a> · 数据池见 <a href="../dataset/index.html">数据集介绍</a> · 评测协议见 <a href="../benchmark/index.html">Benchmark 介绍</a>。</p>
 
   <div class="subtabs">
     <button class="subtab-btn active" data-subtab="compare">对比总览（E1–E5 + S3 + V2）</button>
@@ -43,29 +43,29 @@
   <div id="panel-container"></div>
 </div>
 
-<script src="js/data-compare.js?v=20260817111300"></script>
-<script src="js/data-eval-offline.js?v=20260817033659"></script>
-<script src="js/data-easy-boxed-e1.js?v=20260817111300"></script>
-<script src="js/data-easy-boxed-e2.js?v=20260817111300"></script>
-<script src="js/data-easy-boxed-e3.js?v=20260817111300"></script>
-<script src="js/data-easy-boxed-e4.js?v=20260817111300"></script>
-<script src="js/data-easy-boxed-e5.js?v=20260817111300"></script>
-<script src="js/data-s3-e1.js?v=20260817111300"></script>
-<script src="js/data-s3-e2.js?v=20260817111300"></script>
-<script src="js/data-s3-e3.js?v=20260817111300"></script>
-<script src="js/data-s3-e4.js?v=20260817111300"></script>
-<script src="js/data-s3-e5.js?v=20260817111300"></script>
-<script src="js/data-v2-e1.js?v=20260817111300"></script>
-<script src="js/data-e24k-e1.js?v=20260817111300"></script>
-<script src="js/data-e24k-e2.js?v=20260817111300"></script>
-<script src="js/data-e32k-e2.js?v=20260817111300"></script>
-<script src="js/data-s124k-e2.js?v=20260817111300"></script>
-<script src="js/data-ext-easy-e2.js?v=20260817111300"></script>
-<script src="js/data-ext-e24k-e2.js?v=20260817111300"></script>
-<script src="js/data-ext-s1-e2.js?v=20260817111300"></script>
-<script src="js/data-opd-e2.js?v=20260817111300"></script>
+<script src="js/data-compare.js?v=20260818172400"></script>
+<script src="js/data-eval-offline.js?v=20260819103248"></script>
+<script src="js/data-easy-boxed-e1.js?v=20260818172400"></script>
+<script src="js/data-easy-boxed-e2.js?v=20260818172400"></script>
+<script src="js/data-easy-boxed-e3.js?v=20260818172400"></script>
+<script src="js/data-easy-boxed-e4.js?v=20260818172400"></script>
+<script src="js/data-easy-boxed-e5.js?v=20260818172400"></script>
+<script src="js/data-s3-e1.js?v=20260818172400"></script>
+<script src="js/data-s3-e2.js?v=20260818172400"></script>
+<script src="js/data-s3-e3.js?v=20260818172400"></script>
+<script src="js/data-s3-e4.js?v=20260818172400"></script>
+<script src="js/data-s3-e5.js?v=20260818172400"></script>
+<script src="js/data-v2-e1.js?v=20260818172400"></script>
+<script src="js/data-e24k-e1.js?v=20260818172400"></script>
+<script src="js/data-e24k-e2.js?v=20260818172400"></script>
+<script src="js/data-e32k-e2.js?v=20260818172400"></script>
+<script src="js/data-s124k-e2.js?v=20260818172400"></script>
+<script src="js/data-ext-easy-e2.js?v=20260818172400"></script>
+<script src="js/data-ext-e24k-e2.js?v=20260818172400"></script>
+<script src="js/data-ext-s1-e2.js?v=20260818172400"></script>
+<script src="js/data-opd-e2.js?v=20260818172400"></script>
 <script src="../common/chart-utils.js?v=20260817110000"></script>
-<script src="js/charts.js?v=20260817110000"></script>
-<script src="js/tab-loader.js?v=20260817101800"></script>
+<script src="js/charts.js?v=20260819103057"></script>
+<script src="js/tab-loader.js?v=20260819103248"></script>
 </body>
 </html>
