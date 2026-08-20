@@ -41,6 +41,7 @@
       <a href="../4b/index.html">4B 训练</a>
       <a href="../mm/index.html" class="active">多模态训练</a>
       <a href="../conclusion/index.html">综合结论</a>
+      <a href="../issues/index.html">问题</a>
       <a href="../chronicle/index.html">实验日志</a>
     
     </div>
@@ -50,7 +51,7 @@
 <div class="page">
 
   <h1>多模态训练 — Qwen3.5-2B 图文数据配比</h1>
-  <p class="subtitle">方案说明见 <a href="../algo/mm.html">多模态介绍</a> · 每组 2×A100-80GB · <strong>M1/M2/M3 均已完成 150/150</strong> · 离线 formal 评测进行中（GPU2/GPU3，从 step10 起）。评测协议见 <a href="../benchmark/index.html">Benchmark 介绍</a>。</p>
+  <p class="subtitle">方案说明见 <a href="../algo/mm.html">多模态介绍</a> · 每组 2×A100-80GB · <strong>M1/M2/M3 均已完成 150/150</strong> · 离线 formal 评测进行中（GPU0–3，从 step10 起）。评测协议见 <a href="../benchmark/index.html">Benchmark 介绍</a>。</p>
 
   <div class="tabs">
     <button class="tab-btn active" data-tab="overview">方案 / 算法总览</button>
@@ -150,7 +151,7 @@
           <tr><td>Geo3K 601 题离线评测脚本</td><td><span class="badge"><span class="sdot" style="background:var(--e3)"></span>已完成</span></td><td><span class="mono">scripts/eval/eval_geo3k.py</span> 已通过端到端验证；M0 Geo3K 601 题正式基线评测已完成</td></tr>
           <tr><td>M0 正式基线评测</td><td><span class="badge"><span class="sdot" style="background:var(--e3)"></span>已完成</span></td><td>文本：MMLU=78.34%，AIME24=35.42%，AIME25=32.50%，MATH-500=86.35%；Geo3K：sample_accuracy=57.32%、pass@8=83.69%。已写入 done 标记，并进入看板「评测结果」页签</td></tr>
           <tr><td>M1 light 离线评测</td><td><span class="badge"><span class="sdot" style="background:var(--e3)"></span>@70 / @100</span></td><td>light 口径仅作对照，不与 formal 横比。正式评测见「评测结果」页签</td></tr>
-          <tr><td>M1–M3 自动评测接力 / 归档</td><td><span class="badge"><span class="sdot" style="background:var(--e2)"></span>进行中</span></td><td>formal 已到 M1@30 / M2@80 / M3@10（Geo3K n=8 + evalscope）。刷新：<span class="mono">python3 scripts/analysis/gen_mm_eval_dashboard_data.py</span></td></tr>
+          <tr><td>M1–M3 自动评测接力 / 归档</td><td><span class="badge"><span class="sdot" style="background:var(--e2)"></span>进行中</span></td><td>formal 已到 M1@50 / M2@100 / M3@50（Geo3K + 文本均齐）。GPU0–3 正在跑 M1@60、M2@110、M3@60/@70 Geo3K。刷新：<span class="mono">python3 scripts/analysis/gen_mm_eval_dashboard_data.py</span></td></tr>
         </tbody>
       </table>
       <p class="caption">训练 2026-08-02 已满 150/150。离线 formal 从 step10 起补；看板数字以「评测结果」页签为准。</p>
@@ -409,36 +410,11 @@
                 <div class="chart-wrap"><canvas id="chart-mm-roll-chars" height="220"></canvas><div class="tooltip" id="tip-mm-roll-chars"></div></div>
       </div>
     </section>
-
-    <section style="margin-top:20px">
-      <h2 id="m1-rollout-table-title">M1 训练 rollout 明细表</h2>
-      <table>
-        <thead><tr><th>step</th><th>source</th><th>样本</th><th>train acc</th><th>mean score</th><th>mean output chars</th></tr></thead>
-        <tbody id="m1-rollout-summary-body"></tbody>
-      </table>
-      <p class="caption" id="m1-rollout-summary-caption">数据源加载中。</p>
-    </section>
-    <section style="margin-top:20px">
-      <h2 id="m2-rollout-table-title">M2 训练 rollout 明细表</h2>
-      <table>
-        <thead><tr><th>step</th><th>source</th><th>样本</th><th>train acc</th><th>mean score</th><th>mean output chars</th></tr></thead>
-        <tbody id="m2-rollout-summary-body"></tbody>
-      </table>
-      <p class="caption" id="m2-rollout-summary-caption">数据源加载中。</p>
-    </section>
-    <section style="margin-top:20px">
-      <h2 id="m3-rollout-table-title">M3 训练 rollout 明细表</h2>
-      <table>
-        <thead><tr><th>step</th><th>source</th><th>样本</th><th>train acc</th><th>mean score</th><th>mean output chars</th></tr></thead>
-        <tbody id="m3-rollout-summary-body"></tbody>
-      </table>
-      <p class="caption" id="m3-rollout-summary-caption">数据源加载中。</p>
-    </section>
   </div>
 
 </div>
 
-<script src="js/data-eval.js?v=20260819103100"></script>
+<script src="js/data-eval.js?v=20260820100000"></script>
 <script src="js/data-m1-train.js?v=20260817111300"></script>
 <script src="js/data-m2-train.js?v=20260817111300"></script>
 <script src="js/data-m3-train.js?v=20260817111300"></script>
@@ -446,7 +422,7 @@
 <script src="js/data-m2-rollouts.js?v=20260802183000"></script>
 <script src="js/data-m3-rollouts.js?v=20260802183000"></script>
 <script src="../common/chart-utils.js?v=20260817110000"></script>
-<script src="js/charts-eval.js?v=20260819103100"></script>
+<script src="js/charts-eval.js?v=20260820100000"></script>
 <script>
   const tabBtns = document.querySelectorAll(".tab-btn");
   const panels = {
@@ -467,31 +443,6 @@
   });
 
   if (typeof window.renderMmEval === "function") window.renderMmEval();
-
-  function fillRolloutTable(summary, bodyId, captionId, titleId, label) {
-    const body = document.getElementById(bodyId);
-    const caption = document.getElementById(captionId);
-    const title = document.getElementById(titleId);
-    if (!summary?.rows?.length || !body || !caption) return;
-    const lastStep = summary.rows[summary.rows.length - 1].step;
-    if (title) title.textContent = `${label} 训练 rollout 明细表（step 1–${lastStep}）`;
-    body.innerHTML = summary.rows.map((row) => `
-      <tr>
-        <td>${row.step}</td>
-        <td class="mono">${row.source || "—"}</td>
-        <td>${row.samples}</td>
-        <td>${(row.accuracy * 100).toFixed(2)}%</td>
-        <td>${row.meanScore.toFixed(4)}</td>
-        <td>${Math.round(row.meanOutputChars)}</td>
-      </tr>
-    `).join("");
-    caption.innerHTML = `数据源：<span class="mono">${summary.source}</span> · ` +
-      `${summary.overall.samples} samples · accuracy=${summary.overall.accuracy.toFixed(4)} · mean_score=${summary.overall.meanScore.toFixed(4)}。` +
-      `训练 rollout 口径，≠ Geo3K test 离线评测。`;
-  }
-  fillRolloutTable(window.MM_M1_ROLLOUT_SUMMARY, "m1-rollout-summary-body", "m1-rollout-summary-caption", "m1-rollout-table-title", "M1");
-  fillRolloutTable(window.MM_M2_ROLLOUT_SUMMARY, "m2-rollout-summary-body", "m2-rollout-summary-caption", "m2-rollout-table-title", "M2");
-  fillRolloutTable(window.MM_M3_ROLLOUT_SUMMARY, "m3-rollout-summary-body", "m3-rollout-summary-caption", "m3-rollout-table-title", "M3");
   if (typeof window.renderMmTrainPanel === "function") window.renderMmTrainPanel();
 </script>
 </body>
