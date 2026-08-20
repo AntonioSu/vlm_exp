@@ -21,6 +21,7 @@
       <a href="../4b/index.html">4B 训练</a>
       <a href="../mm/index.html">多模态训练</a>
       <a href="../conclusion/index.html">综合结论</a>
+      <a href="../issues/index.html">问题</a>
       <a href="../chronicle/index.html" class="active">实验日志</a>
     </div>
   </div>
@@ -34,6 +35,139 @@
   </p>
 
   <div class="feed">
+
+    <article class="feed-item">
+      <div class="feed-marker" aria-hidden="true"></div>
+      <div class="feed-head">
+        <span class="feed-date">2026-08-20</span>
+        <span class="feed-label">看板更新：</span>
+      </div>
+      <div class="feed-row">
+        <span class="feed-time">10:00</span>
+        <div class="feed-content">
+          <p>MM formal 再刷：M1@50 Geo3K <strong>66.6%</strong>（@40 68.7% 回落）/ MATH <strong>76.0%</strong>；M2@100 Geo3K <strong>73.1%</strong> 新高（@80 72.1% / @90 71.8%），MATH <strong>87.2%</strong>；M3@40/@50 Geo <strong>59.3→55.4%</strong>，文本同步掉（MATH 83.9→81.6→79.8，AIME24 35.0→30.4→27.1）</p>
+          <p>GPU0 M3@60 Geo ~368/601；GPU1 M3@70 ~240/601；GPU2 M1@60 刚起；GPU3 M2@110 ~48/601。2B：OPD 50/50 已满；Easy-32K mmlu <strong>59/75</strong></p>
+        </div>
+      </div>
+    </article>
+
+    <article class="feed-item">
+      <div class="feed-marker" aria-hidden="true"></div>
+      <div class="feed-head">
+        <span class="feed-date">2026-08-20</span>
+        <span class="feed-label">看板更新：</span>
+      </div>
+      <div class="feed-row">
+        <span class="feed-time">09:59</span>
+        <div class="feed-content">
+          <p>OPD distill offline 齐：mmlu / aime24 / aime25 / MATH-500 均 <strong>50/50</strong>。补点 130 / 370 / 500 已写入。峰值未变：mmlu @450 <strong>79.90%</strong>、aime24 @280/@490 <strong>25.83%</strong>、aime25 @220 <strong>26.66%</strong>、MATH-500 @350 <strong>81.62%</strong></p>
+        </div>
+      </div>
+    </article>
+
+    <article class="feed-item">
+      <div class="feed-marker" aria-hidden="true"></div>
+      <div class="feed-head">
+        <span class="feed-date">2026-08-20</span>
+        <span class="feed-label">看板更新：</span>
+      </div>
+      <div class="feed-row">
+        <span class="feed-time">00:16</span>
+        <div class="feed-content">
+          <p>OPD distill offline 再刷：mmlu <strong>50/50</strong> 已满；aime24 <strong>49/50</strong>（缺 130）；aime25 / MATH-500 <strong>47/50</strong>（缺 130 / 370 / 500）。峰值未变：mmlu @450 <strong>79.90%</strong>、aime24 @280/@490 <strong>25.83%</strong>、aime25 @220 <strong>26.66%</strong>、MATH-500 @350 <strong>81.62%</strong>。GPU0 评 130 aime，GPU1 评 370 aime25，GPU3 评 500 aime25</p>
+        </div>
+      </div>
+    </article>
+
+    <article class="feed-item">
+      <div class="feed-marker" aria-hidden="true"></div>
+      <div class="feed-head">
+        <span class="feed-date">2026-08-20</span>
+        <span class="feed-label">看板更新：</span>
+      </div>
+      <div class="feed-row">
+        <span class="feed-time">00:15</span>
+        <div class="feed-content">
+          <p>MM M3@40 Geo3K <strong>59.3%</strong>（@10–30 <strong>65.9→65.2→64.8</strong> 后回落，pass@8 85.0%）；文本仍在跑，柱状图暂空。M1@40 / M2@90 不变</p>
+          <p>GPU0 M3@40 文本；GPU1 M3@50 Geo（~320/601）；GPU2 M1@50 Geo（~144/601）；GPU3 M2@100 Geo（~288/601）</p>
+        </div>
+      </div>
+    </article>
+
+    <article class="feed-item">
+      <div class="feed-marker" aria-hidden="true"></div>
+      <div class="feed-head">
+        <span class="feed-date">2026-08-19</span>
+        <span class="feed-label">看板更新：</span>
+      </div>
+      <div class="feed-row">
+        <span class="feed-time">22:46</span>
+        <div class="feed-content">
+          <p>OPD distill offline 刷进看板：mmlu/aime24/aime25 <strong>47/50</strong>，MATH-500 <strong>44/50</strong>。GPU1 已完成 140–250；GPU0/2/3 仍在补 120 / 360 / 490 的 MATH-500，以及 130 / 370 / 500。峰值仍是 mmlu @450 <strong>79.90%</strong>、aime24 @280/@490 <strong>25.83%</strong>、aime25 @220 <strong>26.66%</strong>、MATH-500 @350 <strong>81.62%</strong></p>
+        </div>
+      </div>
+    </article>
+
+    <article class="feed-item">
+      <div class="feed-marker" aria-hidden="true"></div>
+      <div class="feed-head">
+        <span class="feed-date">2026-08-19</span>
+        <span class="feed-label">看板更新：</span>
+      </div>
+      <div class="feed-row">
+        <span class="feed-time">22:42</span>
+        <div class="feed-content">
+          <p>MM 文本齐进看板：M1@40 MATH-500 <strong>76.1%</strong> / AIME24 <strong>17.5%</strong>（纯图文仍伤文本）；M2@90 MATH-500 <strong>87.65%</strong> / AIME25 <strong>30.84%</strong> / MMLU <strong>80.1%</strong>；M3@30 MATH-500 <strong>83.9%</strong> / AIME24 <strong>35.0%</strong>（对齐 M0 35.42%）</p>
+          <p>GPU0–3 正在跑 Geo3K：M1@50、M2@100、M3@40/@50。2B offline 同步：OPD mmlu/aime <strong>47/50</strong>；Easy-32K mmlu <strong>56/75</strong></p>
+        </div>
+      </div>
+    </article>
+
+    <article class="feed-item">
+      <div class="feed-marker" aria-hidden="true"></div>
+      <div class="feed-head">
+        <span class="feed-date">2026-08-19</span>
+        <span class="feed-label">看板更新：</span>
+      </div>
+      <div class="feed-row">
+        <span class="feed-time">18:16</span>
+        <div class="feed-content">
+          <p>MM formal 再刷进看板：M1@40 Geo3K <strong>68.7%</strong>（文本仍在跑，@30 MATH-500 已齐 <strong>77.0%</strong>）；M2@90 Geo3K <strong>71.8%</strong>（略低于 @80 72.1%），MMLU <strong>80.1%</strong> / AIME24 <strong>37.08%</strong>（高于 M0@150 35.42%）；M3@10/20/30 Geo3K <strong>65.9→65.2→64.8%</strong>，@30 MMLU <strong>77.94%</strong></p>
+          <p>GPU0–3 仍在补：M1@40 文本、M2@90 AIME25/MATH-500、M3@30 AIME/MATH 与 M3@40。2B offline + agent 同步：OPD 43/50；Easy-32K offline 轴扩到 10–750（mmlu 54/75）</p>
+        </div>
+      </div>
+    </article>
+
+    <article class="feed-item">
+      <div class="feed-marker" aria-hidden="true"></div>
+      <div class="feed-head">
+        <span class="feed-date">2026-08-19</span>
+        <span class="feed-label">评测结果：</span>
+      </div>
+      <div class="feed-row">
+        <span class="feed-time">11:12</span>
+        <div class="feed-content">
+          <p>多模态 formal 进看板：M1@10/20/30 Geo3K <strong>66.1→68.3%</strong>（AIME24 掉到 ~16%，纯图文伤文本）；M2@10–80 Geo3K <strong>65.6→72.1%</strong>，@80 MATH-500 <strong>87.08%</strong> / MMLU <strong>79.2%</strong> 略高于 M0；M3@10 文本齐（MATH-500 <strong>78.5%</strong>）</p>
+          <p>GPU0–3 仍在补：M1@30 MATH-500、M2@90 Geo3K、M3@20/@30 Geo3K。2B offline + agent 同步：OPD 4 卡并行（mmlu 39/50，峰值 @450 <strong>79.90%</strong>）；Ext-24K agent tau 150–300 齐，峰值 @290/@300 <strong>62.5%</strong></p>
+        </div>
+      </div>
+    </article>
+
+    <article class="feed-item">
+      <div class="feed-marker" aria-hidden="true"></div>
+      <div class="feed-head">
+        <span class="feed-date">2026-08-18</span>
+        <span class="feed-label">评测结果：</span>
+      </div>
+      <div class="feed-row">
+        <span class="feed-time">17:24</span>
+        <div class="feed-content">
+          <p>MM formal 扩到 GPU0–3。M3@10 Geo3K <strong>65.9%</strong>（对照 M1@10 66.1 / M2@10 65.6 / M0@150 57.3）；M2 Geo3K 推到 @70 <strong>71.8%</strong>，文本到 @60 MATH-500 <strong>85.0%</strong>；M1@10/@20 文本已出。M0 文本曲线改为 E1 GRPO 全 step（10–150）</p>
+          <p>GPU0 残留 vLLM 挡住 M3 文本，清掉后重拉；部分 step 文本 <span class="mono">exit=127</span>（Geo3K 已落盘、done 标记未齐）</p>
+          <p>2B 训练曲线刷新：Easy-32K <strong>903→1053</strong>（~191.14h，仍在跑）</p>
+        </div>
+      </div>
+    </article>
 
     <article class="feed-item">
       <div class="feed-marker" aria-hidden="true"></div>
