@@ -21,6 +21,7 @@
       <a href="../2b/index.html">2B 训练</a>
       <a href="../4b/index.html">4B 训练</a>
       <a href="../mm/index.html">多模态训练</a>
+      <a href="../memory/index.html">显存</a>
       <a href="../conclusion/index.html">综合结论</a>
       <a href="../issues/index.html">问题</a>
       <a href="../chronicle/index.html">实验日志</a>
@@ -105,6 +106,70 @@
           <p class="formula-label">重要性比率</p>
           <div class="formula">$$r_t(\theta) = \frac{\pi_\theta(a_t \mid s_t)}{\pi_{\theta_{\text{old}}}(a_t \mid s_t)}$$</div>
         </div>
+        <figure class="clip-figure" id="clip-fig">
+          <p class="formula-label">单步目标随 $r$ 的变化</p>
+          <div class="clip-plots" role="img" aria-label="PPO clipped surrogate: left A greater than 0 clips at 1 plus epsilon; right A less than 0 clips at 1 minus epsilon. Red circle marks r equals 1.">
+            <div class="clip-plot">
+              <p class="clip-plot-title">$A &gt; 0$</p>
+              <svg viewBox="0 0 280 236" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <defs>
+                  <marker id="clip-arrow-l" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                    <path d="M 0 1.2 L 9 5 L 0 8.8 Z" fill="#14181f"/>
+                  </marker>
+                </defs>
+                <!-- clip guide at r = 1+ε -->
+                <line x1="186.3" y1="190" x2="186.3" y2="52.9" stroke="#b0b7c0" stroke-width="1.15" stroke-dasharray="3.5 3"/>
+                <!-- axes -->
+                <line x1="56" y1="190" x2="56" y2="22" stroke="#14181f" stroke-width="1.25" marker-end="url(#clip-arrow-l)"/>
+                <line x1="56" y1="190" x2="258" y2="190" stroke="#14181f" stroke-width="1.25" marker-end="url(#clip-arrow-l)"/>
+                <!-- ticks: 0, 1, 1+ε -->
+                <line x1="56" y1="190" x2="56" y2="196" stroke="#14181f" stroke-width="1.2"/>
+                <line x1="164.6" y1="190" x2="164.6" y2="196" stroke="#14181f" stroke-width="1.2"/>
+                <line x1="186.3" y1="190" x2="186.3" y2="196" stroke="#14181f" stroke-width="1.2"/>
+                <text x="48" y="214" font-size="12" fill="#14181f" font-family="Source Sans 3, sans-serif">0</text>
+                <text x="164.6" y="214" text-anchor="middle" font-size="12" fill="#14181f" font-family="Source Sans 3, sans-serif">1</text>
+                <text x="202" y="214" text-anchor="middle" font-size="12" fill="#14181f" font-family="Source Sans 3, sans-serif">1+ε</text>
+                <!-- axis labels -->
+                <text x="50" y="14" text-anchor="end" font-size="13" font-style="italic" fill="#14181f" font-family="Source Sans 3, sans-serif">L<tspan baseline-shift="super" font-size="8" font-style="normal">CLIP</tspan></text>
+                <text x="272" y="208" text-anchor="end" font-size="13" font-style="italic" fill="#14181f" font-family="Source Sans 3, sans-serif">r</text>
+                <!-- L^CLIP = min(r A, (1+ε) A) -->
+                <path d="M 56 190 L 186.3 52.9 H 250" fill="none" stroke="#14181f" stroke-width="2.6" stroke-linejoin="miter" stroke-linecap="butt"/>
+                <!-- start of optimization r = 1 -->
+                <circle cx="164.6" cy="75.7" r="5.2" fill="#dc2626" stroke="#fff" stroke-width="1.4"/>
+              </svg>
+            </div>
+            <div class="clip-plot">
+              <p class="clip-plot-title">$A &lt; 0$</p>
+              <svg viewBox="0 0 280 236" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <defs>
+                  <marker id="clip-arrow-r" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                    <path d="M 0 1.2 L 9 5 L 0 8.8 Z" fill="#14181f"/>
+                  </marker>
+                </defs>
+                <!-- clip guide at r = 1−ε -->
+                <line x1="154.1" y1="48" x2="154.1" y2="136.6" stroke="#b0b7c0" stroke-width="1.15" stroke-dasharray="3.5 3"/>
+                <!-- axes: origin at top-left, L^CLIP points down -->
+                <line x1="56" y1="48" x2="56" y2="208" stroke="#14181f" stroke-width="1.25" marker-end="url(#clip-arrow-r)"/>
+                <line x1="56" y1="48" x2="258" y2="48" stroke="#14181f" stroke-width="1.25" marker-end="url(#clip-arrow-r)"/>
+                <!-- ticks: 0, 1−ε, 1 -->
+                <line x1="56" y1="48" x2="56" y2="42" stroke="#14181f" stroke-width="1.2"/>
+                <line x1="154.1" y1="48" x2="154.1" y2="42" stroke="#14181f" stroke-width="1.2"/>
+                <line x1="178.6" y1="48" x2="178.6" y2="42" stroke="#14181f" stroke-width="1.2"/>
+                <text x="48" y="36" font-size="12" fill="#14181f" font-family="Source Sans 3, sans-serif">0</text>
+                <text x="138" y="36" text-anchor="middle" font-size="12" fill="#14181f" font-family="Source Sans 3, sans-serif">1−ε</text>
+                <text x="188" y="36" text-anchor="middle" font-size="12" fill="#14181f" font-family="Source Sans 3, sans-serif">1</text>
+                <!-- axis labels -->
+                <text x="272" y="42" text-anchor="end" font-size="13" font-style="italic" fill="#14181f" font-family="Source Sans 3, sans-serif">r</text>
+                <text x="50" y="230" text-anchor="end" font-size="13" font-style="italic" fill="#14181f" font-family="Source Sans 3, sans-serif">L<tspan baseline-shift="super" font-size="8" font-style="normal">CLIP</tspan></text>
+                <!-- L^CLIP = min(r A, (1−ε) A) -->
+                <path d="M 56 136.6 H 154.1 L 236 205" fill="none" stroke="#14181f" stroke-width="2.6" stroke-linejoin="miter" stroke-linecap="butt"/>
+                <!-- start of optimization r = 1 -->
+                <circle cx="178.6" cy="158.7" r="5.2" fill="#dc2626" stroke="#fff" stroke-width="1.4"/>
+              </svg>
+            </div>
+          </div>
+          <figcaption class="algo-caption">单步 $L^{\text{CLIP}}$ 随重要性比率 $r$ 的变化（左 $A&gt;0$，右 $A&lt;0$）。红点是优化起点 $r=1$。$A&gt;0$ 时在 $1{+}\epsilon$ 截断，避免该动作概率涨太多；$A&lt;0$ 时在 $1{-}\epsilon$ 截断，避免该动作概率降太多。</figcaption>
+        </figure>
       </article>
       <article class="kit-item" id="kit-gae">
         <p class="kit-num">2</p>
