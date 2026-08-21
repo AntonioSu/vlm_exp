@@ -1,11 +1,11 @@
 // =============================================================================
-// data-eval-offline.js — Offline evalscope scores (Stage-1 + Stage-3 + V2 + extras); auto-synced 2026-08-20
+// data-eval-offline.js — Offline evalscope scores (Stage-1 + Stage-3 + V2 + extras); auto-synced 2026-08-21
 // NOT training-log metrics (those live in data-easy-boxed-e*.js / data-s3-e*.js / data-v2-e*.js).
 //
 //   EVAL_EASY_BOXED*  → Stage-1 offline (e*_2b_<step>)
 //   EVAL_FULL_S3      → Stage-3 offline (e*_2b_s3_<step>)
 //   EVAL_FULL_V2      → V2 offline (e*_2b_v2_s1_<step>, steps 10–300)
-//   EVAL_FULL_E24K / E32K / S124K / EXT_EASY / EXT_E24K / EXT_S1 / OPD → length/Ext/OPD (when present)
+//   EVAL_FULL_E24K / E32K / S124K / EXT_EASY / EXT_E24K / EXT_S1 / OPD / OPSD → length/Ext/OPD/OPSD (when present)
 //   EVAL_STAGE_S3_150 → Stage-3 ad-hoc E1@150 detail card
 //
 // Refresh: python3 scripts/monitoring/2b/sync_2b_eval_dashboard.py
@@ -140,16 +140,16 @@ const EVAL_FULL_E24K = {
 
 const EVAL_FULL_E24K_ORDER = ["e2"];
 
-// ---- Easy-32K offline (e*_2b_easy_32k_<step>, steps 10–750) ----
-const EVAL_E32K_STEPS = ["10", "20", "30", "40", "50", "60", "70", "80", "90", "100", "110", "120", "130", "140", "150", "160", "170", "180", "190", "200", "210", "220", "230", "240", "250", "260", "270", "280", "290", "300", "310", "320", "330", "340", "350", "360", "370", "380", "390", "400", "410", "420", "430", "440", "450", "460", "470", "480", "490", "500", "510", "520", "530", "540", "550", "560", "570", "580", "590", "600", "610", "620", "630", "640", "650", "660", "670", "680", "690", "700", "710", "720", "730", "740", "750"];
+// ---- Easy-32K offline (e*_2b_easy_32k_<step>, steps 10–1050) ----
+const EVAL_E32K_STEPS = ["10", "20", "30", "40", "50", "60", "70", "80", "90", "100", "110", "120", "130", "140", "150", "160", "170", "180", "190", "200", "210", "220", "230", "240", "250", "260", "270", "280", "290", "300", "310", "320", "330", "340", "350", "360", "370", "380", "390", "400", "410", "420", "430", "440", "450", "460", "470", "480", "490", "500", "510", "520", "530", "540", "550", "560", "570", "580", "590", "600", "610", "620", "630", "640", "650", "660", "670", "680", "690", "700", "710", "720", "730", "740", "750", "760", "770", "780", "790", "800", "810", "820", "830", "840", "850", "860", "870", "880", "890", "900", "910", "920", "930", "940", "950", "960", "970", "980", "990", "1000", "1010", "1020", "1030", "1040", "1050"];
 
 const EVAL_FULL_E32K = {
   e2: {
     label: "Easy-32K E2 DAPO", color: COLORS.e2,
-    mmlu:   [76.91, 74.64, 76.67, 76.50, 76.18, 76.90, 78.52, 76.42, 78.04, 78.45, 76.66, 76.99, 76.82, 78.93, 80.47, 82.42, 81.93, 79.99, 81.85, 82.10, 83.87, 81.52, 82.90, 83.39, 84.37, 83.71, 83.06, 83.47, 81.76, 80.88, 82.90, 81.85, 83.23, 83.23, 83.31, 81.85, 84.52, 81.77, 82.01, 81.44, 83.39, 82.98, 83.38, 82.26, 82.66, 83.30, 82.01, null, null, null, null, null, null, 84.20, 83.22, 83.80, 83.95, 83.71, 82.25, 82.66, 82.17, 81.85, 81.68, 81.60, 82.66, null, null, null, null, null, null, null, null, null, null],
-    aime24: [22.50, 12.50, 10.42, 12.92, 10.83, 11.67, 8.33, 9.17, 12.08, 12.08, 8.33, 9.17, 10.00, 14.58, 14.17, 26.67, 32.92, 30.42, 35.83, 34.17, 39.58, 34.58, 34.17, 33.33, 28.75, 31.25, 26.25, 32.92, 32.50, 27.92, 20.83, 25.83, 20.42, 23.33, 22.92, 24.17, 21.67, 23.75, 24.58, 19.58, 18.33, 22.08, 18.75, 10.83, 9.58, 11.67, 8.75, null, null, null, null, null, null, 15.42, 18.33, 17.92, 16.25, 16.25, 20.42, 20.83, 19.17, 15.42, 13.75, 10.00, 10.42, null, null, null, null, null, null, null, null, null, null],
-    aime25: [20.84, 19.17, 22.08, 20.84, 19.17, 20.00, 21.67, 21.25, 24.17, 19.17, 19.16, 20.41, 22.09, 21.67, 23.75, 32.50, 30.42, 34.58, 32.50, 32.50, 36.67, 34.17, 34.17, 30.42, 30.00, 32.92, 29.58, 31.25, 29.58, 24.17, 24.58, 26.25, 24.16, 25.83, 26.25, 27.08, 28.75, 27.08, 28.75, 25.41, 25.41, 23.34, 21.25, 18.34, 16.67, 17.09, null, null, null, null, null, null, null, 23.34, 24.17, 20.84, 22.09, 25.83, 18.33, 17.50, null, null, 15.42, 13.75, 16.25, null, null, null, null, null, null, null, null, null, null],
-    math500:[75.28, 72.42, 73.28, 72.98, 70.93, 72.25, 71.52, 70.80, 72.93, 72.60, 69.30, 69.17, 73.87, 74.08, 75.47, 85.85, 86.50, 86.80, 86.57, 87.45, 87.73, 86.52, 86.95, 86.20, 85.52, 85.67, 81.18, 85.00, 86.97, 83.55, 80.37, 81.20, 79.63, 80.82, 82.40, 84.20, 85.07, 84.08, 85.33, 83.50, 81.65, 82.92, 81.27, 76.20, 75.42, 77.35, null, null, null, null, null, null, null, 82.55, 80.50, 81.57, 81.97, 82.40, 83.67, 82.80, null, null, 77.92, 78.18, 76.88, null, null, null, null, null, null, null, null, null, null],
+    mmlu:   [76.91, 74.64, 76.67, 76.50, 76.18, 76.90, 78.52, 76.42, 78.04, 78.45, 76.66, 76.99, 76.82, 78.93, 80.47, 82.42, 81.93, 79.99, 81.85, 82.10, 83.87, 81.52, 82.90, 83.39, 84.37, 83.71, 83.06, 83.47, 81.76, 80.88, 82.90, 81.85, 83.23, 83.23, 83.31, 81.85, 84.52, 81.77, 82.01, 81.44, 83.39, 82.98, 83.38, 82.26, 82.66, 83.30, 82.01, 83.71, 82.66, 81.93, null, 83.14, null, 84.20, 83.22, 83.80, 83.95, 83.71, 82.25, 82.66, 82.17, 81.85, 81.68, 81.60, 82.66, 80.87, 81.44, 82.09, 82.98, 81.69, 82.09, 81.04, null, 82.42, null, 79.49, 79.66, 80.79, null, null, null, null, null, null, null, null, null, null, null, null, 75.45, 72.93, 72.53, 73.99, 72.77, 72.69, 72.37, 70.50, 68.97, null, null, null, null, null, null],
+    aime24: [22.50, 12.50, 10.42, 12.92, 10.83, 11.67, 8.33, 9.17, 12.08, 12.08, 8.33, 9.17, 10.00, 14.58, 14.17, 26.67, 32.92, 30.42, 35.83, 34.17, 39.58, 34.58, 34.17, 33.33, 28.75, 31.25, 26.25, 32.92, 32.50, 27.92, 20.83, 25.83, 20.42, 23.33, 22.92, 24.17, 21.67, 23.75, 24.58, 19.58, 18.33, 22.08, 18.75, 10.83, 9.58, 11.67, 8.75, 11.25, null, 17.92, null, 7.08, null, 15.42, 18.33, 17.92, 16.25, 16.25, 20.42, 20.83, 19.17, 15.42, 13.75, 10.00, 10.42, 11.67, 9.17, 10.83, 14.17, 15.83, 15.00, 15.83, null, 16.25, null, 14.58, null, 14.58, null, null, null, null, null, null, null, null, null, null, null, null, 5.00, 4.17, 2.92, 4.17, 3.33, 5.42, 2.08, 3.33, 2.92, null, null, null, null, null, null],
+    aime25: [20.84, 19.17, 22.08, 20.84, 19.17, 20.00, 21.67, 21.25, 24.17, 19.17, 19.16, 20.41, 22.09, 21.67, 23.75, 32.50, 30.42, 34.58, 32.50, 32.50, 36.67, 34.17, 34.17, 30.42, 30.00, 32.92, 29.58, 31.25, 29.58, 24.17, 24.58, 26.25, 24.16, 25.83, 26.25, 27.08, 28.75, 27.08, 28.75, 25.41, 25.41, 23.34, 21.25, 18.34, 16.67, 17.09, 13.33, 15.41, null, 17.50, null, 17.91, null, 23.34, 24.17, 20.84, 22.09, 25.83, 18.33, 17.50, 16.66, 16.66, 15.42, 13.75, 16.25, 15.00, 15.83, 15.83, 16.66, 14.58, 13.75, 15.00, null, 13.75, null, 10.83, null, 6.67, null, null, null, null, null, null, null, null, null, null, null, null, 8.34, 5.41, 8.33, 10.83, 7.50, 7.92, 7.08, 7.50, 5.83, null, null, null, null, null, null],
+    math500:[75.28, 72.42, 73.28, 72.98, 70.93, 72.25, 71.52, 70.80, 72.93, 72.60, 69.30, 69.17, 73.87, 74.08, 75.47, 85.85, 86.50, 86.80, 86.57, 87.45, 87.73, 86.52, 86.95, 86.20, 85.52, 85.67, 81.18, 85.00, 86.97, 83.55, 80.37, 81.20, 79.63, 80.82, 82.40, 84.20, 85.07, 84.08, 85.33, 83.50, 81.65, 82.92, 81.27, 76.20, 75.42, 77.35, 74.17, 76.43, null, 77.82, null, 78.00, null, 82.55, 80.50, 81.57, 81.97, 82.40, 83.67, 82.80, 82.03, 80.20, 77.92, 78.18, 76.88, 77.33, 75.98, 78.25, 80.30, 81.70, 79.80, 78.05, null, null, null, 77.52, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 70.55, 64.97, 65.65, 69.35, 65.75, 65.80, 63.20, 61.15, 61.70, null, null, null, null, null, null],
   },
 };
 
@@ -223,26 +223,26 @@ const EVAL_STAGE_S3_150 = {
     aime24: "evalscope/outputs/exp2card/e1_grpo_2b_s3_150/20260726_084042/reports/e1_grpo_2b_s3_150/aime24.json",
     aime25: "evalscope/outputs/exp2card/e1_grpo_2b_s3_150/20260726_084042/reports/e1_grpo_2b_s3_150/aime25.json",
     mmlu_temp: "evalscope/outputs/exp2card/e1_grpo_2b_s3_150/20260726_091746/reports/e1_grpo_2b_s3_150/mmlu.json",
-    bfcl_v3: "/data/juicefs-white/5281-gpu-a100/lijunyi/evalscope/outputs/agent2/20260731_200401/reports/e1_grpo_2b_s3_150/bfcl_v3.json",
-    tau_bench: "/data/juicefs-white/5281-gpu-a100/lijunyi/evalscope/outputs/agent2/20260726_112538/reports/e1_grpo_2b_s3_150/tau_bench.json",
+    bfcl_v3: "evalscope/outputs/agent2/20260726_110431/reports/e1_grpo_2b_s3_150/bfcl_v3.json",
+    tau_bench: "evalscope/outputs/agent2/20260726_112538/reports/e1_grpo_2b_s3_150/tau_bench.json",
   },
   rows: [
     { task: "aime24", metric: "AveragePass@1", num: 30, score: 23.75, detail: "default 23.75" },
     { task: "aime25", metric: "AveragePass@1", num: 30, score: 25.84, detail: "AIME2025-I 27.50 / AIME2025-II 24.17" },
     { task: "mmlu_temp", metric: "AverageAccuracy", num: 617, score: 76.98, detail: "anatomy 63.70 / medical_genetics 76.50 / high_school_mathematics 89.81 / machine_learning 62.50" },
-    { task: "BFCL-v3", metric: "AverageAccuracy", num: 288, score: 56.50, detail: "native-FC OVERALL 56.50%" },
+    { task: "BFCL-v3", metric: "AverageAccuracy", num: 288, score: 56.50, detail: "native-FC OVERALL 56.50" },
     { task: "tau_bench", metric: "Pass^1", num: 40, score: 55.00, detail: "retail 65.00 / airline 45.00" },
   ],
 };
 
-// ---- Agent BFCL / tool-use benchmarks (evalscope, auto-synced 2026-08-20) ----
-// Source: /data/juicefs-white/5281-gpu-a100/lijunyi/evalscope/outputs/agent2/<ts>/reports/<exp>_2b[<stage>]_<step>/{bfcl_v3,tau_bench}.json
+// ---- Agent BFCL / tool-use benchmarks (evalscope, auto-synced 2026-08-21) ----
+// Source: /data/juicefs-white/5281-gpu-a100/lijunyi/evalscope/outputs/agent2/<ts>/reports/<exp>_2b[<stage>]_<step> or opd_distill_2b_from_4b_easy_24k_<step> / opsd_distill_2b_from_2b_easy_24k_<step>/{{bfcl_v3,tau_bench}}.json
 // Coverage Easy: bfcl=75/75 · tau=75/75 · steps with any report: 10/20/30/40/50/60/70/80/90/100/110/120/130/140/150
 // Coverage S3: bfcl=75/75 · tau=75/75 · steps with any report: 10/20/30/40/50/60/70/80/90/100/110/120/130/140/150
 // Coverage V2: bfcl=15/150 · tau=25/150 · steps with any report: 10/20/30/40/50/60/70/80/90/100/110/120/130/140/150/160/170/180/190/200/210/220/230/240/250
 // BFCL-v3: 10 subset ×30；bfcl=OVERALL（或缺省 top-level）；bfcl_mt=MULTI_TURN（仅 native-FC）；S3 仅 native-FC；V2 OVERALL 可暂用 scorer-compat。
 // tau-bench: retail+airline×20，user-sim=gpt-5p5-apipro。null = 尚未评测。
-// Optional: AGENT_E24K / E32K / S124K / EXT_EASY / EXT_E24K / EXT_S1 when reports exist.
+// Optional: AGENT_E24K / E32K / S124K / EXT_EASY / EXT_E24K / EXT_S1 / OPD / OPSD when reports exist.
 // Refresh: python3 scripts/monitoring/2b/sync_2b_agent_dashboard.py
 
 const AGENT_EASY_STEPS = ["10", "20", "30", "40", "50", "60", "70", "80", "90", "100", "110", "120", "130", "140", "150"];
@@ -352,14 +352,14 @@ const AGENT_E24K = {
 const AGENT_E24K_ORDER = ["e2"];
 
 // ---- Agent Easy-32K (e*_2b_easy_32k_<step>; bfcl=32 tau=16; steps 10/20/30/40/50/60/70/80/90/100/110/120/130/140/150/160/170/180/190/200/210/220/230/240/250/260/270/280/290/300/310/540) ----
-const AGENT_E32K_STEPS = ["10", "20", "30", "40", "50", "60", "70", "80", "90", "100", "110", "120", "130", "140", "150", "160", "170", "180", "190", "200", "210", "220", "230", "240", "250", "260", "270", "280", "290", "300", "310", "320", "330", "340", "350", "360", "370", "380", "390", "400", "410", "420", "430", "440", "450", "460", "470", "480", "490", "500", "510", "520", "530", "540", "550", "560", "570", "580", "590", "600", "610", "620", "630", "640", "650", "660", "670", "680", "690", "700", "710", "720", "730", "740", "750"];
+const AGENT_E32K_STEPS = ["10", "20", "30", "40", "50", "60", "70", "80", "90", "100", "110", "120", "130", "140", "150", "160", "170", "180", "190", "200", "210", "220", "230", "240", "250", "260", "270", "280", "290", "300", "310", "320", "330", "340", "350", "360", "370", "380", "390", "400", "410", "420", "430", "440", "450", "460", "470", "480", "490", "500", "510", "520", "530", "540", "550", "560", "570", "580", "590", "600", "610", "620", "630", "640", "650", "660", "670", "680", "690", "700", "710", "720", "730", "740", "750", "760", "770", "780", "790", "800", "810", "820", "830", "840", "850", "860", "870", "880", "890", "900", "910", "920", "930", "940", "950", "960", "970", "980", "990", "1000", "1010", "1020", "1030", "1040", "1050"];
 
 const AGENT_E32K = {
   e2: {
     label: "E2 DAPO Easy-32K", color: COLORS.e2,
-    bfcl:   [49.1, 46.4, 43.6, 46.2, 47.1, 45.6, 45.9, 50.8, 49.4, 48.4, 49.7, 48.7, 48.4, 47.7, 47.0, 47.7, 50.8, 52.5, 49.0, 50.3, 50.4, 54.3, 49.4, 49.3, 49.6, 51.3, 51.9, 51.2, 45.8, 48.0, 52.4, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 47.7, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
-    bfcl_mt:[12.8, 5.6, 6.1, 7.2, 9.4, 8.3, 10.0, 13.3, 13.3, 11.7, 9.4, 15.0, 11.7, 11.1, 6.7, 8.3, 11.7, 11.7, 6.7, 4.5, 13.3, 11.7, 10.6, 7.8, 10.0, 8.3, 10.6, 10.0, 12.8, 11.1, 12.2, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 14.4, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
-    tau:    [32.5, 0.0, 47.5, 35.0, 35.0, 47.5, 42.5, 40.0, 45.0, 42.5, 42.5, 47.5, 52.5, 42.5, 57.5, null, null, null, null, null, 42.5, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
+    bfcl:   [49.1, 46.4, 43.6, 46.2, 47.1, 45.6, 45.9, 50.8, 49.4, 48.4, 49.7, 48.7, 48.4, 47.7, 47.0, 47.7, 50.8, 52.5, 49.0, 50.3, 50.4, 54.3, 49.4, 49.3, 49.6, 51.3, 51.9, 51.2, 45.8, 48.0, 52.4, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 47.7, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
+    bfcl_mt:[12.8, 5.6, 6.1, 7.2, 9.4, 8.3, 10.0, 13.3, 13.3, 11.7, 9.4, 15.0, 11.7, 11.1, 6.7, 8.3, 11.7, 11.7, 6.7, 4.5, 13.3, 11.7, 10.6, 7.8, 10.0, 8.3, 10.6, 10.0, 12.8, 11.1, 12.2, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 14.4, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
+    tau:    [32.5, 0.0, 47.5, 35.0, 35.0, 47.5, 42.5, 40.0, 45.0, 42.5, 42.5, 47.5, 52.5, 42.5, 57.5, null, null, null, null, null, 42.5, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
   },
 };
 
@@ -406,3 +406,17 @@ const AGENT_EXT_S1 = {
 };
 
 const AGENT_EXT_S1_ORDER = ["e2"];
+
+// ---- Agent OPD (opd_distill_2b_from_4b_easy_24k_<step>; bfcl=50 tau=49; steps 10/20/30/40/50/60/70/80/90/100/110/120/130/140/150/160/170/180/190/200/210/220/230/240/250/260/270/280/290/300/310/320/330/340/350/360/370/380/390/400/410/420/430/440/450/460/470/480/490/500) ----
+const AGENT_OPD_STEPS = ["10", "20", "30", "40", "50", "60", "70", "80", "90", "100", "110", "120", "130", "140", "150", "160", "170", "180", "190", "200", "210", "220", "230", "240", "250", "260", "270", "280", "290", "300", "310", "320", "330", "340", "350", "360", "370", "380", "390", "400", "410", "420", "430", "440", "450", "460", "470", "480", "490", "500"];
+
+const AGENT_OPD = {
+  e2: {
+    label: "OPD 2B←4B easy 24K", color: COLORS.opd,
+    bfcl:   [43.1, 48.1, 53.2, 51.2, 50.4, 47.1, 50.4, 48.3, 53.3, 50.4, 47.8, 48.8, 50.2, 46.0, 50.0, 47.1, 50.5, 47.4, 49.9, 45.4, 53.6, 46.4, 50.2, 47.3, 48.1, 49.5, 50.1, 46.6, 49.0, 48.8, 50.6, 49.8, 48.4, 48.0, 47.1, 48.0, 47.6, 52.2, 48.9, 50.4, 50.6, 47.3, 49.6, 50.6, 48.0, 47.5, 48.1, 45.6, 49.6, 50.6],
+    bfcl_mt:[7.8, 10.5, 10.6, 11.1, 13.3, 7.8, 11.1, 6.7, 12.2, 7.8, 5.6, 9.4, 13.9, 7.8, 7.8, 12.8, 12.8, 12.8, 10.6, 9.4, 13.9, 14.4, 13.9, 11.1, 15.0, 12.8, 13.3, 4.5, 11.1, 8.9, 11.1, 12.8, 15.0, 12.8, 12.2, 8.9, 11.7, 15.6, 12.2, 12.8, 15.6, 13.3, 12.2, 15.6, 12.8, 11.7, 13.9, 12.8, 16.1, 12.2],
+    tau:    [37.5, 37.5, 40.0, 55.0, 50.0, 52.5, 45.0, 50.0, 55.0, 45.0, 57.5, 40.0, 42.5, 42.5, 42.5, 47.5, 45.0, 57.5, 45.0, 52.5, 57.5, 37.5, 55.0, 50.0, 50.0, 42.5, 45.0, 57.5, 52.5, 40.0, 52.5, 50.0, 50.0, 50.0, 45.0, 35.0, 50.0, null, 40.0, 50.0, 47.5, 60.0, 52.5, 52.5, 47.5, 45.0, 42.5, 45.0, 52.5, 47.5],
+  },
+};
+
+const AGENT_OPD_ORDER = ["e2"];
