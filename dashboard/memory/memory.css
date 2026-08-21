@@ -1,0 +1,120 @@
+/* 训练 / 推理显存页 */
+
+.vram-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  margin: 10px 0 6px;
+  font-size: 12.5px;
+  color: var(--text-secondary);
+}
+.vram-legend i {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  margin-right: 6px;
+  vertical-align: -1px;
+}
+.vram-row {
+  margin: 12px 0 16px;
+}
+.vram-row .lbl {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 13px;
+  font-weight: 650;
+  margin-bottom: 6px;
+}
+.vram-row .lbl span {
+  font-weight: 500;
+  color: var(--text-secondary);
+  font-size: 12.5px;
+}
+.vram-track {
+  display: flex;
+  height: 22px;
+  border-radius: 6px;
+  overflow: hidden;
+  background: #e5e7eb;
+  border: 1px solid var(--border);
+}
+.vram-seg { height: 100%; }
+.vram-w { background: #2563eb; }
+.vram-kv { background: #059669; }
+.vram-enc { background: #d97706; }
+.vram-roll { background: #9333ea; }
+.vram-act { background: #db2777; }
+.vram-grad { background: #0891b2; }
+.vram-opt { background: #64748b; }
+.vram-actv { background: #e11d48; }
+.phase-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin: 14px 0 4px;
+}
+@media (max-width: 720px) { .phase-grid { grid-template-columns: 1fr; } }
+.phase-card {
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: 12px;
+  padding: 12px 14px;
+  background: #fff;
+}
+.phase-card h4 {
+  margin: 0 0 6px;
+  font-size: 14px;
+}
+.algo-section h3 {
+  font-size: 17px;
+  font-weight: 650;
+  margin: 28px 0 8px;
+  color: var(--algo-ink, #14181f);
+}
+.algo-section h4 {
+  font-size: 14px;
+  font-weight: 650;
+  margin: 18px 0 8px;
+  color: var(--algo-ink, #14181f);
+}
+.algo-section .sub-lede {
+  font-size: 13.5px;
+  color: var(--text-secondary);
+  margin: 0 0 14px;
+  line-height: 1.6;
+}
+.algo-toc .toc-sub {
+  list-style: none;
+  margin: 0 0 2px 22px;
+  padding: 0;
+}
+.algo-toc .toc-sub a {
+  display: block;
+  grid-template-columns: none;
+  padding: 5px 10px;
+  font-size: 12.5px;
+  color: var(--text-secondary);
+  border-left: 3px solid transparent;
+  text-decoration: none;
+  border-radius: 8px;
+}
+.algo-toc .toc-sub a:hover {
+  background: rgba(20, 24, 31, 0.04);
+}
+.phase-card p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+.vram-note {
+  font-size: 12.5px;
+  color: var(--text-secondary);
+  margin: 4px 0 0;
+  line-height: 1.55;
+}
+.num { font-variant-numeric: tabular-nums; font-weight: 650; }
+.ok { color: #059669; }
+.warn { color: #b45309; }
+.bad { color: #dc2626; }

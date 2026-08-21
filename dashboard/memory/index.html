@@ -1,0 +1,408 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>显存 — 训练 / 推理 · A100-80GB</title>
+<link rel="stylesheet" href="../common/base.css">
+<link rel="stylesheet" href="../algo/algo.css">
+<link rel="stylesheet" href="memory.css?v=20260821174000">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+</head>
+<body class="algo-body">
+
+<div class="site-header">
+  <div class="site-header-inner">
+    <a class="site-brand" href="../index.html"><span class="dot">●</span> RL 实验看板</a>
+    <div class="site-nav">
+      <a href="../index.html">总览</a>
+      <a href="../algo/index.html">算法介绍</a>
+      <a href="../benchmark/index.html">Benchmark 介绍</a>
+      <a href="../dataset/index.html">数据集介绍</a>
+      <a href="../2b/index.html">2B 训练</a>
+      <a href="../4b/index.html">4B 训练</a>
+      <a href="../mm/index.html">多模态训练</a>
+      <a href="../memory/index.html" class="active">显存</a>
+      <a href="../conclusion/index.html">综合结论</a>
+      <a href="../issues/index.html">问题</a>
+      <a href="../chronicle/index.html">实验日志</a>
+    </div>
+  </div>
+</div>
+
+<div class="algo-page algo-page-with-toc">
+  <header class="algo-hero">
+    <div class="algo-hero-text">
+      <p class="algo-kicker">Hardware · A100-SXM4-80GB</p>
+      <h1>训练与推理显存</h1>
+      <p class="lede">
+        卡都是 80GB。训练把一张卡切成 FSDP actor + vLLM rollout；离线评测只跑 vLLM。
+        数字来自脚本配置与 2026-08-20/21 MM eval 日志 / nvtop，不是理论峰值。
+      </p>
+    </div>
+  </header>
+
+  <div class="algo-layout">
+  <nav class="algo-toc" aria-label="目录">
+    <p class="toc-heading">目录</p>
+    <ol class="toc-list">
+      <li><a href="#sec-one"><span class="toc-num">0</span><span class="toc-title">一张卡怎么切</span></a></li>
+      <li><a href="#sec-train"><span class="toc-num">1</span><span class="toc-title">训练</span></a>
+        <ol class="toc-sub">
+          <li><a href="#sec-w">权重</a></li>
+          <li><a href="#sec-adam">梯度 / Adam</a></li>
+          <li><a href="#sec-act">激活</a></li>
+          <li><a href="#sec-kv">KV</a></li>
+        </ol>
+      </li>
+      <li><a href="#sec-infer"><span class="toc-num">2</span><span class="toc-title">离线推理</span></a></li>
+      <li><a href="#sec-break"><span class="toc-num">3</span><span class="toc-title">2B VL 拆开看</span></a></li>
+      <li><a href="#sec-why"><span class="toc-num">4</span><span class="toc-title">为什么 MM 不能 pack</span></a></li>
+    </ol>
+  </nav>
+
+  <div class="algo-main">
+
+  <section class="algo-section" id="sec-one">
+    <h2>一张卡怎么切</h2>
+    <p class="sec-sub">80GB 标尺 · 训练留一半给 rollout · 评测把整卡给 KV</p>
+    <p>
+      <code>gpu_memory_utilization</code> 是 vLLM <strong>在「它看见的空闲显存」里再订多少</strong>，不是整卡的 50%。
+      训练时 actor/ref 已经占了一截，rollout=0.5 大约还能拿到 30–40GB KV。
+      评测时卡上几乎只有一个引擎，0.8 就会订走约 63GB。
+    </p>
+    <div class="vram-legend">
+      <span><i class="vram-w"></i>权重</span>
+      <span><i class="vram-grad"></i>梯度</span>
+      <span><i class="vram-opt"></i>Adam 状态</span>
+      <span><i class="vram-actv"></i>激活</span>
+      <span><i class="vram-kv"></i>vLLM KV</span>
+      <span><i class="vram-enc"></i>encoder cache（图）</span>
+    </div>
+  </section>
+
+  <section class="algo-section" id="sec-train">
+    <h2>训练</h2>
+    <p class="sec-sub">同一套 rollout.n=8、response 16K；2B 开 offload，4B 关</p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>赛道</th>
+            <th>卡数</th>
+            <th>FSDP</th>
+            <th>param / optim offload</th>
+            <th>rollout util</th>
+            <th>rollout 其它</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>2B 文本 E1–E5</td>
+            <td>2×A100</td>
+            <td>fsdp_size=2</td>
+            <td>True / True</td>
+            <td class="num">0.5</td>
+            <td>vLLM TP=1</td>
+          </tr>
+          <tr>
+            <td>MM M1–M3（同 2B 规格）</td>
+            <td>2×A100</td>
+            <td>fsdp_size=2</td>
+            <td>True / True</td>
+            <td class="num">0.5</td>
+            <td><code>enforce_eager=True</code>（无 CUDA Graph）</td>
+          </tr>
+          <tr>
+            <td>4B 文本 E1–E5</td>
+            <td>4×A100</td>
+            <td>fsdp_size=4</td>
+            <td>False / False</td>
+            <td class="num">0.5</td>
+            <td>权重留在 GPU，4 卡摊</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="vram-note">
+      来源：<code>scripts/train/experiments_2b/run_2b_exp_stage.sh</code>（<code>GPU_MEMORY_UTILIZATION=0.5</code>、<code>PARAM_OFFLOAD=True</code>）、
+      <code>vlm_exp/scripts/train/run_mm_mix_2b.sh</code>（rollout 0.5 + eager）、
+      <code>scripts/train/experiments_4b/run_4b_exp_stage.sh</code>（4 卡、<code>PARAM_OFFLOAD=False</code>）。
+      2B/MM 把参数和优化器卸到 CPU，是为了给 16K×n=8 的 rollout KV 腾地方；4B 用 4 卡换不 offload。
+    </p>
+
+    <h3 id="sec-w">权重</h3>
+    <p class="sub-lede">一个参数 fp16 / bf16 占 2 个字节。不跟 batch、seq 走。</p>
+    <div class="formula-block">
+      <p class="formula-label">权重 = 参数个数 × 2 字节</p>
+      <div class="formula">$$\text{2B:}\quad 2.27{\times}10^{9}\times 2\,\mathrm{B} = 4.24\,\mathrm{GiB}$$</div>
+      <div class="formula">$$\text{4B:}\quad 4.66{\times}10^{9}\times 2\,\mathrm{B} = 8.68\,\mathrm{GiB}\ \text{（含 vision）}$$</div>
+      <p class="formula-note">
+        参数个数来自 safetensors 字节 $/2$。FSDP 按卡数切开：2B 两卡各约 2.1G，4B 四卡各约 2.2G。
+      </p>
+    </div>
+
+    <h3 id="sec-adam">梯度 / Adam</h3>
+    <p class="sub-lede">训练时另两份跟参数个数走的状态，不是权重本身。2B 卸到 CPU，4B 留在卡上。</p>
+    <div class="formula-block">
+      <p class="formula-label">梯度同样 × 2 字节；Adam 的 m、v 各 4 字节（fp32），合计 × 8 字节</p>
+      <div class="formula">$$\text{2B 梯度:}\quad 2.27{\times}10^{9}\times 2\,\mathrm{B} = 4.24\,\mathrm{GiB}$$</div>
+      <div class="formula">$$\text{2B Adam:}\quad 2.27{\times}10^{9}\times 8\,\mathrm{B} = 16.96\,\mathrm{GiB}\ \text{（卸到 CPU）}$$</div>
+      <div class="formula">$$\text{4B 梯度:}\quad 4.66{\times}10^{9}\times 2\,\mathrm{B} = 8.68\,\mathrm{GiB}$$</div>
+      <div class="formula">$$\text{4B Adam:}\quad 4.66{\times}10^{9}\times 8\,\mathrm{B} = 34.72\,\mathrm{GiB}\ \text{（4 卡，每卡 }8.68\,\mathrm{GiB}\text{）}$$</div>
+    </div>
+
+    <h3 id="sec-act">激活</h3>
+    <p class="sub-lede">跟 micro-batch $B$、序列长 $S$、隐层 $H$ 成正比。一步 256 条不进这条公式——反传 $B{=}1$。</p>
+    <div class="formula-block">
+      <p class="formula-label">batch 与 seq</p>
+      <div class="formula">$$N_{\mathrm{seq}} = B_{\mathrm{train}}\times n = 32\times 8 = 256$$</div>
+      <div class="formula">$$S = S_{\mathrm{prompt}}+S_{\mathrm{resp}} = 1024+16384 = 17408$$</div>
+      <div class="formula">$$B = B_{\mathrm{micro/gpu}} = 1$$</div>
+      <p class="formula-label">一层激活（bf16）</p>
+      <div class="formula">$$M_{\mathrm{res}} = B\,S\,H\cdot 2,\qquad M_{\mathrm{mlp}} = B\,S\,I\cdot 4$$</div>
+      <p class="formula-label">checkpoint 开 / 关</p>
+      <div class="formula">$$M_{\mathrm{act}}^{\mathrm{ckpt}} \approx M_{\mathrm{res}}+M_{\mathrm{mlp}},\qquad M_{\mathrm{act}}^{\mathrm{no}} \approx L\,(M_{\mathrm{res}}+M_{\mathrm{mlp}})$$</div>
+      <p class="formula-label">未分块的 logits（脚本已 chunk，峰值不走这条）</p>
+      <div class="formula">$$M_{\mathrm{logits}} = B\,S\,V\cdot 2$$</div>
+      <p class="formula-note">
+        $I$ 为 MLP intermediate；$M_{\mathrm{mlp}}$ 的 $4{=}2$ 字节 $\times$ gate+up。
+        2B：$H{=}2048$，$I{=}6144$，$L{=}24$ → $M_{\mathrm{res}}{=}68$&nbsp;MiB，$M_{\mathrm{mlp}}{=}408$&nbsp;MiB；checkpoint 峰值约一层，不开则 $\times 24$。
+        4B：$H{=}2560$，$I{=}9216$，$L{=}32$ → $85$&nbsp;MiB + $612$&nbsp;MiB。
+        $V{=}248320$ 时 $M_{\mathrm{logits}}{=}8.05$&nbsp;GiB，因此 <code>entropy_from_logits_with_chunking=True</code>。
+        MM 另加 ViT：$P{\approx}2304$ patch、$H_{\mathrm{vit}}{=}1024$，一层约 $P H_{\mathrm{vit}}\cdot 2 \approx 4.7$&nbsp;MiB，相对 $S{=}17$K 可忽略；图 token 进 LLM 后算进 $S$。
+      </p>
+    </div>
+
+    <h3 id="sec-kv">KV</h3>
+    <p class="sub-lede">只计 full attention。跟并发条数和当前长度成正比，是训练时最大的一块。</p>
+    <div class="formula-block">
+      <p class="formula-label">每 token（K+V，bf16）</p>
+      <div class="formula">$$m = n_{\mathrm{full}}\cdot n_{\mathrm{kv}}\cdot d\cdot 2\cdot 2$$</div>
+      <p class="formula-label">一步打满 max seq</p>
+      <div class="formula">$$M_{\mathrm{KV}} = N_{\mathrm{seq}}\cdot S\cdot m$$</div>
+      <p class="formula-label">每卡（TP 或数据并行均分）</p>
+      <div class="formula">$$M_{\mathrm{KV}}^{\mathrm{gpu}} = \frac{M_{\mathrm{KV}}}{N_{\mathrm{gpu}}}$$</div>
+      <p class="formula-note">
+        $n_{\mathrm{full}}$ = full attn 层数（interval=4）；$d{=}256$。GDN/linear 是常数量级 state，不进 $m$。
+        2B：$n_{\mathrm{full}}{=}6$，$n_{\mathrm{kv}}{=}2$ → $m{=}12$&nbsp;KiB/token；$M_{\mathrm{KV}}{=}256\times 17408\times 12\,\mathrm{KiB}{=}51.0$&nbsp;GiB；TP=1、2 卡 → 每卡 $25.5$&nbsp;GiB。
+        4B：$n_{\mathrm{full}}{=}8$，$n_{\mathrm{kv}}{=}4$ → $m{=}32$&nbsp;KiB/token；$M_{\mathrm{KV}}{=}136$&nbsp;GiB；TP=4 → 每卡 $34.0$&nbsp;GiB。
+        实际长度往往 &lt; $S$，上式是上界；vLLM 再按空闲显存的 $0.5$ 预订。
+      </p>
+    </div>
+  </section>
+
+  <section class="algo-section" id="sec-infer">
+    <h2>离线推理（评测）</h2>
+    <p class="sec-sub">Qwen3.5-2B VL merged · 实测 2026-08-20/21</p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>形态</th>
+            <th>util</th>
+            <th>nvtop 占用</th>
+            <th>权重</th>
+            <th>KV</th>
+            <th>KV token</th>
+            <th>~并发（/max_len）</th>
+            <th>GPU 利用率</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>MM Geo3K 独占（eager，17408）</td>
+            <td class="num">0.80</td>
+            <td class="num">63.9 GiB</td>
+            <td class="num">4.25 GiB</td>
+            <td class="num">57.25 GiB</td>
+            <td class="num">4.57M</td>
+            <td class="num">~263</td>
+            <td>23–25%（长尾 decode）</td>
+          </tr>
+          <tr>
+            <td>MM 文本独占（Graph，24576）</td>
+            <td class="num">~0.85</td>
+            <td class="num">67.1 GiB</td>
+            <td class="num">4.25 GiB</td>
+            <td class="num">60.85 GiB</td>
+            <td class="num">4.90M</td>
+            <td class="num">~199</td>
+            <td class="ok">90–100%</td>
+          </tr>
+          <tr>
+            <td>MM 同卡两路（抄 Easy pack）</td>
+            <td class="num">0.42 ×2</td>
+            <td class="num">33.1+33.1 GiB</td>
+            <td class="num">4.25×2</td>
+            <td class="num">26.82×2 GiB</td>
+            <td class="num">2.16M ×2</td>
+            <td class="num">~88 ×2</td>
+            <td class="warn">各 ~33–66%</td>
+          </tr>
+          <tr>
+            <td>Easy-32K 文本 pack（脚本设计）</td>
+            <td class="num">0.42 ×2</td>
+            <td>约 2×33 GiB</td>
+            <td>~4 GiB×2</td>
+            <td>短答吃不满</td>
+            <td>—</td>
+            <td>—</td>
+            <td class="ok">独占一路约 40% 忙 → pack 吃空 SM</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="vram-row">
+      <div class="lbl">MM Geo 独占<span>63.9 / 80 GiB  · KV 57.25</span></div>
+      <div class="vram-track">
+        <div class="vram-seg vram-w" style="width:5.3%"></div>
+        <div class="vram-seg vram-enc" style="width:0.5%"></div>
+        <div class="vram-seg vram-kv" style="width:71.6%"></div>
+      </div>
+    </div>
+    <div class="vram-row">
+      <div class="lbl">MM 文本独占<span>67.1 / 80 GiB  · KV 60.85</span></div>
+      <div class="vram-track">
+        <div class="vram-seg vram-w" style="width:5.3%"></div>
+        <div class="vram-seg vram-kv" style="width:76.1%"></div>
+      </div>
+    </div>
+    <div class="vram-row">
+      <div class="lbl">MM 同卡两路<span>33.1 + 33.1 / 80 GiB</span></div>
+      <div class="vram-track">
+        <div class="vram-seg vram-w" style="width:5.3%"></div>
+        <div class="vram-seg vram-kv" style="width:33.5%"></div>
+        <div class="vram-seg vram-w" style="width:5.3%"></div>
+        <div class="vram-seg vram-kv" style="width:33.5%"></div>
+      </div>
+      <p class="vram-note">两份权重、两份 KV。并发从 199 砍到 88，MATH L3 从 15 min 变成 40 min。</p>
+    </div>
+
+    <p class="vram-note">
+      fail=12：空闲只剩 <span class="num">11.58 / 79.14 GiB</span>，0.8 需要 <span class="num">63.31 GiB</span>，第二路起不来。
+      Geo 一步还要 <strong>杀引擎再拉文本 server</strong>，权重 4.25 GiB 装两次。
+    </p>
+  </section>
+
+  <section class="algo-section" id="sec-break">
+    <h2>2B VL 拆开看</h2>
+    <p class="sec-sub">图只多一段 prefix KV；大头仍是 decode 的长度</p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>块</th>
+            <th>怎么算 / 日志</th>
+            <th>占用</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>HF 权重</td>
+            <td><code>model.safetensors</code> 4.12 GiB；vLLM「Model loading took 4.25 GiB」</td>
+            <td class="num">4.25 GiB</td>
+          </tr>
+          <tr>
+            <td>Encoder cache 预算 16384 token</td>
+            <td>16384 × hidden 2048 × bf16 2B</td>
+            <td class="num">64 MiB</td>
+          </tr>
+          <tr>
+            <td>一张 Geo 图（encoder 里）</td>
+            <td>~576 visual token × hidden 2048 × bf16</td>
+            <td class="num">~2.25 MiB</td>
+          </tr>
+          <tr>
+            <td>同一张图进 LLM 后的 prefix KV</td>
+            <td>576 × 12 KiB/token（只计 6 层 full attn）</td>
+            <td class="num">~6.8 MiB / 条</td>
+          </tr>
+          <tr>
+            <td>128 条图 prefix KV</td>
+            <td>若一批全带图</td>
+            <td class="num">~0.85 GiB</td>
+          </tr>
+          <tr>
+            <td>128 条打满 16K decode KV</td>
+            <td>128 × 17408 × 12 KiB</td>
+            <td class="num">~25 GiB</td>
+          </tr>
+          <tr>
+            <td>Geo KV</td>
+            <td>util 0.8、max_len 17408、eager</td>
+            <td class="num">57.25 GiB</td>
+          </tr>
+          <tr>
+            <td>文本 KV</td>
+            <td>max_len 24576</td>
+            <td class="num">60.85 GiB</td>
+          </tr>
+          <tr>
+            <td>Geo 工作量</td>
+            <td>601 题 × n=8 = 4808 条，一批 128，5–11 min/批</td>
+            <td>~7 h / step</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="algo-section" id="sec-why">
+    <h2>为什么 Easy-32K 能 pack、MM 不能</h2>
+    <p class="sec-sub">Geo 用不满 KV；MM 文本会把 KV 打满</p>
+
+    <h3>1. Geo：长尾 decode，真正用到的 KV 不多</h3>
+    <p>
+      一批 128 条。即便 128 条都打到 17K，KV 也只有
+      \(128 \times 17408 \times 12\,\mathrm{KiB} \approx 25\,\mathrm{GiB}\)。
+      独占却订了 <strong>57 GiB</strong>（按 263 条打满来的），多出来的是预留，不是正在用的。
+      长尾时短序列已经结束，活着的更少，瞬时 KV 更低。
+      GPU 23–25%：慢在等最长那几条 decode，<strong>不是 KV 容量</strong>。
+      所以把 util 砍到 0.42（约 27 GiB）对 Geo 几乎没影响——25 GiB 还是装得下这一批。
+    </p>
+
+    <h3>2. MM 文本：并发高，把 KV 打满了——砍了才疼</h3>
+    <p>
+      evalscope 会把很多请求堆进 vLLM（batch=10 只是 HTTP 侧，引擎里连续批处理）。
+      独占 KV <strong>60.85 GiB ≈ 199 条</strong>，GPU <strong>90–100%</strong>：并发已经把 KV 池用满，算力也打满。
+      0.42×2 之后每路只剩 ≈ <strong>88 条</strong>，并发腰斩，MATH L3 15 min → 40 min。
+    </p>
+
+    <h3>3. 那 Easy-32K pack 为什么能快约一倍</h3>
+    <p>
+      协议不一样：Easy 的 MMLU 是 <strong>n=2</strong> 选择题，生成很快结束（几十个 token，不是 16K）；
+      MM formal 的 MMLU 也是 <strong>n=8</strong>，再加同样 n=8 的长 MATH。
+      Easy 独占 util 0.90 订了约 73GB，但 GPU 只有约 <strong>40%</strong>——KV 订满、活 token 很少，卡在「活着的短请求不够、SM 空转」。
+      再塞一路 0.42：短序列本来就装得下，两路把空转的 SM 吃掉，墙钟大约 ×2。
+      MM 文本已经 90–100%，没有空转可吃，再切 KV 只会更慢。
+    </p>
+    <p class="vram-note">
+      不是 HTTP <code>batch-size</code>：Easy 默认 64，MM 文本才 10，Easy 一次塞得更多。
+      KV = 同时活着的条数 × 当前长度。差在 MMLU <strong>n=2 短答</strong> vs <strong>n=8 长生成</strong>，活 token 差两个数量级。
+      Geo：KV 用不满，慢在长尾 decode。Easy pack：KV 也用不满，空的是 SM。MM 文本：KV 和 SM 都满了，pack 把并发 199→88。
+    </p>
+  </section>
+
+  </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  renderMathInElement(document.body, {
+    delimiters: [
+      {left: "$$", right: "$$", display: true},
+      {left: "\\[", right: "\\]", display: true},
+      {left: "$", right: "$", display: false},
+      {left: "\\(", right: "\\)", display: false}
+    ],
+    throwOnError: false
+  });
+});
+</script>
+</body>
+</html>
