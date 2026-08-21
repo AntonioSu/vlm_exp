@@ -61,6 +61,7 @@
       <a href="2b/index.html">2B 训练</a>
       <a href="4b/index.html">4B 训练</a>
       <a href="mm/index.html">多模态训练</a>
+      <a href="memory/index.html">显存</a>
       <a href="conclusion/index.html">综合结论</a>
       <a href="issues/index.html">问题</a>
       <a href="chronicle/index.html">实验日志</a>
@@ -102,7 +103,7 @@
       </div>
       <div class="intro-item">
         <h4>看板怎么读</h4>
-        <p>「算法介绍」讲定义与权衡；「Benchmark 介绍」说明 AIME / MMLU / BFCL / tau-bench 怎么判分；「数据集介绍」说明 Easy-Boxed / S1–S3 / mix band 各池从哪来、怎么用；「2B / 4B 训练」放训练曲线与评测对比；「综合结论」按 Model Size / Param / MM / Algorithm 四轴汇总；「多模态训练」展示执行状态与评测；「问题」汇总环境 / 奖励 / 信号 / 评测踩坑；「实验日志」按时间线记节点。下方卡片按入口进入。</p>
+        <p>「算法介绍」讲定义与权衡；「Benchmark 介绍」说明 AIME / MMLU / BFCL / tau-bench 怎么判分；「数据集介绍」说明 Easy-Boxed / S1–S3 / mix band 各池从哪来、怎么用；「2B / 4B 训练」放训练曲线与评测对比；「综合结论」按 Model Size / Param / MM / Algorithm 四轴汇总；「多模态训练」展示执行状态与评测；「显存」对照训练 rollout 与离线评测占用；「问题」汇总环境 / 奖励 / 信号 / 评测踩坑；「实验日志」按时间线记节点。下方卡片按入口进入。</p>
       </div>
       <div class="intro-item">
         <h4>数据与复现</h4>
@@ -151,10 +152,10 @@
         <div class="go">进入 →</div>
         <div class="kicker">Track 1 · Language Model</div>
         <h3>2B 训练监控</h3>
-        <p class="desc">Qwen3.5-2B · 2×A100-80GB · 16K 非思考模式 · E1–E5 五组算法对比；V2 / 长度消融 / Ext 续训已接入看板。</p>
+        <p class="desc">Qwen3.5-2B · 2×A100-80GB · 16K 非思考模式 · E1–E5 五组算法对比；V2 / 长度消融 / Ext / OPD / OPSD 已接入看板。</p>
         <div class="stat-row">
           <span><b>E1–E5</b> Easy-Boxed / S3 完成 · V2 E1 250/300</span>
-          <span>Easy-24K 321 · Easy-32K 1053 · OPD 500 · Ext 三臂满 300</span>
+          <span>Easy-24K 321 · Easy-32K 1053 · OPD 500 · OPSD 87 · Ext 三臂满 300</span>
           <span>峰值 aime25 <b>38.33%</b>（E5@130）</span>
         </div>
       </a>
@@ -180,8 +181,21 @@
         <p class="desc">固定 GRPO，只改图文占比（0/20/50/100%）。M1/M2/M3 训练曲线已同步；formal 离线评测从 step10 起在 GPU0–3 补齐。</p>
         <div class="stat-row">
           <span><b>M0 formal</b> Geo3K <b>57.3%</b> · MATH-500 <b>86.4%</b></span>
-          <span><b>M1@50</b> Geo3K <b>66.6%</b> · <b>M2@100</b> <b>73.1%</b> · <b>M3@50</b> <b>55.4%</b></span>
-          <span>M2 Geo 新高 · M3 继续回落</span>
+          <span><b>M1@70</b> Geo3K <b>68.3%</b> · <b>M2@130</b> <b>73.8%</b> · <b>M3@90</b> <b>52.6%</b></span>
+          <span>M2 Geo 新高 · M3 续跌</span>
+        </div>
+      </a>
+
+      <a class="track-card" href="memory/index.html">
+        <div class="bar" style="background:#7c3aed"></div>
+        <div class="go">进入 →</div>
+        <div class="kicker">Hardware · Train vs Infer</div>
+        <h3>训练与推理显存</h3>
+        <p class="desc">80GB 怎么切：训练 FSDP + rollout 0.5；评测独占 vs 同卡两路。Easy-32K 能 pack，MM formal 不能。</p>
+        <div class="stat-row">
+          <span>2B 权重 <b>4.25 GiB</b></span>
+          <span>Geo KV <b>57.3 GiB</b> · 文本 KV <b>60.9 GiB</b></span>
+          <span>独占 67 GiB / pack 33+33</span>
         </div>
       </a>
 
@@ -203,11 +217,10 @@
         <div class="go">进入 →</div>
         <div class="kicker">Ops · Silent failures · Science debt</div>
         <h3>项目问题</h3>
-        <p class="desc">环境、奖励接线、训练信号、评测链路踩过的坑。按「现在还会不会再踩」排列，可按类别筛选。</p>
+        <p class="desc">按「你在做什么」分六章：读曲线前、环境、训练对照、训练挂了、评测跑不通、实验边界。左侧目录可跳到章或单条。</p>
         <div class="stat-row">
-          <span><b>26</b> 条</span>
-          <span>仍会踩 <b>4</b> · 运维未解 <b>3</b></span>
-          <span>科学债 <b>8</b></span>
+          <span><b>6</b> 章 · <b>26</b> 条</span>
+          <span>目录可跳</span>
         </div>
       </a>
 
@@ -218,8 +231,8 @@
         <h3>实验日志</h3>
         <p class="desc">时间线记录训练跑满、评测同步、看板与环境节点。空心绿圆 + 竖线，按日倒序追加。</p>
         <div class="stat-row">
-          <span><b>最新</b> 2026-08-20 10:00 看板更新</span>
-          <span>M2@100 Geo3K 73.1% · M3@50 55.4%</span>
+          <span><b>最新</b> 2026-08-21 17:23 显存拆分</span>
+          <span>OPSD 接入 E2 · 87/500</span>
         </div>
       </a>
 
