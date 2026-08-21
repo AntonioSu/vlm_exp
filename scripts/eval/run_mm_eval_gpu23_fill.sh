@@ -112,7 +112,7 @@ run_worker() {
   local gpu=$1 port=$2
   shift 2
   local exps=("$@")
-  local label="gpu${gpu}"
+  local label="${WORKER_LABEL:-gpu${gpu}}"
   local fail=0 skip=0 ok=0
   local steps=("${STEPS[@]}")
   if [[ -n "${STEPS_OVERRIDE:-}" ]]; then
@@ -121,6 +121,7 @@ run_worker() {
   export CUDA_VISIBLE_DEVICES="${gpu}"
   export PORT="${port}"
   export TP_SIZE
+  export VLLM_GPU_MEM_UTIL="${VLLM_GPU_MEM_UTIL:-0.85}"
   export NO_PROXY="${NO_PROXY:-127.0.0.1,localhost,::1}"
   export no_proxy="${no_proxy:-127.0.0.1,localhost,::1}"
   export WORKSPACE_ROOT POLARIS VLM_EXP EVALSCOPE
@@ -148,9 +149,12 @@ run_worker() {
       local run_log=${LOG_DIR}/${label}_${exp}_step${step}_$(date +%Y%m%d_%H%M%S).log
       log "${label}: evaluating ${exp} step ${step}; log=${run_log}"
       echo "${exp} ${step} running $(date -Is)" > "${LOG_DIR}/${label}.status"
+      # One vLLM per GPU. evaluate_mm_checkpoint.sh claims gpuN.device.lock.
       set +e
       CUDA_VISIBLE_DEVICES="${gpu}" PORT="${port}" EVAL_STEP="${step}" \
         TP_SIZE="${TP_SIZE}" \
+        VLLM_GPU_MEM_UTIL="${VLLM_GPU_MEM_UTIL}" \
+        SKIP_GPU_CLAIM="${SKIP_GPU_CLAIM:-0}" \
         WORKSPACE_ROOT="${WORKSPACE_ROOT}" \
         VLM_EXP="${VLM_EXP}" POLARIS="${POLARIS}" EVALSCOPE="${EVALSCOPE}" \
         bash "${EVAL_SH}" "${exp}" >"${run_log}" 2>&1
