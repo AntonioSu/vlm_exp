@@ -20,6 +20,7 @@
       <a href="../2b/index.html">2B 训练</a>
       <a href="../4b/index.html">4B 训练</a>
       <a href="../mm/index.html">多模态训练</a>
+      <a href="../memory/index.html">显存</a>
       <a href="../conclusion/index.html">综合结论</a>
       <a href="../issues/index.html">问题</a>
       <a href="../chronicle/index.html" class="active">实验日志</a>
@@ -31,10 +32,168 @@
   <h1>实验日志</h1>
   <p class="log-lede">
     按时间倒序记录本轮 Qwen3.5 RL 对比实验的关键节点：训练跑满、评测同步、看板更新与环境固化。
-    曲线与数字见 <a href="../2b/index.html">2B</a> / <a href="../4b/index.html">4B</a> / <a href="../mm/index.html">多模态</a>；跨规模结论见 <a href="../conclusion/index.html">综合结论</a>。
+    曲线与数字见 <a href="../2b/index.html">2B</a> / <a href="../4b/index.html">4B</a> / <a href="../mm/index.html">多模态</a>；显存见 <a href="../memory/index.html">训练与推理显存</a>；跨规模结论见 <a href="../conclusion/index.html">综合结论</a>。
   </p>
 
   <div class="feed">
+
+    <article class="feed-item">
+      <div class="feed-marker" aria-hidden="true"></div>
+      <div class="feed-head">
+        <span class="feed-date">2026-08-21</span>
+        <span class="feed-label">看板更新：</span>
+      </div>
+      <div class="feed-row">
+        <span class="feed-time">23:55</span>
+        <div class="feed-content">
+          <p>2B 对比总览接上 OPD 训练曲线：Pass / 长度 / 熵 / grad 叠 Easy-24K E2（对照）+ OPD 2B←4B + OPSD 2B←2B。E2 页金色短点仍在。刷新：<code>parse_2b_logs.py</code> + <code>gen_2b_js.py</code></p>
+        </div>
+      </div>
+    </article>
+
+    <article class="feed-item">
+      <div class="feed-marker" aria-hidden="true"></div>
+      <div class="feed-head">
+        <span class="feed-date">2026-08-21</span>
+        <span class="feed-label">看板更新：</span>
+      </div>
+      <div class="feed-row">
+        <span class="feed-time">17:23</span>
+        <div class="feed-content">
+          <p><a href="../memory/index.html">显存</a> 训练节补「权重 / 激活 / batch / seq」：32×8=256 条、seq 17408、micro=1；2B 权重 4.24 GiB、Adam ~16.5 GiB 在 CPU；KV 12 KiB/token（只计 6 层 full attn），256 条打满 ~51 GiB。4B 权重 8.68 GiB、Adam 留 GPU，KV 32 KiB/token、TP=4 每卡 ~34 GiB。</p>
+        </div>
+      </div>
+    </article>
+
+    <article class="feed-item">
+      <div class="feed-marker" aria-hidden="true"></div>
+      <div class="feed-head">
+        <span class="feed-date">2026-08-21</span>
+        <span class="feed-label">看板更新：</span>
+      </div>
+      <div class="feed-row">
+        <span class="feed-time">14:55</span>
+        <div class="feed-content">
+          <p>新增 <a href="../memory/index.html">显存</a> 页：对照训练（2B/MM 2 卡 FSDP + rollout 0.5 + offload；4B 4 卡不 offload）与离线推理（Geo 独占 63.9 GiB / 文本 67.1 GiB / 同卡 0.42×2）。结论：Easy-32K 空转可 pack，MM formal 已打满不能抄。</p>
+        </div>
+      </div>
+    </article>
+
+    <article class="feed-item">
+      <div class="feed-marker" aria-hidden="true"></div>
+      <div class="feed-head">
+        <span class="feed-date">2026-08-21</span>
+        <span class="feed-label">看板更新：</span>
+      </div>
+      <div class="feed-row">
+        <span class="feed-time">10:45</span>
+        <div class="feed-content">
+          <p>OPSD 自蒸馏接入 2B 看板：<span class="mono">opsd_distill_2b_from_2b_easy_24k</span>（2B student ← 冻结 2B teacher · easy × 24K）曲线叠在 E2 页（青色密点，对照金色短点 = OPD 2B←4B）。训练 <strong>87/500</strong>（~10.71h，仍在跑）。offline / agent 同步脚本已预留，有报告时自动叠加</p>
+        </div>
+      </div>
+    </article>
+
+    <article class="feed-item">
+      <div class="feed-marker" aria-hidden="true"></div>
+      <div class="feed-head">
+        <span class="feed-date">2026-08-21</span>
+        <span class="feed-label">看板更新：</span>
+      </div>
+      <div class="feed-row">
+        <span class="feed-time">10:33</span>
+        <div class="feed-content">
+          <p>MM formal 接入：M2@130 Geo3K <strong>73.8%</strong> 新高（@100 73.1 / @120 72.2），文本未出；M1@70 Geo <strong>68.3%</strong>（低于 @60 69.1% 峰值），文本未出；M3@80/@90 Geo <strong>54.4→52.6%</strong> 续跌，@90 文本部分齐（MMLU 76.8 / AIME24 22.1，缺 MATH-500）</p>
+          <p>GPU0a M2@40 文本、GPU0b M3@50 文本；GPU1 M3@90 文本；GPU2 开 M1@80；GPU3 M2@140 Geo ~384/601</p>
+        </div>
+      </div>
+    </article>
+
+    <article class="feed-item">
+      <div class="feed-marker" aria-hidden="true"></div>
+      <div class="feed-head">
+        <span class="feed-date">2026-08-20</span>
+        <span class="feed-label">看板更新：</span>
+      </div>
+      <div class="feed-row">
+        <span class="feed-time">23:25</span>
+        <div class="feed-content">
+          <p>OPD agent 收尾：BFCL <strong>50/50</strong>（峰值仍 @210 <strong>53.6%</strong>）；tau <strong>49/50</strong>（@500 = 47.5% 已写入，仅缺 @380，当时 exit=1）。峰值 tau 仍 @420 <strong>60.0%</strong>。四卡队列 23:14 收工</p>
+        </div>
+      </div>
+    </article>
+
+    <article class="feed-item">
+      <div class="feed-marker" aria-hidden="true"></div>
+      <div class="feed-head">
+        <span class="feed-date">2026-08-20</span>
+        <span class="feed-label">看板更新：</span>
+      </div>
+      <div class="feed-row">
+        <span class="feed-time">23:10</span>
+        <div class="feed-content">
+          <p>MM formal：M2@120 Geo3K <strong>72.2%</strong> 落地（低于 @110 72.9% / @100 峰值 73.1%），文本未出；M1 仍 @60 <strong>69.1%</strong> 新高、文本未出；M3 仍 @70 Geo <strong>54.7%</strong>、文本齐</p>
+          <p>GPU0a M2@10 文本、GPU0b M3@20 文本（同卡已加独占锁）；GPU1 M3@80 ~416/601；GPU2 M1@70 ~544/601；GPU3 开 M2@130。2B：Easy-32K offline <strong>67/105</strong>；OPD agent BFCL <strong>50/50</strong>、tau <strong>48/50</strong>（缺 @380/@500，峰值仍 BFCL @210 53.6%、tau @420 60.0%）</p>
+        </div>
+      </div>
+    </article>
+
+    <article class="feed-item">
+      <div class="feed-marker" aria-hidden="true"></div>
+      <div class="feed-head">
+        <span class="feed-date">2026-08-20</span>
+        <span class="feed-label">看板更新：</span>
+      </div>
+      <div class="feed-row">
+        <span class="feed-time">20:21</span>
+        <div class="feed-content">
+          <p>MM formal 再刷：M1@60 Geo3K <strong>69.1%</strong> 新高（@40 68.7 / @50 66.6），文本未出；M2@110 Geo <strong>72.9%</strong>（略低于 @100 73.1%），文本未出；M3@60/@70 Geo <strong>53.7→54.7%</strong>，@70 文本齐（MATH <strong>79.5%</strong> / AIME24 <strong>21.3%</strong>）</p>
+          <p>GPU0 fill 已停 fail=12；GPU1 M3@80 ~160/601；GPU2 M1@70 ~288/601；GPU3 M2@120 ~368/601。2B：Easy-32K offline <strong>66/105</strong>；OPD agent BFCL <strong>39/50</strong>、tau <strong>38/50</strong>（峰值 BFCL @210 53.6%、tau @420 60.0%）</p>
+        </div>
+      </div>
+    </article>
+
+    <article class="feed-item">
+      <div class="feed-marker" aria-hidden="true"></div>
+      <div class="feed-head">
+        <span class="feed-date">2026-08-20</span>
+        <span class="feed-label">看板更新：</span>
+      </div>
+      <div class="feed-row">
+        <span class="feed-time">15:30</span>
+        <div class="feed-content">
+          <p>OPD agent 再刷：BFCL <strong>20/50</strong>（10–50 / 140–180 / 260–300 / 380–420，峰值改到 @30 <strong>53.2%</strong>）；tau <strong>17/50</strong>（10–40 / 140–180 / 260–290 / 390–420，峰值 @420 <strong>60.0%</strong>）。@380 tau 仍失败。GPU0 评 50 tau，GPU1 评 190 BFCL，GPU2 评 300 tau，GPU3 评 430 BFCL</p>
+        </div>
+      </div>
+    </article>
+
+    <article class="feed-item">
+      <div class="feed-marker" aria-hidden="true"></div>
+      <div class="feed-head">
+        <span class="feed-date">2026-08-20</span>
+        <span class="feed-label">看板更新：</span>
+      </div>
+      <div class="feed-row">
+        <span class="feed-time">12:17</span>
+        <div class="feed-content">
+          <p>OPD agent 进看板：BFCL <strong>5/50</strong>（@10 / 140 / 260 / 380 / 390，峰值 @380 <strong>52.2%</strong>）；tau <strong>3/50</strong>（@10 / 140 / 260，峰值 @140/@260 <strong>42.5%</strong>；@380 tau 失败）。GPU0 评 20、GPU1 评 150、GPU2 评 270 BFCL，GPU3 评 390 tau。offline 仍 50/50</p>
+        </div>
+      </div>
+    </article>
+
+    <article class="feed-item">
+      <div class="feed-marker" aria-hidden="true"></div>
+      <div class="feed-head">
+        <span class="feed-date">2026-08-20</span>
+        <span class="feed-label">看板更新：</span>
+      </div>
+      <div class="feed-row">
+        <span class="feed-time">12:13</span>
+        <div class="feed-content">
+          <p>2B Easy-32K offline 轴扩到 10–1050（mmlu 61/105、aime24 61/105、aime25 59/105、math 56/105）。新增 @450–470 / @630–660，以及 @900（mmlu <strong>75.45%</strong>、aime24 <strong>5.0%</strong>）。OPD 仍 50/50。训练停在 1053</p>
+          <p>MM formal 未出新点（仍 M1@50 / M2@100 / M3@50）。Geo3K 进行中：M1@60 ~192/601、M2@110 ~272/601、M3@60 ~560/601、M3@70 ~448/601</p>
+        </div>
+      </div>
+    </article>
 
     <article class="feed-item">
       <div class="feed-marker" aria-hidden="true"></div>
