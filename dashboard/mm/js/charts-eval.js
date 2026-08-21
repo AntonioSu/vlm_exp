@@ -181,6 +181,15 @@
     }
   }
 
+  // Offline eval % axes: locked so legend toggles / new checkpoints do not rescale.
+  // Ranges follow 2B EVAL_Y, tightened to MM cluster (avoid 0–100% empty space).
+  const EVAL_Y = {
+    geo3kAcc: { yMin: 50, yMax: 85 },
+    math500:  { yMin: 70, yMax: 95 },
+    mmlu:     { yMin: 70, yMax: 90 },
+    aime25:   { yMin: 10, yMax: 45 },
+  };
+
   function drawLineChart(canvasId, tipId, {
     categories, series, yMin, yMax, valueSuffix = "", height = 240, referenceLines = [],
   }) {
@@ -301,12 +310,6 @@
     return v == null ? "—" : Number(v).toFixed(2) + "%";
   }
 
-  function metricValue(group, key) {
-    if (key === "geo3kAcc") return group.geo3k ? group.geo3k.sampleAccuracy : null;
-    if (key === "geo3kPass") return group.geo3k ? group.geo3k.passAtN : null;
-    return (group.text || {})[key] ?? null;
-  }
-
   function fullSeries(metric) {
     const evalData = window.MM_EVAL;
     if (!evalData?.full) return [];
@@ -379,20 +382,6 @@
         .join("");
     }
 
-    const cats = groups.map((g) => g.shortLabel);
-    const colors = groups.map((g) => g.color);
-    const bindMmBar = (id, metric) => {
-      bindBarLegend(id.replace("chart-", "legend-"), cats, groups.map((g) => metricValue(g, metric)), colors, (data) => {
-        drawBarChart(id, id.replace("chart-", "tip-"), {
-          categories: cats, data, colors, valueSuffix: "%",
-        });
-      });
-    };
-    bindMmBar("chart-mm-geo3k", "geo3kAcc");
-    bindMmBar("chart-mm-math500", "math500");
-    bindMmBar("chart-mm-mmlu", "mmlu");
-    bindMmBar("chart-mm-aime", "aime25");
-
     // Mid-step offline curves: only draw when a series has ≥2 points; otherwise show checkpoint cards.
     const fullSteps = evalData.fullSteps || [];
     const geoSeries = fullSeries("geo3kAcc");
@@ -405,7 +394,7 @@
     if (midCaption) {
       midCaption.innerHTML = canDrawCurves
         ? "M0 文本 = 2B E1 GRPO 全 step（10–150 /10，虚线）；Geo3K 仅 M0@150。M1–M3 为 MM formal。缺测为断点。"
-        : "当前每组只有 <strong>1 个</strong>离线点，画不出曲线。上方柱状图 / 对照表是主视图；下面列出已完成 checkpoint。";
+        : "当前每组只有 <strong>1 个</strong>离线点，画不出曲线。上方对照表是主视图；下面列出已完成 checkpoint。";
     }
     if (sparseEl) {
       if (!canDrawCurves && ready.length) {
@@ -438,18 +427,18 @@
     if (curvesEl) curvesEl.style.display = canDrawCurves ? "block" : "none";
 
     if (canDrawCurves && fullSteps.length) {
-      const bindFull = (id, series, height = 240) => {
+      const bindFull = (id, series, height = 240, yAxis = { yMin: 0, yMax: 100 }) => {
         bindSeriesLegend(id.replace("chart-", "legend-"), series, (visible) => {
           drawLineChart(id, id.replace("chart-", "tip-"), {
             categories: fullSteps, series: visible,
-            valueSuffix: "%", height, yMin: 0, yMax: 100,
+            valueSuffix: "%", height, ...yAxis,
           });
         });
       };
-      bindFull("chart-mm-full-geo3k", geoSeries, 240);
-      bindFull("chart-mm-full-math500", fullSeries("math500"), 240);
-      bindFull("chart-mm-full-mmlu", fullSeries("mmlu"), 220);
-      bindFull("chart-mm-full-aime25", fullSeries("aime25"), 220);
+      bindFull("chart-mm-full-geo3k", geoSeries, 240, EVAL_Y.geo3kAcc);
+      bindFull("chart-mm-full-math500", fullSeries("math500"), 240, EVAL_Y.math500);
+      bindFull("chart-mm-full-mmlu", fullSeries("mmlu"), 220, EVAL_Y.mmlu);
+      bindFull("chart-mm-full-aime25", fullSeries("aime25"), 220, EVAL_Y.aime25);
     }
   }
 
