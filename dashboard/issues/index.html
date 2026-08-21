@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>项目问题 — PolarIS / Qwen3.5 RL</title>
 <link rel="stylesheet" href="../common/base.css">
-<link rel="stylesheet" href="issues.css?v=20260819131400">
+<link rel="stylesheet" href="issues.css?v=20260820160500">
 </head>
 <body>
 
@@ -20,6 +20,7 @@
       <a href="../2b/index.html">2B 训练</a>
       <a href="../4b/index.html">4B 训练</a>
       <a href="../mm/index.html">多模态训练</a>
+      <a href="../memory/index.html">显存</a>
       <a href="../conclusion/index.html">综合结论</a>
       <a href="../issues/index.html" class="active">问题</a>
       <a href="../chronicle/index.html">实验日志</a>
@@ -28,89 +29,33 @@
 </div>
 
 <div class="iss-page">
-  <h1>项目问题</h1>
-  <p class="iss-lede">
-    PolarIS / Qwen3.5 RL 实验栈在环境、奖励接线、训练信号和评测链路上踩过的坑。
-    按「现在还会不会再踩」排列，不是按发现时间。
-    曲线与数字见 <a href="../2b/index.html">2B</a> / <a href="../4b/index.html">4B</a> / <a href="../mm/index.html">多模态</a>；
-    怎么读结论见 <a href="../conclusion/index.html">综合结论</a>。
-  </p>
+  <div class="iss-layout">
+    <nav class="iss-toc" aria-label="目录">
+      <p class="toc-heading">目录</p>
+      <ol class="toc-list" id="iss-toc-list"></ol>
+    </nav>
 
-  <div class="iss-stats" id="iss-stats"></div>
+    <div class="iss-main">
+      <header class="iss-hero">
+        <h1>项目问题</h1>
+        <p class="iss-lede">
+          按你在做什么分六章。点左边目录跳章，点条目看症状 / 根因 / 处理。
+          曲线见 <a href="../2b/index.html">2B</a> / <a href="../4b/index.html">4B</a> / <a href="../mm/index.html">多模态</a>
+          · 结论见 <a href="../conclusion/index.html">综合结论</a>。
+        </p>
+      </header>
 
-  <div class="iss-callout">
-    <div class="title">三类静默失败：看起来在跑，其实已经错了</div>
-    奖励键写错会静默回退 math_dapo（reward≈−0.98）；
-    <code>filter_groups.enable=True</code> 是空实现，v1 E2 没有 Dynamic Sampling；
-    往 <code>verl_qwen35</code> 装 agent 包会挤掉 FLA，GDN 悄悄退回纯 torch。
-    这三件事都不抛致命错误，是本项目最贵的一类问题。
-  </div>
+      <div id="iss-chapters"></div>
 
-  <div class="iss-open">
-    <div class="iss-open-card">
-      <p class="kicker">仍会踩</p>
-      <h3>环境复现不稳定</h3>
-      <p>新 pod 不能靠 pip freeze。内网镜像没有 vllm 0.24.0；agent 评测 venv 放在 /tmp，重启就没，colorlog / bfcl 缺失会让 tau / BFCL 队列秒挂。</p>
-      <div class="ids">E3 · E4 · V2 · R3</div>
-    </div>
-    <div class="iss-open-card">
-      <p class="kicker">运维未解</p>
-      <h3>GPU 僵尸卡 + Docker 评测</h3>
-      <p>多模态 OOM 后 GPU0 曾残留约 75G 无 PID，无 root 无法 reset；SWE / GAIA / Terminal-Bench 在嵌套 K8s pod 里注册不了 Docker layer。</p>
-      <div class="ids">T2 · T3 · V3</div>
+      <p class="iss-foot">
+        来源：<code>plan/exp_plan.md</code>、<code>scripts/setup/README.md</code>、<code>experiments_v2/README.md</code> · 截至 <span id="iss-updated"></span>。
+        新事故写进 <code>dashboard/issues/data-issues.js</code> 对应章。
+      </p>
     </div>
   </div>
-
-  <div class="iss-section-title">问题按状态分布</div>
-  <div class="iss-bar-wrap">
-    <div class="iss-bar" id="iss-bar"></div>
-    <div class="iss-bar-legend" id="iss-bar-legend"></div>
-    <p class="iss-bar-caption">计数单位：问题条目 · 已兜底指脚本/文档已挡住，不代表可以忘记</p>
-  </div>
-
-  <div class="iss-section-title">筛选</div>
-  <div class="iss-filters">
-    <div class="iss-chips" id="iss-cat-chips"></div>
-    <div class="iss-chips" id="iss-status-chips"></div>
-  </div>
-  <p class="iss-count" id="iss-count"></p>
-
-  <div class="iss-table-wrap">
-    <table class="iss-table">
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>问题</th>
-          <th>类别</th>
-          <th>状态</th>
-          <th>影响</th>
-        </tr>
-      </thead>
-      <tbody id="iss-table-body"></tbody>
-    </table>
-  </div>
-
-  <div class="iss-section-title">条目说明</div>
-  <p class="iss-count">展开看症状、根因和下一步。筛选条件与上表相同。仍会踩 / 运维未解默认展开。</p>
-  <div class="iss-list" id="iss-list"></div>
-
-  <div class="iss-read">
-    <div class="title">读实验数字时先排除这几件事</div>
-    <ol>
-      <li>先确认奖励键是 <code>reward.*</code>，第一步 reward 不该钉在 −1。</li>
-      <li>不要把 v1 E2 当成带 Dynamic Sampling 的 DAPO；那一键从未生效。</li>
-      <li>shaped overlong 之后 pass 看 <code>critic/score/mean</code>，不要用含惩罚的 <code>critic/rewards/mean</code>。</li>
-      <li>算法排名以 math_500 为准；AIME 30 题噪声太大，4B 五组差会落在 ±8pt 里。</li>
-    </ol>
-  </div>
-
-  <p class="iss-foot">
-    来源：<code>plan/exp_plan.md</code>、<code>scripts/setup/README.md</code>、<code>experiments_v2/README.md</code>、<code>vlm_exp/exp_result_mm.md</code>、eval 脚本与近期评测事故 · 截至 <span id="iss-updated"></span>。
-    新事故请按同样字段补：症状 / 根因 / 现在还会不会踩（改 <code>dashboard/issues/data-issues.js</code>）。
-  </p>
 </div>
 
-<script src="data-issues.js?v=20260819131400"></script>
-<script src="issues.js?v=20260819131400"></script>
+<script src="data-issues.js?v=20260820160500"></script>
+<script src="issues.js?v=20260820160500"></script>
 </body>
 </html>

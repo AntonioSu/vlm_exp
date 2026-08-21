@@ -11,23 +11,96 @@ window.ISSUE_META = {
   ],
 };
 
-window.ISSUE_CATS = [
-  { id: "all", label: "全部" },
-  { id: "silent", label: "静默失败" },
-  { id: "env", label: "环境 / CUDA" },
-  { id: "signal", label: "训练信号" },
-  { id: "runtime", label: "运行时" },
-  { id: "eval", label: "评测链路" },
-  { id: "science", label: "实验设计" },
-];
+window.ISSUE_STATUS_LABEL = {
+  live: "仍会踩",
+  ops: "运维未解",
+  partial: "部分兜底",
+  science: "读数边界",
+  mitigated: "已兜底",
+};
 
-window.ISSUE_STATUSES = [
-  { id: "all", label: "全部状态" },
-  { id: "live", label: "仍会踩" },
-  { id: "ops", label: "运维未解" },
-  { id: "partial", label: "部分兜底" },
-  { id: "science", label: "科学债" },
-  { id: "mitigated", label: "已兜底" },
+/* 按「你在做什么」分章，每条只出现一次。左侧目录跟这个走。 */
+window.ISSUE_CHAPTERS = [
+  {
+    id: "read",
+    num: "1",
+    title: "读曲线前",
+    blurb: "数字看起来正常，其实已经错了。先排除这些再谈算法好坏。",
+    when: "看 2B / 4B 训练曲线、offline 分数、综合结论",
+    items: [
+      { id: "R1", toc: "奖励被静默忽略" },
+      { id: "R2", toc: "filter_groups 是空实现" },
+      { id: "R4", toc: "overlong 配错 / 看错 pass" },
+      { id: "V4", toc: "AIME 30 题噪声太大" },
+      { id: "D3", toc: "单 seed 不能看单步" },
+    ],
+  },
+  {
+    id: "env",
+    num: "2",
+    title: "环境与启动",
+    blurb: "新机器、新 pod、CUDA 检查、起训脚本。装错环境后面全是误导。",
+    when: "conda / setup / cuda_available / 第一次起训",
+    items: [
+      { id: "E1", toc: "漏 source verl_env.sh" },
+      { id: "E2", toc: "compat 包解残了" },
+      { id: "E3", toc: "pip freeze 装不出环境" },
+      { id: "E4", toc: "镜像没有 vllm 0.24" },
+      { id: "E5", toc: "FLA TileLang / nvcc" },
+      { id: "E6", toc: "关掉 custom all-reduce" },
+      { id: "E7", toc: "不要装 flash-attn" },
+      { id: "E8", toc: "Hydra 新字段加 +" },
+      { id: "R3", toc: "训练环境被挤掉 FLA" },
+    ],
+  },
+  {
+    id: "signal",
+    num: "3",
+    title: "训练对照",
+    blurb: "算法对比不公平的来源：题太简单、截断口径不统一、几乎没 off-policy。",
+    when: "解释为什么某组更好、设计 v2 / 长度消融",
+    items: [
+      { id: "S1", toc: "4B 上 easy 已失效" },
+      { id: "S2", toc: "16K 截断是混淆变量" },
+      { id: "S3", toc: "OPD 几乎为 0" },
+      { id: "S4", toc: "100K 思考已废弃" },
+    ],
+  },
+  {
+    id: "runtime",
+    num: "4",
+    title: "训练挂了",
+    blurb: "OOM、僵尸 GPU、pipeline 空转。卡死时来这里，不要先怀疑算法。",
+    when: "训练中断、显存打满、GPU util=0 但仍占显存",
+    items: [
+      { id: "T1", toc: "大词表 logits OOM" },
+      { id: "T2", toc: "Ray OOM + 僵尸卡" },
+      { id: "T3", toc: "评测空等已放弃 ckpt" },
+    ],
+  },
+  {
+    id: "eval",
+    num: "5",
+    title: "评测跑不通",
+    blurb: "Judge 404、临时 venv 消失、Docker 在 pod 里注册不了 layer。",
+    when: "BFCL / tau-bench / SWE / GAIA / Terminal-Bench",
+    items: [
+      { id: "V1", toc: "Ark Judge 已下线" },
+      { id: "V2", toc: "agent venv 在 /tmp" },
+      { id: "V3", toc: "嵌套 pod 无 Docker" },
+    ],
+  },
+  {
+    id: "design",
+    num: "6",
+    title: "实验边界",
+    blurb: "这组实验回答不了什么。读过头会得出假结论。",
+    when: "extend / 难度池 / 冷启动 / 下结论",
+    items: [
+      { id: "D1", toc: "extend ≠ S1 冷启动" },
+      { id: "D2", toc: "4B 难度池太小" },
+    ],
+  },
 ];
 
 window.ISSUES = [

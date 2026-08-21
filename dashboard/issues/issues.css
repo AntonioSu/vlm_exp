@@ -1,320 +1,248 @@
-/* 项目问题页 */
+/* 项目问题页：左目录 + 分章清单 */
 
 .iss-page {
   max-width: 1080px;
   margin: 0 auto;
-  padding: 36px 24px 96px;
+  padding: 32px 24px 96px;
 }
 
-.iss-page h1 {
+.iss-layout {
+  display: grid;
+  grid-template-columns: 168px minmax(0, 1fr);
+  gap: 40px;
+  align-items: start;
+}
+
+@media (max-width: 860px) {
+  .iss-layout { grid-template-columns: 1fr; gap: 20px; }
+  .iss-toc {
+    position: static !important;
+    max-height: none;
+  }
+  .iss-toc .toc-list {
+    display: flex;
+    flex-wrap: wrap;
+    border-left: none;
+    gap: 4px;
+  }
+  .iss-toc .toc-list a {
+    border-left: none;
+    padding: 6px 10px;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+  }
+  .iss-toc .toc-list a.is-active {
+    background: #111827;
+    color: #fff;
+    border-color: #111827;
+  }
+  .iss-toc .toc-list a.is-active .toc-num,
+  .iss-toc .toc-list a.is-active .toc-count { color: rgba(255,255,255,0.7); }
+}
+
+.iss-toc {
+  position: sticky;
+  top: 20px;
+  max-height: calc(100vh - 40px);
+}
+
+.iss-toc .toc-heading {
+  font-size: 11px;
+  font-weight: 650;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin: 0 0 10px;
+}
+
+.iss-toc .toc-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-left: 2px solid var(--border);
+}
+
+.iss-toc .toc-list a {
+  display: grid;
+  grid-template-columns: 16px 1fr auto;
+  gap: 8px;
+  align-items: baseline;
+  padding: 7px 0 7px 12px;
+  margin-left: -2px;
+  border-left: 2px solid transparent;
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.iss-toc .toc-list a:hover { color: var(--text); }
+.iss-toc .toc-list a.is-active {
+  color: var(--text);
+  font-weight: 650;
+  border-left-color: #111827;
+}
+
+.iss-toc .toc-num {
+  color: var(--text-tertiary);
+  font-variant-numeric: tabular-nums;
+  font-size: 12px;
+}
+
+.iss-toc .toc-count {
+  color: var(--text-tertiary);
+  font-variant-numeric: tabular-nums;
+  font-size: 11px;
+}
+
+.iss-hero h1 {
   font-size: 24px;
   font-weight: 650;
   margin: 0 0 8px;
+  letter-spacing: -0.02em;
 }
 
 .iss-lede {
   color: var(--text-secondary);
   font-size: 14px;
-  max-width: 78ch;
-  margin: 0 0 24px;
+  max-width: 68ch;
+  margin: 0 0 36px;
   line-height: 1.7;
 }
 
 .iss-lede a { color: var(--accent); text-decoration: none; }
 .iss-lede a:hover { text-decoration: underline; }
 
-.iss-stats {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 12px;
-  margin: 0 0 22px;
-}
-@media (max-width: 720px) {
-  .iss-stats { grid-template-columns: repeat(2, 1fr); }
+.iss-main section {
+  margin: 0 0 44px;
+  scroll-margin-top: 20px;
 }
 
-.iss-stat {
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  background: #fff;
-  padding: 12px 14px;
-}
-.iss-stat .n {
-  font-size: 22px;
+.iss-main .sec-kicker {
+  font-size: 11px;
   font-weight: 650;
-  font-variant-numeric: tabular-nums;
-  line-height: 1.15;
-}
-.iss-stat .l {
-  margin-top: 4px;
-  font-size: 12px;
-  color: var(--text-tertiary);
-  font-weight: 550;
-}
-.iss-stat.live .n { color: var(--danger); }
-.iss-stat.ops .n { color: #d97706; }
-.iss-stat.science .n { color: var(--e1); }
-.iss-stat.mitigated .n { color: #059669; }
-
-.iss-callout {
-  border: 1px solid #fecaca;
-  background: #fef2f2;
-  border-radius: 10px;
-  padding: 12px 14px;
-  margin: 0 0 22px;
-  font-size: 13.5px;
-  line-height: 1.7;
-  color: var(--text);
-}
-.iss-callout .title {
-  font-weight: 650;
-  margin: 0 0 4px;
-  color: #991b1b;
-}
-
-.iss-open {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  margin: 0 0 28px;
-}
-@media (max-width: 720px) { .iss-open { grid-template-columns: 1fr; } }
-
-.iss-open-card {
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 14px 16px;
-  background: #fff;
-}
-.iss-open-card .kicker {
-  font-size: 11.5px;
-  font-weight: 650;
-  color: var(--text-tertiary);
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  letter-spacing: 0.03em;
+  color: var(--text-tertiary);
   margin: 0 0 4px;
 }
-.iss-open-card h3 {
-  font-size: 15px;
+
+.iss-main .sec-title {
+  font-size: 18px;
   font-weight: 650;
-  margin: 0 0 8px;
+  margin: 0 0 6px;
+  letter-spacing: -0.02em;
 }
-.iss-open-card p {
-  font-size: 13px;
+
+.iss-main .sec-sub {
+  font-size: 13.5px;
   color: var(--text-secondary);
-  margin: 0;
-  line-height: 1.65;
-}
-.iss-open-card .ids {
-  margin-top: 8px;
-  font-size: 12px;
-  color: var(--text-tertiary);
-  font-variant-numeric: tabular-nums;
+  margin: 0 0 16px;
+  line-height: 1.6;
+  max-width: 62ch;
 }
 
-.iss-section-title {
-  font-size: 15px;
-  font-weight: 650;
-  margin: 0 0 10px;
-}
-
-.iss-bar-wrap { margin: 0 0 18px; }
-.iss-bar {
-  display: flex;
-  height: 10px;
-  border-radius: 999px;
+.iss-list {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #fff;
   overflow: hidden;
-  background: #e5e7eb;
 }
-.iss-bar span { display: block; height: 100%; }
-.iss-bar .live, .iss-bar-legend i.live { background: #dc2626; }
-.iss-bar .ops, .iss-bar-legend i.ops { background: #d97706; }
-.iss-bar .partial, .iss-bar-legend i.partial { background: #ca8a04; }
-.iss-bar .science, .iss-bar-legend i.science { background: #2563eb; }
-.iss-bar .mitigated, .iss-bar-legend i.mitigated { background: #059669; }
-
-.iss-bar-legend {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px 16px;
-  margin-top: 8px;
-  font-size: 12px;
-  color: var(--text-secondary);
-}
-.iss-bar-legend i {
-  display: inline-block;
-  width: 8px;
-  height: 8px;
-  border-radius: 2px;
-  margin-right: 6px;
-  vertical-align: 0;
-}
-.iss-bar-caption {
-  margin: 6px 0 0;
-  font-size: 12px;
-  color: var(--text-tertiary);
-}
-
-.iss-filters { margin: 0 0 8px; }
-.iss-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin: 0 0 8px;
-}
-.iss-chip {
-  border: 1px solid var(--border);
-  background: #fff;
-  color: var(--text-secondary);
-  font-size: 13px;
-  font-weight: 550;
-  padding: 5px 11px;
-  border-radius: 999px;
-  cursor: pointer;
-}
-.iss-chip:hover { border-color: #cbd5e1; color: var(--text); }
-.iss-chip.active {
-  background: #111827;
-  border-color: #111827;
-  color: #fff;
-}
-
-.iss-count {
-  font-size: 13px;
-  color: var(--text-tertiary);
-  margin: 4px 0 12px;
-}
-
-.iss-table-wrap {
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  overflow: auto;
-  background: #fff;
-  margin: 0 0 28px;
-}
-.iss-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 13px;
-}
-.iss-table th,
-.iss-table td {
-  padding: 9px 12px;
-  border-bottom: 1px solid var(--border);
-  text-align: left;
-  vertical-align: top;
-  line-height: 1.5;
-}
-.iss-table thead th {
-  background: #f3f4f6;
-  font-weight: 650;
-  font-size: 12.5px;
-  position: sticky;
-  top: 0;
-}
-.iss-table tbody tr:last-child td { border-bottom: none; }
-.iss-table tbody tr:hover td { background: #fafafa; }
-.iss-table .id {
-  font-variant-numeric: tabular-nums;
-  font-weight: 650;
-  white-space: nowrap;
-}
-.iss-table .title-cell { font-weight: 550; }
-
-.iss-dot {
-  display: inline-block;
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  margin-right: 7px;
-  vertical-align: 1px;
-}
-.iss-dot.live { background: #dc2626; }
-.iss-dot.ops { background: #d97706; }
-.iss-dot.partial { background: #ca8a04; }
-.iss-dot.science { background: #2563eb; }
-.iss-dot.mitigated { background: #059669; }
-
-.iss-list { display: flex; flex-direction: column; gap: 8px; }
 
 .iss-item {
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  background: #fff;
+  border-bottom: 1px solid var(--border);
 }
+
+.iss-item:last-child { border-bottom: none; }
+
 .iss-item summary {
   list-style: none;
   cursor: pointer;
-  padding: 12px 14px;
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: baseline;
+  padding: 13px 16px;
 }
+
 .iss-item summary::-webkit-details-marker { display: none; }
-.iss-item .iss-id {
-  flex: none;
-  width: 36px;
-  font-weight: 650;
+.iss-item summary:hover { background: #fafafa; }
+
+.iss-item[open] summary {
+  background: #fafafa;
+  border-bottom: 1px solid var(--border);
+}
+
+.iss-id {
   font-variant-numeric: tabular-nums;
-  color: var(--text);
-  padding-top: 1px;
-}
-.iss-item .iss-main { flex: 1; min-width: 0; }
-.iss-item .iss-title {
-  font-size: 14px;
   font-weight: 650;
-  margin: 0 0 4px;
-}
-.iss-item .iss-meta {
   font-size: 12.5px;
   color: var(--text-tertiary);
 }
-.iss-item .iss-status {
-  flex: none;
-  font-size: 12px;
+
+.iss-title {
+  font-size: 14.5px;
   font-weight: 650;
-  color: var(--text-secondary);
-  padding-top: 2px;
+  color: var(--text);
+  line-height: 1.4;
+}
+
+.iss-impact-inline {
+  display: block;
+  margin-top: 3px;
+  font-size: 12.5px;
+  font-weight: 400;
+  color: var(--text-tertiary);
+}
+
+.iss-pill {
+  font-size: 11px;
+  font-weight: 650;
+  color: var(--text-tertiary);
   white-space: nowrap;
 }
-.iss-item[open] { border-color: #d1d5db; }
-.iss-body {
-  padding: 0 14px 14px 60px;
-  font-size: 13.5px;
-  color: var(--text-secondary);
-  line-height: 1.7;
-}
-.iss-body p { margin: 0 0 8px; }
-.iss-body p:last-child { margin-bottom: 0; }
-.iss-body strong { color: var(--text); font-weight: 650; }
 
-.iss-read {
-  border: 1px solid var(--info-border);
-  background: var(--info-bg);
-  border-radius: 10px;
-  padding: 12px 14px;
-  margin: 28px 0 0;
-  font-size: 13.5px;
-  color: var(--text);
-  line-height: 1.7;
+.iss-pill.live { color: #b91c1c; }
+.iss-pill.ops { color: #c2410c; }
+.iss-pill.partial { color: #b45309; }
+
+.iss-body {
+  padding: 4px 16px 16px 68px;
 }
-.iss-read .title { font-weight: 650; margin: 0 0 6px; }
-.iss-read ol { margin: 0; padding-left: 18px; }
-.iss-read li { margin: 0 0 4px; }
-.iss-read code {
+
+.iss-dl {
+  margin: 0;
+  display: grid;
+  grid-template-columns: 36px 1fr;
+  gap: 8px 12px;
+  font-size: 13.5px;
+  line-height: 1.65;
+}
+
+.iss-dl dt {
+  color: var(--text-tertiary);
+  font-weight: 650;
+  font-size: 12px;
+  padding-top: 2px;
+}
+
+.iss-dl dd {
+  margin: 0;
+  color: var(--text-secondary);
+}
+
+code {
   font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
   font-size: 0.92em;
-  background: #fff;
+  background: #f3f4f6;
   padding: 1px 5px;
   border-radius: 4px;
 }
 
 .iss-foot {
-  margin-top: 20px;
+  margin-top: 8px;
   font-size: 12px;
   color: var(--text-tertiary);
-}
-.iss-foot code {
-  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-  font-size: 0.92em;
+  line-height: 1.6;
 }

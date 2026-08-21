@@ -1,133 +1,106 @@
 (function () {
-  const CAT_LABEL = {
-    silent: "静默失败",
-    env: "环境 / CUDA",
-    signal: "训练信号",
-    runtime: "运行时",
-    eval: "评测链路",
-    science: "实验设计",
-  };
-  const STATUS_LABEL = {
-    live: "仍会踩",
-    ops: "运维未解",
-    partial: "部分兜底",
-    science: "科学债",
-    mitigated: "已兜底",
-  };
-
+  const chapters = window.ISSUE_CHAPTERS || [];
   const issues = window.ISSUES || [];
-  let cat = "all";
-  let status = "all";
+  const statusLabel = window.ISSUE_STATUS_LABEL || {};
+  const byId = Object.fromEntries(issues.map((i) => [i.id, i]));
+  const openByDefault = new Set(["live", "ops"]);
 
-  function count(pred) {
-    return issues.filter(pred).length;
+  function esc(s) {
+    return String(s)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;");
   }
 
-  function visible() {
-    return issues.filter((i) => {
-      if (cat !== "all" && i.category !== cat) return false;
-      if (status !== "all" && i.status !== status) return false;
-      return true;
-    });
+  function renderToc() {
+    document.getElementById("iss-toc-list").innerHTML = chapters
+      .map(
+        (ch) => `<li>
+          <a href="#sec-${ch.id}" data-watch="sec-${ch.id}" title="${esc(ch.when)}">
+            <span class="toc-num">${ch.num}</span>
+            <span>${esc(ch.title)}</span>
+            <span class="toc-count">${ch.items.length}</span>
+          </a>
+        </li>`
+      )
+      .join("");
   }
 
-  function chipRow(items, selected, attr) {
-    return items
-      .map((c) => {
-        const extra =
-          attr === "data-cat"
-            ? c.id === "all"
-              ? ` ${issues.length}`
-              : ` ${count((i) => i.category === c.id)}`
-            : "";
-        const active = selected === c.id ? " active" : "";
-        return `<button type="button" class="iss-chip${active}" ${attr}="${c.id}">${c.label}${extra}</button>`;
+  function renderChapters() {
+    document.getElementById("iss-chapters").innerHTML = chapters
+      .map((ch) => {
+        const rows = ch.items
+          .map((it) => {
+            const iss = byId[it.id];
+            if (!iss) return "";
+            const open = openByDefault.has(iss.status) ? " open" : "";
+            const st = statusLabel[iss.status] || iss.status;
+            return `<details class="iss-item" id="${iss.id}"${open}>
+              <summary>
+                <span class="iss-id">${iss.id}</span>
+                <span>
+                  <span class="iss-title">${esc(iss.title)}</span>
+                  <span class="iss-impact-inline">${esc(iss.impact)}</span>
+                </span>
+                <span class="iss-pill ${iss.status}">${esc(st)}</span>
+              </summary>
+              <div class="iss-body">
+                <dl class="iss-dl">
+                  <dt>症状</dt><dd>${esc(iss.symptom)}</dd>
+                  <dt>根因</dt><dd>${esc(iss.cause)}</dd>
+                  <dt>处理</dt><dd>${esc(iss.action)}</dd>
+                </dl>
+              </div>
+            </details>`;
+          })
+          .join("");
+        return `<section id="sec-${ch.id}">
+          <p class="sec-kicker">${ch.num} / ${chapters.length}</p>
+          <h2 class="sec-title">${esc(ch.title)}</h2>
+          <p class="sec-sub">${esc(ch.when)}。${esc(ch.blurb)}</p>
+          <div class="iss-list">${rows}</div>
+        </section>`;
       })
       .join("");
   }
 
-  function render() {
-    const n = (s) => count((i) => i.status === s);
-    const total = issues.length;
-    const rows = visible();
+  function spy() {
+    const links = [...document.querySelectorAll(".iss-toc a[data-watch]")];
+    const targets = links
+      .map((a) => document.getElementById(a.getAttribute("data-watch")))
+      .filter(Boolean);
+    if (!targets.length) return;
 
-    document.getElementById("iss-stats").innerHTML = `
-      <div class="iss-stat"><div class="n">${total}</div><div class="l">记录问题</div></div>
-      <div class="iss-stat live"><div class="n">${n("live")}</div><div class="l">仍会踩</div></div>
-      <div class="iss-stat ops"><div class="n">${n("ops")}</div><div class="l">运维未解</div></div>
-      <div class="iss-stat science"><div class="n">${n("science")}</div><div class="l">科学债</div></div>
-      <div class="iss-stat mitigated"><div class="n">${n("mitigated")}</div><div class="l">脚本已兜底</div></div>
-    `;
+    const setActive = (id) => {
+      links.forEach((a) => {
+        a.classList.toggle("is-active", a.getAttribute("data-watch") === id);
+      });
+    };
 
-    const segs = [
-      ["live", n("live")],
-      ["ops", n("ops")],
-      ["partial", n("partial")],
-      ["science", n("science")],
-      ["mitigated", n("mitigated")],
-    ];
-    document.getElementById("iss-bar").innerHTML = segs
-      .map(([k, v]) => `<span class="${k}" style="width:${(v / total) * 100}%"></span>`)
-      .join("");
-    document.getElementById("iss-bar-legend").innerHTML = segs
-      .map(([k, v]) => `<span><i class="${k}"></i>${STATUS_LABEL[k]} ${v}</span>`)
-      .join("");
+    const io = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((e) => e.isIntersecting)
+          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+        if (visible[0]) setActive(visible[0].target.id);
+      },
+      { rootMargin: "-18% 0px -70% 0px", threshold: 0.01 }
+    );
+    targets.forEach((el) => io.observe(el));
 
-    document.getElementById("iss-cat-chips").innerHTML = chipRow(window.ISSUE_CATS, cat, "data-cat");
-    document.getElementById("iss-status-chips").innerHTML = chipRow(window.ISSUE_STATUSES, status, "data-status");
-    document.getElementById("iss-count").textContent = `问题表 · ${rows.length} 条`;
-
-    document.getElementById("iss-table-body").innerHTML = rows
-      .map(
-        (i) => `<tr>
-          <td class="id">${i.id}</td>
-          <td class="title-cell">${i.title}</td>
-          <td>${CAT_LABEL[i.category]}</td>
-          <td><span class="iss-dot ${i.status}"></span>${STATUS_LABEL[i.status]}</td>
-          <td>${i.impact}</td>
-        </tr>`
-      )
-      .join("");
-
-    const openLive = new Set(["live", "ops"]);
-    document.getElementById("iss-list").innerHTML = rows
-      .map(
-        (i) => `<details class="iss-item"${openLive.has(i.status) ? " open" : ""}>
-          <summary>
-            <span class="iss-id">${i.id}</span>
-            <span class="iss-main">
-              <div class="iss-title">${i.title}</div>
-              <div class="iss-meta">${CAT_LABEL[i.category]} · 影响：${i.impact}</div>
-            </span>
-            <span class="iss-status"><span class="iss-dot ${i.status}"></span>${STATUS_LABEL[i.status]}</span>
-          </summary>
-          <div class="iss-body">
-            <p><strong>症状</strong> ${i.symptom}</p>
-            <p><strong>根因</strong> ${i.cause}</p>
-            <p><strong>处理</strong> ${i.action}</p>
-          </div>
-        </details>`
-      )
-      .join("");
-
-    bind();
+    if (location.hash) {
+      const id = location.hash.slice(1);
+      const el = document.getElementById(id);
+      if (el) {
+        if (el.tagName === "DETAILS") el.open = true;
+        el.scrollIntoView({ block: "start" });
+        setActive(id.startsWith("sec-") ? id : (el.closest("section") || {}).id);
+      }
+    }
   }
 
-  function bind() {
-    document.querySelectorAll("[data-cat]").forEach((btn) => {
-      btn.onclick = () => {
-        cat = btn.getAttribute("data-cat");
-        render();
-      };
-    });
-    document.querySelectorAll("[data-status]").forEach((btn) => {
-      btn.onclick = () => {
-        status = btn.getAttribute("data-status");
-        render();
-      };
-    });
-  }
-
-  document.getElementById("iss-updated").textContent = window.ISSUE_META.updated;
-  render();
+  document.getElementById("iss-updated").textContent = (window.ISSUE_META || {}).updated || "";
+  renderToc();
+  renderChapters();
+  spy();
 })();
