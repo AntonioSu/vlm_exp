@@ -1,4 +1,4 @@
-  <p class="tertiary">Sources: logs/exp2card/e*_4b{,_s3,_v2_s1}（<code>parse_4b_logs.py</code> + <code>gen_4b_js.py</code>）。Easy-Boxed 五组 150/150；S3 E1–E3/E5 150；E4 ckpt 150（日志空，曲线仍 ~111）；V2 目前 E1 GRPO 进行中（61/150，~77.18h）。pass rate = (critic/score/mean + 1)/2；DAPO 另可从 rollout_dump 看真实 sample accuracy。</p>
+  <p class="tertiary">pass rate = (critic/score/mean + 1)/2；DAPO 另可从 rollout_dump 看真实 sample accuracy。</p>
   <div class="detail-layout">
     <nav class="detail-toc" aria-label="目录" id="compare-toc">
       <p class="toc-heading">目录</p>
@@ -20,7 +20,7 @@
       <section class="detail-sec" id="cmp-sec-overview">
         <h2 class="sec-title">概览</h2>
         <div class="callout">
-          <div class="title">Easy-Boxed 已满；S3 E1–E3/E5 150；E4 ckpt 150（曲线 ~111）；V2 E1 GRPO 61/150</div>
+          <div class="title">Easy-Boxed / S3 / V2 对照</div>
           Easy-Boxed 末段 pass 挤在 88–91%（零优势 group 过多）。V2 用难度池 <code>mix_4b_band</code> + 统一 shaped overlong + KL=none（见 <code>scripts/train/experiments_v2/</code>），与 V1 尺度不同，单独看图。
         </div>
       </section>
@@ -208,7 +208,7 @@
       </section>
 
       <h2 class="sec-title" style="margin-top:28px">V2（难度池 · shaped · no-KL）</h2>
-      <p class="tertiary">数据源：<code>logs/exp2card/e*_4b_v2_s1/</code>（<code>scripts/train/experiments_v2/run_exp_v2.sh</code>）。当前仅 E1 GRPO 有日志（61/150，~77.18h）；后续算法跑起来会自动出现。</p>
+      <p class="tertiary">数据源：<code>logs/exp2card/e*_4b_v2_s1/</code>（<code>scripts/train/experiments_v2/run_exp_v2.sh</code>）。</p>
       <section class="detail-sec" id="cmp-sec-v2-pass">
         <h2>V2 Pass rate（%，逐 step）</h2>
         <div class="chart-card">
@@ -250,6 +250,5 @@
         </div>
       </section>
 
-      <p class="tertiary">刷新数据：<code>python3 scripts/monitoring/4b/parse_4b_logs.py && python3 scripts/monitoring/4b/gen_4b_js.py</code>。纯静态页，<code>bash serve.sh</code> 本地访问。</p>
     </div>
   </div>
