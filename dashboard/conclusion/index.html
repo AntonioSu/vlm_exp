@@ -69,7 +69,7 @@
           <div class="title">没有「全能冠军」——按目标选轴，再选算法</div>
           <strong>Size</strong>：2B 算法排序更散；4B 训练 pass 挤一团，必须看 offline。
           <strong>Param</strong>：有 KL 更稳、关 KL 更快也更极端；DAPO 的 overlong 是长度主开关。
-          <strong>MM</strong>：固定 GRPO + 2B，只改图文占比；M0 formal 文本强、Geo3K 已有基线；纯图文 M1 light 文本崩得很快。
+          <strong>MM</strong>：固定 GRPO + 2B，只改图文占比；<strong>50%（M2）</strong> Geo 最高且文本不掉；100% 伤 AIME；20% 后期 Geo 掉回 M0。
           <strong>Algo</strong>：吞吐看 DAPO；2B 定盘数学看 RLOO；通识峰值看 Dr.GRPO / REINFORCE++。
         </div>
         <div class="verdict-grid four">
@@ -85,8 +85,8 @@
           </div>
           <div class="verdict-card">
             <p class="kicker"><span class="tag tag-mm">MM</span></p>
-            <h3>配比是唯一自变量</h3>
-            <p>M0=E1 文本端点；M1 100% 图文换视觉但文本 light 崩；M2/M3 formal 评测待补。</p>
+            <h3>50% 是当前 Pareto</h3>
+            <p>M2@130 Geo <strong>73.8%</strong> 且 MATH/MMLU 不低于 M0；M1 伤 AIME；M3 后期 Geo 掉回基线。</p>
           </div>
           <div class="verdict-card">
             <p class="kicker"><span class="tag tag-algo">Algo</span></p>
@@ -268,35 +268,42 @@
               <td>100% Geo3K</td>
               <td>150/150 满</td>
               <td>
-                light 探查：Geo3K @70→@100 = <strong>13.6% → 14.8%</strong>（n=1 / 512 tok，不可与 M0 formal 横比绝对值）。
-                文本 light@70：MATH-500 23.6% / AIME25 6.7% / MMLU≈1% —— <strong>纯图文对文本能力杀伤很大</strong>（口径弱，趋势可信）。
+                formal Geo @10–80：<strong>66.1 → 69.1%（@60 峰）→ 69.0%（@80）</strong>，明显高于 M0 57.3%。
+                文本 @10–80：MATH-500 <strong>75–77%</strong>（到 @70）、AIME24 <strong>14–20%</strong>（M0 35.4）—— <strong>纯图文换视觉、伤数学</strong>。@80 缺 MATH。
               </td>
             </tr>
             <tr>
               <td class="algo">M2</td>
               <td>50% 混合</td>
               <td>150/150 满</td>
-              <td>训练曲线已同步（mixed reward 可按 source 拆分）；<strong>formal / light 离线评测待补</strong>——配比权衡曲线的关键中间点。</td>
+              <td>
+                <strong>formal Geo 已满 10–150</strong>：峰 @130 <strong>73.8%</strong>，@150 <strong>70.2%</strong>。
+                @150 文本：MATH-500 <strong>87.6%</strong> · MMLU <strong>80.5%</strong>（略高于 M0）、AIME24 31.7%（略低于 M0 35.4）。
+                当前配比赢家：视觉涨最多，文本基本保住。缺 @110/120/130 文本。
+              </td>
             </tr>
             <tr>
               <td class="algo">M3</td>
               <td>20% 混合</td>
               <td>150/150 满</td>
-              <td>训练曲线已同步（mixed overall；dump 无 modality tag）；<strong>formal / light 离线评测待补</strong>——配比权衡曲线的低图文端点。</td>
+              <td>
+                formal Geo @10–120：开局 @10 <strong>65.9%</strong> 与 M1/M2 接近，随后跌到 @100 <strong>51.9%</strong>，@120 回 <strong>57.0%</strong>（≈ M0）。
+                文本后期走弱：@120 MATH <strong>75.6%</strong>（M0 86.4）、AIME24 <strong>16.3%</strong>。20% 图文不够稳住视觉，后期还伤文本。
+              </td>
             </tr>
           </tbody>
         </table>
 
         <div class="verdict-grid" style="margin-top:16px">
           <div class="verdict-card">
-            <p class="kicker"><span class="tag tag-mm">已成立（弱）</span></p>
+            <p class="kicker"><span class="tag tag-mm">已成立</span></p>
             <h3>100% 图文会严重伤文本</h3>
-            <p>M1 light 文本探针断崖式下跌；若要保数学，不要直接上纯 Geo3K 长训，优先等 M2/M3 权衡点。</p>
+            <p>M1 formal 文本 @10–50：AIME24 掉到 14–19%（M0 35.4）、MATH 75–77%（M0 86.4）。不要直接上纯 Geo3K 长训。</p>
           </div>
           <div class="verdict-card">
-            <p class="kicker"><span class="tag tag-mm">待闭合</span></p>
-            <h3>视觉–文本 Pareto 还没画完</h3>
-            <p>需要 M1–M3 同口径 formal（Geo3K n=8 + evalscope）才能定量回答「20% / 50% 值不值」。</p>
+            <p class="kicker"><span class="tag tag-mm">当前最优</span></p>
+            <h3>50% 混合（M2）Pareto 最好</h3>
+            <p>Geo 峰 73.8%，@150 仍 70.2%；MATH/MMLU 略高于 M0。20%（M3）后期 Geo 掉回基线、AIME 也掉。</p>
           </div>
           <div class="verdict-card">
             <p class="kicker"><span class="tag tag-both">与算法轴正交</span></p>
@@ -306,7 +313,7 @@
           <div class="verdict-card">
             <p class="kicker"><span class="tag tag-param">下一刀候选</span></p>
             <h3>配比结论出来后再动别的轴</h3>
-            <p>视觉编码器冻/解冻、分辨率、底座（Qwen3-VL）——等 M2/M3 formal 有信号再开，避免组数爆炸。</p>
+            <p>视觉编码器冻/解冻、分辨率、底座（Qwen3-VL）——配比信号已出（50% 优于 20%/100%），下一刀可以动这些，仍避免与算法网格交叉。</p>
           </div>
         </div>
       </section>
@@ -389,7 +396,7 @@
           <li><strong>MMLU：</strong> 2B 峰值 E3@100 = 82.4%，定盘@150 偏 E4/E5；4B 全程 90–92% 窄带，峰值 E3@120 = 92.5%。通识上 Dr.GRPO / REINFORCE++ 更常出头。</li>
           <li><strong>S3 vs Easy（2B）：</strong> S3 offline 数学整体低于 Easy（aime25@150 约 22–26%）。Stage-3 数据更难，不能拿 Easy 的绝对分去比 S3。</li>
           <li><strong>Agent：</strong> 数学 RL 对 agent 几乎无增益——BFCL MULTI_TURN 仍是最弱环；tau n=40，排序只可作弱证据。</li>
-          <li><strong>MM：</strong> M0 formal 已给出文本+Geo3K 双基线；M1 light 只可看趋势；M2/M3 formal 齐了才能谈配比 Pareto。</li>
+          <li><strong>MM：</strong> M2（50%）formal 已满 150，Geo 峰 73.8% 且文本不掉；M1 伤 AIME；M3 20% 后期 Geo≈M0。M1 Geo 仅到 @70，M3 到 @120。</li>
           <li><strong>训练验证 ≠ offline：</strong> 尤其 4B E1 训练 aime24@150 走低时，必须以 evalscope 为准再下结论。</li>
         </ul>
       </section>
@@ -420,8 +427,8 @@
           </div>
           <div class="pick-card">
             <p class="when">MM · 要视觉且保文本</p>
-            <h3>别直接上 M1 纯图文</h3>
-            <p>等 M2（50%）/ M3（20%）formal；现阶段证据显示 100% Geo3K 文本崩得快。</p>
+            <h3>要视觉且保文本：M2 50%</h3>
+            <p>别上 M1 纯图文（AIME 腰斩）。M3 20% 后期 Geo 掉回 M0。M1 Geo 仍缺 @80–150。</p>
           </div>
           <div class="pick-card">
             <p class="when">Algo · 要上线 ckpt</p>
@@ -435,8 +442,8 @@
           </div>
           <div class="pick-card">
             <p class="when">跨轴 · 下一轮实验</p>
-            <h3>先闭合 MM formal，再开新轴</h3>
-            <p>配比 Pareto → 再考虑冻视觉塔 / 分辨率 / 4B×MM。避免与算法网格同时炸开。</p>
+            <h3>配比有信号后再开新轴</h3>
+            <p>50% 已优于 20%/100%。下一刀：冻视觉塔 / 分辨率 / 4B×MM。避免与算法网格同时炸开。</p>
           </div>
         </div>
       </section>
@@ -452,7 +459,7 @@
         <ul class="bullet-list">
           <li><strong>Size：</strong> 4B S3 尚未五组跑满；S3 上的算法排序暂以 Easy-Boxed + 已有 S3 曲线为限。</li>
           <li><strong>Param：</strong> 无 lr / batch / n 网格；「Param」节是开关效应，不是超参最优解。</li>
-          <li><strong>MM：</strong> M1–M3 训练均已 150/150；formal 评测未齐；M1 light 不可与 M0 比绝对值。</li>
+          <li><strong>MM：</strong> M1–M3 训练均已 150/150。M2 formal 满 150；M1 Geo 仅 @10–70（文本 @10–50）；M3 Geo @10–120。缺测点见曲线断点，不要把对照表最新 ckpt 当成峰值。</li>
           <li><strong>Algo：</strong> PPO 未纳入——不能推出「critic-free 一定优于 PPO」。Agent 评测噪声大，不宜细排名次。</li>
           <li><strong>踩坑全表：</strong> 环境 / 奖励静默失败 / 训练信号 / 评测链路见 <a href="../issues/index.html">项目问题</a>。</li>
         </ul>
