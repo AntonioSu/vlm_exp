@@ -1,4 +1,4 @@
-  <p class="tertiary">Sources: logs/exp2card/e*_2b{,_s3,_v2_s1} 与 <code>opd_distill_2b_from_4b_easy_24k</code> / <code>opsd_distill_2b_from_2b_easy_24k</code>（<code>parse_2b_logs.py</code> + <code>gen_2b_js.py</code>）。Easy-Boxed / S3 五组均 150/150；OPD 蒸馏已满 500/500（~39.13h）；OPSD 自蒸馏 87/500（~10.7h，仍在跑）；Easy-32K 1053（~191.14h，仍在跑）；V2 E1 GRPO 续训中（~250/300），E2 尚无 step。pass rate = (critic/score/mean + 1)/2（shaped 下不用 rewards）。</p>
+  <p class="tertiary">pass rate = (critic/score/mean + 1)/2（shaped 下不用 rewards）。</p>
   <div class="detail-layout">
     <nav class="detail-toc" aria-label="目录" id="compare-toc">
       <p class="toc-heading">目录</p>
@@ -23,8 +23,8 @@
       <section class="detail-sec" id="cmp-sec-overview">
         <h2 class="sec-title">概览</h2>
         <div class="callout">
-          <div class="title">Easy-Boxed / S3 五组已满 150；OPD 蒸馏已满 500/500；OPSD 自蒸馏 87/500 进行中；Easy-32K 1053 仍在跑；V2 E1 GRPO 续训 ~250/300</div>
-          V1 两块（Easy-Boxed / S3）保持原结论。V2 改三项：难度池 <code>mix_2b_band</code>、全算法统一 overlong shaped、KL/ref 关掉。OPD / OPSD 是另一条线：2B 学生 on-policy 采样，冻结教师给 top-k（OPD=4B teacher，OPSD=2B 自己的冻结 init；见 <code>scripts/train/experiments_opd_distill/</code>）。下方三块各自独立图；OPD / OPSD 训练曲线见本页末，并叠在 E2 页。
+          <div class="title">Easy-Boxed / S3 / V2 / OPD / OPSD 对照</div>
+          V1 两块（Easy-Boxed / S3）保持原结论。V2 改三项：难度池 <code>mix_2b_band</code>、全算法统一 overlong shaped、KL/ref 关掉。OPD / OPSD 是另一条线：2B 学生 on-policy 采样，冻结教师给 top-k（OPD=4B teacher，OPSD=2B 自己的冻结 init；见 <code>scripts/train/experiments_opd_distill/</code>）。下方三块各自独立图；完整曲线见「OPD 蒸馏」/「OPSD 自蒸馏」子页，本页末与 E2 页仍叠对照。
         </div>
       </section>
 
@@ -141,7 +141,7 @@
         </div>
 
         <h3 class="cpt">OPD / OPSD 蒸馏 vs Easy-24K DAPO</h3>
-        <p class="cpt-p">同数据（easy boxed）同 24K 窗口；换算法：学生自己采样，冻结教师在整段轨迹上给 top-k。OPD 教师是 4B，OPSD 教师是学生自己的冻结 2B init。脚本 <code>experiments_opd_distill/run_opd_easy_24k_2b.sh</code> / <code>run_opsd_easy_24k_2b.sh</code>。OPD 已从 <code>global_step_150</code> 续满 <strong>500/500</strong>（~39.13h）；OPSD 目标同样 500 步，进行中。</p>
+        <p class="cpt-p">同数据（easy boxed）同 24K 窗口；换算法：学生自己采样，冻结教师在整段轨迹上给 top-k。OPD 教师是 4B，OPSD 教师是学生自己的冻结 2B init。脚本 <code>experiments_opd_distill/run_opd_easy_24k_2b.sh</code> / <code>run_opsd_easy_24k_2b.sh</code>。</p>
         <div class="table-wrap" style="margin-top:10px; overflow-x:auto">
           <table class="hp-table">
             <thead>
@@ -247,7 +247,7 @@
                 <td>total_training_steps</td>
                 <td>已跑过 150，后续续到 321</td>
                 <td>已满 <span class="mono">500/500</span>（~39.13h）</td>
-                <td>87/500（~10.7h，仍在跑）</td>
+                <td>500/500（~61.90h）</td>
               </tr>
               <tr>
                 <td>save_freq</td>
@@ -345,7 +345,7 @@
                 <td><span class="mono">stage1/polaris_easy_boxed.parquet</span><br>同 Easy</td>
                 <td>2B student 冷启动<br>冻结 2B teacher（同一份 init）<br><span class="mono">experiments_opd_distill/</span></td>
                 <td>超参与 OPD 对齐；只换教师为 2B 冻结拷贝</td>
-                <td class="mono">87/500 进行中</td>
+                <td class="mono">500/500 已满</td>
               </tr>
               <tr>
                 <td>Ext · easy-cont</td>
@@ -423,7 +423,7 @@
                 </li>
                 <li class="hp-branch-dash">
                   <span class="hp-node">OPSD 2B←2B</span>
-                  <span class="hp-meta">easy · 24K · 冻结 2B teacher · 87/500</span>
+                  <span class="hp-meta">easy · 24K · 冻结 2B teacher · 500/500</span>
                 </li>
               </ul>
             </li>
@@ -481,7 +481,7 @@
       </section>
 
       <h2 class="sec-title" style="margin-top:28px">S3（E1–E5）</h2>
-      <p class="tertiary">S3 数据源：logs/exp2card/e1_grpo_2b_s3 … e5_reinforce_pp_2b_s3。五组均已满 150 步（E5 的 console 日志因续训重启被覆盖，曲线改由 tensorboard/exp2card/e5_reinforce_pp_2b_s3 的 event 文件重建）。</p>
+      <p class="tertiary">S3 数据源：logs/exp2card/e1_grpo_2b_s3 … e5_reinforce_pp_2b_s3。</p>
       <section class="detail-sec" id="cmp-sec-s3-pass">
         <h2>S3 Pass rate（%，逐 step）</h2>
         <div class="chart-card">
@@ -524,7 +524,7 @@
       </section>
 
       <h2 class="sec-title" style="margin-top:28px">V2（难度池 · shaped · no-KL）</h2>
-      <p class="tertiary">数据源：<code>logs/exp2card/e*_2b_v2_s1/</code>（<code>scripts/train/experiments_v2/run_exp_v2.sh</code>）。E1 GRPO 已从 150 续到 ~250/300（对比图用完整步数轴）；E2 DAPO 目录已建、尚无 step，出日志后会自动出现。</p>
+      <p class="tertiary">数据源：<code>logs/exp2card/e*_2b_v2_s1/</code>（<code>scripts/train/experiments_v2/run_exp_v2.sh</code>）。</p>
       <section class="detail-sec" id="cmp-sec-v2-pass">
         <h2>V2 Pass rate（%，逐 step）</h2>
         <div class="chart-card">
@@ -567,7 +567,7 @@
       </section>
 
       <h2 class="sec-title" style="margin-top:28px">OPD / OPSD（easy × 24K 蒸馏）</h2>
-      <p class="tertiary">数据源：<code>logs/exp2card/opd_distill_2b_from_4b_easy_24k/</code> · <code>opsd_distill_2b_from_2b_easy_24k/</code>（<code>parse_2b_logs.py</code> + <code>gen_2b_js.py</code>）。对照是 Easy-24K DAPO（点线）。金色短点 = OPD 2B←4B（500/500）；青色密点 = OPSD 2B←2B（进行中）。pass 为 5-step 滑动平均。</p>
+      <p class="tertiary">对照是 Easy-24K DAPO（点线）。金色短点 = OPD 2B←4B；青色密点 = OPSD 2B←2B。pass 为 5-step 滑动平均。</p>
       <section class="detail-sec" id="cmp-sec-opd-pass">
         <h2>OPD Pass rate（%，MA5）</h2>
         <div class="chart-card">

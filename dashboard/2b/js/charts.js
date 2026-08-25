@@ -19,6 +19,11 @@ function e32kSeries(name, data, color) {
   return { name, data, color: color || COLORS.e32k || "#6366f1", dash: [3, 1, 1, 1] };
 }
 
+// Think32K overlay: long dash-dot (DAPO easy × thinking, max_response_length=32768).
+function think32kSeries(name, data, color) {
+  return { name, data, color: color || COLORS.think32k || "#14b8a6", dash: [6, 2, 1, 2] };
+}
+
 // S1-24K overlay: dash-dot-dash (DAPO × S1 × 24K cold-start, max_response_length=24576).
 function s124kSeries(name, data, color) {
   return { name, data, color: color || COLORS.s124k || "#0284c7", dash: [5, 2, 1, 2] };
@@ -114,6 +119,11 @@ const E24K_ALT = {
 // Distinct Easy-32K tint vs Easy-24K / Ext on the same chart.
 const E32K_ALT = {
   e2: "#6366f1", // indigo  vs violet + teal + crimson
+};
+
+// Distinct Think32K tint vs Easy-32K.
+const THINK32K_ALT = {
+  e2: "#14b8a6", // teal    vs indigo Easy-32K
 };
 
 // Distinct S1-24K tint vs Easy-24K/32K / Ext on the same chart.
@@ -750,13 +760,14 @@ function fillExpStats(key, e) {
   const el = document.getElementById(`${key}-stats`);
   if (!el || !e.pass) return;
   const n = e.pass.length;
+  const target = (key === "opd" || key === "opsd") ? 500 : 150;
   const last10 = e.pass.slice(-10);
   const first5 = e.pass.slice(0, 5);
   const peak = e.pass.reduce((best, v, i) => (v != null && (best.v == null || v > best.v) ? { v, i: i + 1 } : best), { v: null, i: 0 });
   const avgStepMin = meanOf(e.stepMin || []);
   const fmt = (v, d = 1) => (v == null ? "—" : Number(v).toFixed(d));
   el.innerHTML = [
-    `<div class="stat"><div class="stat-val">${n}/150</div><div class="stat-label">训练步数</div></div>`,
+    `<div class="stat"><div class="stat-val">${n}/${target}</div><div class="stat-label">训练步数</div></div>`,
     `<div class="stat"><div class="stat-val">${fmt(meanOf(last10))}%</div><div class="stat-label">末 10 步 pass 均值</div></div>`,
     `<div class="stat"><div class="stat-val">${fmt(peak.v)}%</div><div class="stat-label">峰值（step ${peak.i}）</div></div>`,
     `<div class="stat"><div class="stat-val">${fmt(meanOf(first5))}%</div><div class="stat-label">首 5 步 pass 均值</div></div>`,
@@ -765,35 +776,45 @@ function fillExpStats(key, e) {
 }
 
 function renderExpPanel(key) {
-  const e = EXP[key];
+  const isDistill = key === "opd" || key === "opsd";
+  let e = EXP[key];
+  if (key === "opd") e = EXP.opd_e2 || e;
+  if (key === "opsd") e = EXP.opsd_e2 || e;
   if (!e) return;
   const s3Key = "s3_" + key;
-  const s = EXP[s3Key] || null;
-  const v = EXP["v2_" + key] || null;
-  const e24 = EXP["e24k_" + key] || null;
-  const e32 = EXP["e32k_" + key] || null;
-  const s124 = EXP["s124k_" + key] || null;
-  const extEasy = EXP["ext_easy_" + key] || null;
-  const extE24k = EXP["ext_e24k_" + key] || null;
-  const extS1 = EXP["ext_s1_" + key] || null;
-  const opd = EXP["opd_" + key] || null;
-  const opsd = EXP["opsd_" + key] || null;
+  const s = isDistill ? null : (EXP[s3Key] || null);
+  const v = isDistill ? null : (EXP["v2_" + key] || null);
+  const e24 = isDistill ? (EXP.e24k_e2 || null) : (EXP["e24k_" + key] || null);
+  const e32 = isDistill ? null : (EXP["e32k_" + key] || null);
+  const think32 = isDistill ? null : (EXP["think32k_" + key] || null);
+  const s124 = isDistill ? null : (EXP["s124k_" + key] || null);
+  const extEasy = isDistill ? null : (EXP["ext_easy_" + key] || null);
+  const extE24k = isDistill ? null : (EXP["ext_e24k_" + key] || null);
+  const extS1 = isDistill ? null : (EXP["ext_s1_" + key] || null);
+  const opd = key === "opd" ? null : (isDistill ? (EXP.opd_e2 || null) : (EXP["opd_" + key] || null));
+  const opsd = key === "opsd" ? null : (isDistill ? (EXP.opsd_e2 || null) : (EXP["opsd_" + key] || null));
+  const srcKey = isDistill ? "e2" : key;
+  const primName = key === "opd" ? (e.label || "OPD 2B←4B")
+    : key === "opsd" ? (e.label || "OPSD 2B←2B")
+    : "Easy-Boxed";
   const s3c = S3_ALT[key] || COLORS.s3;
   const v2c = V2_ALT[key] || COLORS.v2;
-  const e24c = E24K_ALT[key] || COLORS.e24k || "#7c3aed";
+  const e24c = E24K_ALT[srcKey] || COLORS.e24k || "#7c3aed";
   const e32c = E32K_ALT[key] || COLORS.e32k || "#6366f1";
+  const think32c = THINK32K_ALT[key] || COLORS.think32k || "#14b8a6";
   const s124c = S124K_ALT[key] || COLORS.s124k || "#0284c7";
   const extEc = EXT_EASY_ALT[key] || COLORS.extEasy || "#0e7490";
   const extE24c = EXT_E24K_ALT[key] || COLORS.extE24k || "#b45309";
   const extSc = EXT_S1_ALT[key] || COLORS.extS1 || "#be123c";
-  const opdc = OPD_ALT[key] || COLORS.opd || "#ca8a04";
-  const opsdc = OPSD_ALT[key] || COLORS.opsd || "#0891b2";
+  const opdc = OPD_ALT[srcKey] || COLORS.opd || "#ca8a04";
+  const opsdc = OPSD_ALT[srcKey] || COLORS.opsd || "#0891b2";
   const axisN = Math.max(
     (e.pass || []).length,
     s ? (s.pass || []).length : 0,
     v ? (v.pass || []).length : 0,
     e24 ? (e24.pass || []).length : 0,
     e32 ? (e32.pass || []).length : 0,
+    think32 ? (think32.pass || []).length : 0,
     s124 ? (s124.pass || []).length : 0,
     extEasy ? (extEasy.pass || []).length : 0,
     extE24k ? (extE24k.pass || []).length : 0,
@@ -806,6 +827,7 @@ function renderExpPanel(key) {
   const v2o = (name, data) => v2Series(name, data, v2c);
   const e24o = (name, data) => e24kSeries(name, data, e24c);
   const e32o = (name, data) => e32kSeries(name, data, e32c);
+  const think32o = (name, data) => think32kSeries(name, data, think32c);
   const s124o = (name, data) => s124kSeries(name, data, s124c);
   const extEo = (name, data) => extEasySeries(name, data, extEc);
   const extE24o = (name, data) => extE24kSeries(name, data, extE24c);
@@ -821,6 +843,7 @@ function renderExpPanel(key) {
   if (v) allPass.push(...v.pass.filter(x => x != null));
   if (e24) allPass.push(...e24.pass.filter(x => x != null));
   if (e32) allPass.push(...e32.pass.filter(x => x != null));
+  if (think32) allPass.push(...think32.pass.filter(x => x != null));
   if (s124) allPass.push(...s124.pass.filter(x => x != null));
   if (extEasy) allPass.push(...extEasy.pass.filter(x => x != null));
   if (extE24k) allPass.push(...extE24k.pass.filter(x => x != null));
@@ -831,12 +854,13 @@ function renderExpPanel(key) {
   const passYMax = Math.min(100, Math.ceil((passMax + 10) / 10) * 10);
   if (passLegend) {
     const items = [
-      { name: "Easy-Boxed", data: passMA, color: e.color },
+      { name: primName, data: passMA, color: e.color },
     ];
     if (s) items.push(s3o("S3", movingAvg(s.pass, 5)));
     if (v) items.push(v2o("V2", movingAvg(v.pass, 5)));
     if (e24) items.push(e24o("Easy-24K", movingAvg(e24.pass, 5)));
     if (e32) items.push(e32o("Easy-32K", movingAvg(e32.pass, 5)));
+    if (think32) items.push(think32o("Think32K", movingAvg(think32.pass, 5)));
     if (s124) items.push(s124o("S1-24K", movingAvg(s124.pass, 5)));
     if (extEasy) items.push(extEo("Ext easy-cont", movingAvg(extEasy.pass, 5)));
     if (extE24k) items.push(extE24o("Ext easy-cont-24K", movingAvg(extE24k.pass, 5)));
@@ -849,11 +873,12 @@ function renderExpPanel(key) {
       yMin: 0, yMax: passYMax, valueSuffix: "%", height: 240,
     }));
   } else {
-    const items = [{ name: "Easy-Boxed pass", data: e.pass, color: e.color }];
+    const items = [{ name: primName + " pass", data: e.pass, color: e.color }];
     if (s) items.push(s3o("S3 pass", s.pass));
     if (v) items.push(v2o("V2 pass", v.pass));
     if (e24) items.push(e24o("Easy-24K pass", e24.pass));
     if (e32) items.push(e32o("Easy-32K pass", e32.pass));
+    if (think32) items.push(think32o("Think32K pass", think32.pass));
     if (s124) items.push(s124o("S1-24K pass", s124.pass));
     if (extEasy) items.push(extEo("Ext easy-cont pass", extEasy.pass));
     if (extE24k) items.push(extE24o("Ext easy-cont-24K pass", extE24k.pass));
@@ -868,11 +893,12 @@ function renderExpPanel(key) {
 
   if (e.rolloutAcc && e.rolloutAcc.length && document.getElementById(`chart-${key}-racc`)) {
     const raccMA = movingAvg(e.rolloutAcc, 5);
-    const raccItems = [{ name: "Easy-Boxed", data: raccMA, color: e.color }];
+    const raccItems = [{ name: primName, data: raccMA, color: e.color }];
     if (s && s.rolloutAcc) raccItems.push(s3o("S3", movingAvg(s.rolloutAcc, 5)));
     if (v && v.rolloutAcc) raccItems.push(v2o("V2", movingAvg(v.rolloutAcc, 5)));
     if (e24 && e24.rolloutAcc) raccItems.push(e24o("Easy-24K", movingAvg(e24.rolloutAcc, 5)));
     if (e32 && e32.rolloutAcc) raccItems.push(e32o("Easy-32K", movingAvg(e32.rolloutAcc, 5)));
+    if (think32 && think32.rolloutAcc) raccItems.push(think32o("Think32K", movingAvg(think32.rolloutAcc, 5)));
     if (s124 && s124.rolloutAcc) raccItems.push(s124o("S1-24K", movingAvg(s124.rolloutAcc, 5)));
     if (extEasy && extEasy.rolloutAcc) raccItems.push(extEo("Ext easy-cont", movingAvg(extEasy.rolloutAcc, 5)));
     if (extE24k && extE24k.rolloutAcc) raccItems.push(extE24o("Ext easy-cont-24K", movingAvg(extE24k.rolloutAcc, 5)));
@@ -883,6 +909,7 @@ function renderExpPanel(key) {
     if (s && s.rolloutAcc) allRacc.push(...s.rolloutAcc.filter(v => v != null));
     if (e24 && e24.rolloutAcc) allRacc.push(...e24.rolloutAcc.filter(v => v != null));
     if (e32 && e32.rolloutAcc) allRacc.push(...e32.rolloutAcc.filter(v => v != null));
+    if (think32 && think32.rolloutAcc) allRacc.push(...think32.rolloutAcc.filter(v => v != null));
     if (s124 && s124.rolloutAcc) allRacc.push(...s124.rolloutAcc.filter(v => v != null));
     if (extEasy && extEasy.rolloutAcc) allRacc.push(...extEasy.rolloutAcc.filter(v => v != null));
     if (extE24k && extE24k.rolloutAcc) allRacc.push(...extE24k.rolloutAcc.filter(v => v != null));
@@ -905,11 +932,12 @@ function renderExpPanel(key) {
   }
 
   {
-    const items = [{ name: "Easy-Boxed", data: e.len, color: e.color }];
+    const items = [{ name: primName, data: e.len, color: e.color }];
     if (s) items.push(s3o("S3", s.len));
     if (v) items.push(v2o("V2", v.len));
     if (e24) items.push(e24o("Easy-24K", e24.len));
     if (e32) items.push(e32o("Easy-32K", e32.len));
+    if (think32) items.push(think32o("Think32K", think32.len));
     if (s124) items.push(s124o("S1-24K", s124.len));
     if (extEasy) items.push(extEo("Ext easy-cont", extEasy.len));
     if (extE24k) items.push(extE24o("Ext easy-cont-24K", extE24k.len));
@@ -918,7 +946,7 @@ function renderExpPanel(key) {
     if (opsd) items.push(opsdo("OPSD 2B←2B", opsd.len));
     const lenRefs = [{ value: 16384, label: "16K cap", tone: "danger" }];
     if (e24 || s124 || extE24k || opd || opsd) lenRefs.push({ value: 24576, label: "24K cap", tone: "neutral" });
-    if (e32) lenRefs.push({ value: 32768, label: "32K cap", tone: "neutral" });
+    if (e32 || think32) lenRefs.push({ value: 32768, label: "32K cap", tone: "neutral" });
     const lenLegend = document.getElementById(`legend-${key}-len`);
     if (lenLegend) {
       renderLegend(lenLegend, items, (visible) => drawLineChart(`chart-${key}-len`, `tip-${key}-len`, {
@@ -936,11 +964,12 @@ function renderExpPanel(key) {
   }
 
   if (e.trunc && document.getElementById(`chart-${key}-trunc`)) {
-    const items = [{ name: "Easy-Boxed clip@16K", data: e.trunc, color: e.color }];
+    const items = [{ name: isDistill ? primName + " clip@24K" : "Easy-Boxed clip@16K", data: e.trunc, color: e.color }];
     if (s && s.trunc) items.push(s3o("S3 clip@16K", s.trunc));
     if (v && v.trunc) items.push(v2o("V2 clip@16K", v.trunc));
     if (e24 && e24.trunc) items.push(e24o("Easy-24K clip@24K", e24.trunc));
     if (e32 && e32.trunc) items.push(e32o("Easy-32K clip@32K", e32.trunc));
+    if (think32 && think32.trunc) items.push(think32o("Think32K clip@32K", think32.trunc));
     if (s124 && s124.trunc) items.push(s124o("S1-24K clip@24K", s124.trunc));
     if (extEasy && extEasy.trunc) items.push(extEo("Ext easy-cont clip@16K", extEasy.trunc));
     if (extE24k && extE24k.trunc) items.push(extE24o("Ext easy-cont-24K clip@24K", extE24k.trunc));
@@ -954,11 +983,12 @@ function renderExpPanel(key) {
   }
 
   if (e.promptLen && document.getElementById(`chart-${key}-promptlen`)) {
-    const items = [{ name: "Easy-Boxed", data: e.promptLen, color: e.color }];
+    const items = [{ name: primName, data: e.promptLen, color: e.color }];
     if (s && s.promptLen) items.push(s3o("S3", s.promptLen));
     if (v && v.promptLen) items.push(v2o("V2", v.promptLen));
     if (e24 && e24.promptLen) items.push(e24o("Easy-24K", e24.promptLen));
     if (e32 && e32.promptLen) items.push(e32o("Easy-32K", e32.promptLen));
+    if (think32 && think32.promptLen) items.push(think32o("Think32K", think32.promptLen));
     if (s124 && s124.promptLen) items.push(s124o("S1-24K", s124.promptLen));
     if (extEasy && extEasy.promptLen) items.push(extEo("Ext easy-cont", extEasy.promptLen));
     if (extE24k && extE24k.promptLen) items.push(extE24o("Ext easy-cont-24K", extE24k.promptLen));
@@ -974,12 +1004,13 @@ function renderExpPanel(key) {
   const lossLegend = document.getElementById(`legend-${key}-loss`);
   {
     const items = [
-      { name: "Easy-Boxed loss", data: e.loss, color: e.color },
+      { name: primName + " loss", data: e.loss, color: e.color },
     ];
     if (s) items.push(s3o("S3 loss", s.loss));
     if (v) items.push(v2o("V2 loss", v.loss));
     if (e24) items.push(e24o("Easy-24K loss", e24.loss));
     if (e32) items.push(e32o("Easy-32K loss", e32.loss));
+    if (think32) items.push(think32o("Think32K loss", think32.loss));
     if (s124) items.push(s124o("S1-24K loss", s124.loss));
     if (extEasy) items.push(extEo("Ext easy-cont loss", extEasy.loss));
     if (extE24k) items.push(extE24o("Ext easy-cont-24K loss", extE24k.loss));
@@ -998,11 +1029,12 @@ function renderExpPanel(key) {
   }
 
   {
-    const items = [{ name: "Easy-Boxed entropy", data: e.ent, color: e.color }];
+    const items = [{ name: primName + " entropy", data: e.ent, color: e.color }];
     if (s) items.push(s3o("S3 entropy", s.ent));
     if (v) items.push(v2o("V2 entropy", v.ent));
     if (e24) items.push(e24o("Easy-24K entropy", e24.ent));
     if (e32) items.push(e32o("Easy-32K entropy", e32.ent));
+    if (think32) items.push(think32o("Think32K entropy", think32.ent));
     if (s124) items.push(s124o("S1-24K entropy", s124.ent));
     if (extEasy) items.push(extEo("Ext easy-cont entropy", extEasy.ent));
     if (extE24k) items.push(extE24o("Ext easy-cont-24K entropy", extE24k.ent));
@@ -1015,11 +1047,12 @@ function renderExpPanel(key) {
   }
 
   if (e.klLoss && e.klLoss.some((x) => x != null) && document.getElementById(`chart-${key}-klloss`)) {
-    const items = [{ name: "Easy-Boxed kl_loss ×100", data: e.klLoss, color: e.color }];
+    const items = [{ name: primName + " kl_loss ×100", data: e.klLoss, color: e.color }];
     if (s && s.klLoss && s.klLoss.some(x => x != null)) items.push(s3o("S3 kl_loss ×100", s.klLoss));
     if (v && v.klLoss && v.klLoss.some(x => x != null)) items.push(v2o("V2 kl_loss ×100", v.klLoss));
     if (e24 && e24.klLoss && e24.klLoss.some(x => x != null)) items.push(e24o("Easy-24K kl_loss ×100", e24.klLoss));
     if (e32 && e32.klLoss && e32.klLoss.some(x => x != null)) items.push(e32o("Easy-32K kl_loss ×100", e32.klLoss));
+    if (think32 && think32.klLoss && think32.klLoss.some(x => x != null)) items.push(think32o("Think32K kl_loss ×100", think32.klLoss));
     if (s124 && s124.klLoss && s124.klLoss.some(x => x != null)) items.push(s124o("S1-24K kl_loss ×100", s124.klLoss));
     if (extEasy && extEasy.klLoss && extEasy.klLoss.some(x => x != null)) items.push(extEo("Ext easy-cont kl_loss ×100", extEasy.klLoss));
     if (extE24k && extE24k.klLoss && extE24k.klLoss.some(x => x != null)) items.push(extE24o("Ext easy-cont-24K kl_loss ×100", extE24k.klLoss));
@@ -1032,11 +1065,12 @@ function renderExpPanel(key) {
   }
 
   {
-    const items = [{ name: "Easy-Boxed grad_norm", data: e.grad, color: e.color }];
+    const items = [{ name: primName + " grad_norm", data: e.grad, color: e.color }];
     if (s) items.push(s3o("S3 grad_norm", s.grad));
     if (v) items.push(v2o("V2 grad_norm", v.grad));
     if (e24) items.push(e24o("Easy-24K grad_norm", e24.grad));
     if (e32) items.push(e32o("Easy-32K grad_norm", e32.grad));
+    if (think32) items.push(think32o("Think32K grad_norm", think32.grad));
     if (s124) items.push(s124o("S1-24K grad_norm", s124.grad));
     if (extEasy) items.push(extEo("Ext easy-cont grad_norm", extEasy.grad));
     if (extE24k) items.push(extE24o("Ext easy-cont-24K grad_norm", extE24k.grad));
@@ -1055,11 +1089,12 @@ function renderExpPanel(key) {
     }
   }
   {
-    const items = [{ name: "Easy-Boxed ppo_kl ×1e5", data: e.ppokl, color: e.color }];
+    const items = [{ name: primName + " ppo_kl ×1e5", data: e.ppokl, color: e.color }];
     if (s) items.push(s3o("S3 ppo_kl ×1e5", s.ppokl));
     if (v) items.push(v2o("V2 ppo_kl ×1e5", v.ppokl));
     if (e24) items.push(e24o("Easy-24K ppo_kl ×1e5", e24.ppokl));
     if (e32) items.push(e32o("Easy-32K ppo_kl ×1e5", e32.ppokl));
+    if (think32) items.push(think32o("Think32K ppo_kl ×1e5", think32.ppokl));
     if (s124) items.push(s124o("S1-24K ppo_kl ×1e5", s124.ppokl));
     if (extEasy) items.push(extEo("Ext easy-cont ppo_kl ×1e5", extEasy.ppokl));
     if (extE24k) items.push(extE24o("Ext easy-cont-24K ppo_kl ×1e5", extE24k.ppokl));
@@ -1072,13 +1107,14 @@ function renderExpPanel(key) {
     }));
   }
   {
-    const clipItems = [{ name: "Easy-Boxed clipfrac", data: e.clip, color: e.color }];
+    const clipItems = [{ name: primName + " clipfrac", data: e.clip, color: e.color }];
     // amber (not danger red) — avoids collision with E5 pink clipfrac
-    if (e.clipLower) clipItems.push({ name: "Easy-Boxed clipfrac_lower", data: e.clipLower, color: "#c2410c" });
+    if (e.clipLower) clipItems.push({ name: primName + " clipfrac_lower", data: e.clipLower, color: "#c2410c" });
     if (s) clipItems.push(s3o("S3 clipfrac", s.clip));
     if (v) clipItems.push(v2o("V2 clipfrac", v.clip));
     if (e24) clipItems.push(e24o("Easy-24K clipfrac", e24.clip));
     if (e32) clipItems.push(e32o("Easy-32K clipfrac", e32.clip));
+    if (think32) clipItems.push(think32o("Think32K clipfrac", think32.clip));
     if (s124) clipItems.push(s124o("S1-24K clipfrac", s124.clip));
     if (extEasy) clipItems.push(extEo("Ext easy-cont clipfrac", extEasy.clip));
     if (extE24k) clipItems.push(extE24o("Ext easy-cont-24K clipfrac", extE24k.clip));
@@ -1089,6 +1125,7 @@ function renderExpPanel(key) {
     if (v && v.clipLower) clipItems.push({ name: "V2 clipfrac_lower", data: v.clipLower, color: "#0284c7", dash: [2, 3] });
     if (e24 && e24.clipLower) clipItems.push({ name: "Easy-24K clipfrac_lower", data: e24.clipLower, color: "#a21caf", dash: [1, 3] });
     if (e32 && e32.clipLower) clipItems.push({ name: "Easy-32K clipfrac_lower", data: e32.clipLower, color: "#4338ca", dash: [3, 1, 1, 1] });
+    if (think32 && think32.clipLower) clipItems.push({ name: "Think32K clipfrac_lower", data: think32.clipLower, color: think32c, dash: [6, 2, 1, 2] });
     if (s124 && s124.clipLower) clipItems.push({ name: "S1-24K clipfrac_lower", data: s124.clipLower, color: "#0369a1", dash: [5, 2, 1, 2] });
     if (extEasy && extEasy.clipLower) clipItems.push({ name: "Ext easy-cont clipfrac_lower", data: extEasy.clipLower, color: "#155e75", dash: [4, 2, 1, 2] });
     if (extE24k && extE24k.clipLower) clipItems.push({ name: "Ext easy-cont-24K clipfrac_lower", data: extE24k.clipLower, color: "#92400e", dash: [6, 2, 1, 2] });
@@ -1101,11 +1138,12 @@ function renderExpPanel(key) {
     }));
   }
   {
-    const items = [{ name: "Easy-Boxed (1−corr)×1e4", data: e.pearsonDev, color: e.color }];
+    const items = [{ name: primName + " (1−corr)×1e4", data: e.pearsonDev, color: e.color }];
     if (s) items.push(s3o("S3 (1−corr)×1e4", s.pearsonDev));
     if (v) items.push(v2o("V2 (1−corr)×1e4", v.pearsonDev));
     if (e24) items.push(e24o("Easy-24K (1−corr)×1e4", e24.pearsonDev));
     if (e32) items.push(e32o("Easy-32K (1−corr)×1e4", e32.pearsonDev));
+    if (think32) items.push(think32o("Think32K (1−corr)×1e4", think32.pearsonDev));
     if (s124) items.push(s124o("S1-24K (1−corr)×1e4", s124.pearsonDev));
     if (extEasy) items.push(extEo("Ext easy-cont (1−corr)×1e4", extEasy.pearsonDev));
     if (extE24k) items.push(extE24o("Ext easy-cont-24K (1−corr)×1e4", extE24k.pearsonDev));
@@ -1125,11 +1163,12 @@ function renderExpPanel(key) {
   }
 
   if (e.rolloutKl && document.getElementById(`chart-${key}-rollkl`)) {
-    const items = [{ name: "Easy-Boxed rollout_kl ×1e4", data: e.rolloutKl, color: e.color }];
+    const items = [{ name: primName + " rollout_kl ×1e4", data: e.rolloutKl, color: e.color }];
     if (s && s.rolloutKl) items.push(s3o("S3 rollout_kl ×1e4", s.rolloutKl));
     if (v && v.rolloutKl) items.push(v2o("V2 rollout_kl ×1e4", v.rolloutKl));
     if (e24 && e24.rolloutKl) items.push(e24o("Easy-24K rollout_kl ×1e4", e24.rolloutKl));
     if (e32 && e32.rolloutKl) items.push(e32o("Easy-32K rollout_kl ×1e4", e32.rolloutKl));
+    if (think32 && think32.rolloutKl) items.push(think32o("Think32K rollout_kl ×1e4", think32.rolloutKl));
     if (s124 && s124.rolloutKl) items.push(s124o("S1-24K rollout_kl ×1e4", s124.rolloutKl));
     if (extEasy && extEasy.rolloutKl) items.push(extEo("Ext easy-cont rollout_kl ×1e4", extEasy.rolloutKl));
     if (extE24k && extE24k.rolloutKl) items.push(extE24o("Ext easy-cont-24K rollout_kl ×1e4", extE24k.rolloutKl));
@@ -1141,11 +1180,12 @@ function renderExpPanel(key) {
     }));
   }
   if (e.stepMin && document.getElementById(`chart-${key}-stepmin`)) {
-    const items = [{ name: "Easy-Boxed", data: e.stepMin, color: e.color }];
+    const items = [{ name: primName, data: e.stepMin, color: e.color }];
     if (s && s.stepMin) items.push(s3o("S3", s.stepMin));
     if (v && v.stepMin) items.push(v2o("V2", v.stepMin));
     if (e24 && e24.stepMin) items.push(e24o("Easy-24K", e24.stepMin));
     if (e32 && e32.stepMin) items.push(e32o("Easy-32K", e32.stepMin));
+    if (think32 && think32.stepMin) items.push(think32o("Think32K", think32.stepMin));
     if (s124 && s124.stepMin) items.push(s124o("S1-24K", s124.stepMin));
     if (extEasy && extEasy.stepMin) items.push(extEo("Ext easy-cont", extEasy.stepMin));
     if (extE24k && extE24k.stepMin) items.push(extE24o("Ext easy-cont-24K", extE24k.stepMin));
@@ -1158,11 +1198,12 @@ function renderExpPanel(key) {
     }));
   }
   if (e.mfu && document.getElementById(`chart-${key}-mfu`)) {
-    const items = [{ name: "Easy-Boxed MFU", data: e.mfu, color: e.color }];
+    const items = [{ name: primName + " MFU", data: e.mfu, color: e.color }];
     if (s && s.mfu) items.push(s3o("S3 MFU", s.mfu));
     if (v && v.mfu) items.push(v2o("V2 MFU", v.mfu));
     if (e24 && e24.mfu) items.push(e24o("Easy-24K MFU", e24.mfu));
     if (e32 && e32.mfu) items.push(e32o("Easy-32K MFU", e32.mfu));
+    if (think32 && think32.mfu) items.push(think32o("Think32K MFU", think32.mfu));
     if (s124 && s124.mfu) items.push(s124o("S1-24K MFU", s124.mfu));
     if (extEasy && extEasy.mfu) items.push(extEo("Ext easy-cont MFU", extEasy.mfu));
     if (extE24k && extE24k.mfu) items.push(extE24o("Ext easy-cont-24K MFU", extE24k.mfu));
@@ -1175,11 +1216,12 @@ function renderExpPanel(key) {
     }));
   }
   if (e.throughput && document.getElementById(`chart-${key}-thru`)) {
-    const items = [{ name: "Easy-Boxed throughput", data: e.throughput, color: e.color }];
+    const items = [{ name: primName + " throughput", data: e.throughput, color: e.color }];
     if (s && s.throughput) items.push(s3o("S3 throughput", s.throughput));
     if (v && v.throughput) items.push(v2o("V2 throughput", v.throughput));
     if (e24 && e24.throughput) items.push(e24o("Easy-24K throughput", e24.throughput));
     if (e32 && e32.throughput) items.push(e32o("Easy-32K throughput", e32.throughput));
+    if (think32 && think32.throughput) items.push(think32o("Think32K throughput", think32.throughput));
     if (s124 && s124.throughput) items.push(s124o("S1-24K throughput", s124.throughput));
     if (extEasy && extEasy.throughput) items.push(extEo("Ext easy-cont throughput", extEasy.throughput));
     if (extE24k && extE24k.throughput) items.push(extE24o("Ext easy-cont-24K throughput", extE24k.throughput));
@@ -1263,11 +1305,12 @@ function renderExpPanel(key) {
       }));
     }
     if (document.getElementById(`chart-${key}-timing-step`)) {
-      const items = [{ name: "Easy-Boxed step", data: t.step, color: e.color }];
+      const items = [{ name: primName + " step", data: t.step, color: e.color }];
       if (s && s.timing) items.push(s3o("S3 step", s.timing.step));
       if (v && v.timing) items.push(v2o("V2 step", v.timing.step));
       if (e24 && e24.timing) items.push(e24o("Easy-24K step", e24.timing.step));
       if (e32 && e32.timing) items.push(e32o("Easy-32K step", e32.timing.step));
+      if (think32 && think32.timing) items.push(think32o("Think32K step", think32.timing.step));
       if (s124 && s124.timing) items.push(s124o("S1-24K step", s124.timing.step));
       if (extEasy && extEasy.timing) items.push(extEo("Ext easy-cont step", extEasy.timing.step));
       if (extE24k && extE24k.timing) items.push(extE24o("Ext easy-cont-24K step", extE24k.timing.step));
@@ -1308,21 +1351,35 @@ function renderExpPanel(key) {
   const evalEl = document.getElementById(`chart-${key}-eval-mmlu`);
   if (evalEl) {
     let steps = null, ev = null;
-    if (typeof EVAL_EASY_BOXED_FULL !== "undefined" && EVAL_EASY_BOXED_FULL[key]) {
+    if (key === "opd") {
+      if (typeof EVAL_FULL_OPD !== "undefined" && EVAL_FULL_OPD.e2) {
+        steps = (typeof EVAL_OPD_STEPS !== "undefined") ? EVAL_OPD_STEPS : null;
+        ev = EVAL_FULL_OPD.e2;
+      }
+    } else if (key === "opsd") {
+      if (typeof EVAL_FULL_OPSD !== "undefined" && EVAL_FULL_OPSD.e2) {
+        steps = (typeof EVAL_OPSD_STEPS !== "undefined") ? EVAL_OPSD_STEPS
+          : ((typeof EVAL_OPD_STEPS !== "undefined") ? EVAL_OPD_STEPS : null);
+        ev = EVAL_FULL_OPSD.e2;
+      } else if (typeof EVAL_FULL_OPD !== "undefined" && EVAL_FULL_OPD.e2) {
+        steps = (typeof EVAL_OPD_STEPS !== "undefined") ? EVAL_OPD_STEPS : null;
+        ev = { label: e.label || "OPSD 2B←2B", color: COLORS.opsd || "#0891b2" };
+      }
+    } else if (typeof EVAL_EASY_BOXED_FULL !== "undefined" && EVAL_EASY_BOXED_FULL[key]) {
       steps = EVAL_EASY_BOXED_FULL_STEPS; ev = EVAL_EASY_BOXED_FULL[key];
     } else if (typeof EVAL_EASY_BOXED !== "undefined" && EVAL_EASY_BOXED[key]) {
       steps = EVAL_EASY_BOXED_STEPS; ev = EVAL_EASY_BOXED[key];
     }
-    const s3ev = (typeof EVAL_FULL_S3 !== "undefined" && EVAL_FULL_S3[key]) ? EVAL_FULL_S3[key] : null;
-    const v2ev = (typeof EVAL_FULL_V2 !== "undefined" && EVAL_FULL_V2[key]) ? EVAL_FULL_V2[key] : null;
-    const e24ev = (typeof EVAL_FULL_E24K !== "undefined" && EVAL_FULL_E24K[key]) ? EVAL_FULL_E24K[key] : null;
-    const e32ev = (typeof EVAL_FULL_E32K !== "undefined" && EVAL_FULL_E32K[key]) ? EVAL_FULL_E32K[key] : null;
-    const s124ev = (typeof EVAL_FULL_S124K !== "undefined" && EVAL_FULL_S124K[key]) ? EVAL_FULL_S124K[key] : null;
-    const extEasyEv = (typeof EVAL_FULL_EXT_EASY !== "undefined" && EVAL_FULL_EXT_EASY[key]) ? EVAL_FULL_EXT_EASY[key] : null;
-    const extE24Ev = (typeof EVAL_FULL_EXT_E24K !== "undefined" && EVAL_FULL_EXT_E24K[key]) ? EVAL_FULL_EXT_E24K[key] : null;
-    const extS1Ev = (typeof EVAL_FULL_EXT_S1 !== "undefined" && EVAL_FULL_EXT_S1[key]) ? EVAL_FULL_EXT_S1[key] : null;
-    const opdev = (typeof EVAL_FULL_OPD !== "undefined" && EVAL_FULL_OPD[key]) ? EVAL_FULL_OPD[key] : null;
-    const opsdev = (typeof EVAL_FULL_OPSD !== "undefined" && EVAL_FULL_OPSD[key]) ? EVAL_FULL_OPSD[key] : null;
+    const s3ev = isDistill ? null : ((typeof EVAL_FULL_S3 !== "undefined" && EVAL_FULL_S3[key]) ? EVAL_FULL_S3[key] : null);
+    const v2ev = isDistill ? null : ((typeof EVAL_FULL_V2 !== "undefined" && EVAL_FULL_V2[key]) ? EVAL_FULL_V2[key] : null);
+    const e24ev = (typeof EVAL_FULL_E24K !== "undefined" && EVAL_FULL_E24K[srcKey]) ? EVAL_FULL_E24K[srcKey] : null;
+    const e32ev = isDistill ? null : ((typeof EVAL_FULL_E32K !== "undefined" && EVAL_FULL_E32K[key]) ? EVAL_FULL_E32K[key] : null);
+    const s124ev = isDistill ? null : ((typeof EVAL_FULL_S124K !== "undefined" && EVAL_FULL_S124K[key]) ? EVAL_FULL_S124K[key] : null);
+    const extEasyEv = isDistill ? null : ((typeof EVAL_FULL_EXT_EASY !== "undefined" && EVAL_FULL_EXT_EASY[key]) ? EVAL_FULL_EXT_EASY[key] : null);
+    const extE24Ev = isDistill ? null : ((typeof EVAL_FULL_EXT_E24K !== "undefined" && EVAL_FULL_EXT_E24K[key]) ? EVAL_FULL_EXT_E24K[key] : null);
+    const extS1Ev = isDistill ? null : ((typeof EVAL_FULL_EXT_S1 !== "undefined" && EVAL_FULL_EXT_S1[key]) ? EVAL_FULL_EXT_S1[key] : null);
+    const opdev = key === "opd" ? null : ((typeof EVAL_FULL_OPD !== "undefined" && EVAL_FULL_OPD[srcKey]) ? EVAL_FULL_OPD[srcKey] : null);
+    const opsdev = key === "opsd" ? null : ((typeof EVAL_FULL_OPSD !== "undefined" && EVAL_FULL_OPSD[srcKey]) ? EVAL_FULL_OPSD[srcKey] : null);
     if (ev && steps) {
       const baseSteps = steps;
       const e32Steps = (typeof EVAL_E32K_STEPS !== "undefined") ? EVAL_E32K_STEPS : baseSteps;
@@ -1357,7 +1414,7 @@ function renderExpPanel(key) {
       const s3Math = s3ev ? alignEvalSeries(s3ev.math500, baseSteps, plotSteps) : null;
       const hasExtra = !!(e24ev || e32ev || s124ev || extEasyEv || extE24Ev || extS1Ev || opdev || opsdev);
 
-      const mmluItems = [{ name: "Easy-Boxed", data: easyMmlu, color: ev.color }];
+      const mmluItems = [{ name: primName, data: easyMmlu, color: ev.color }];
       if (s3Mmlu) mmluItems.push(s3o("S3", s3Mmlu));
       if (evalHasMetric(v2ev, "mmlu")) mmluItems.push(v2o("V2", v2ev.mmlu));
       pushAligned(mmluItems, "Easy-24K", e24ev, "mmlu", e24Steps, e24kSeries, e24c);
@@ -1392,7 +1449,7 @@ function renderExpPanel(key) {
         if (!legendEl) return;
         const hasOverlay = !!(s3ev || v2ev || hasExtra);
         const items = [
-          { name: hasOverlay ? "Easy-Boxed" : metric, data: easyData, color },
+          { name: hasOverlay ? primName : metric, data: easyData, color },
         ];
         if (s3ev && s3Data) {
           items.push(metric === "aime24"
@@ -1432,7 +1489,7 @@ function renderExpPanel(key) {
       bindAimeMetric("aime25", easyAime25, s3Aime25, ev.color === COLORS.e1 ? COLORS.e5 : ev.color);
       const mathEl = document.getElementById(`chart-${key}-eval-math500`);
       if (mathEl && (ev.math500 || evalHasMetric(v2ev, "math500") || evalHasMetric(e32ev, "math500") || evalHasMetric(extS1Ev, "math500") || evalHasMetric(extE24Ev, "math500") || evalHasMetric(opdev, "math500") || evalHasMetric(opsdev, "math500"))) {
-        const mathItems = [{ name: "Easy-Boxed", data: easyMath, color: ev.color }];
+        const mathItems = [{ name: primName, data: easyMath, color: ev.color }];
         if (s3Math && s3Math.some((v) => v != null)) mathItems.push(s3o("S3", s3Math));
         if (evalHasMetric(v2ev, "math500")) mathItems.push(v2o("V2", v2ev.math500));
         pushAligned(mathItems, "Easy-24K", e24ev, "math500", e24Steps, e24kSeries, e24c);
@@ -1471,20 +1528,30 @@ function renderExpPanel(key) {
   if (agentEl && (typeof AGENT_EASY !== "undefined" || typeof AGENT_S3 !== "undefined" || typeof AGENT_V2 !== "undefined"
       || typeof AGENT_E32K !== "undefined" || typeof AGENT_EXT_S1 !== "undefined"
       || typeof AGENT_OPD !== "undefined" || typeof AGENT_OPSD !== "undefined")) {
-    const baseAgSteps = (typeof AGENT_S3_STEPS !== "undefined")
-      ? AGENT_S3_STEPS
-      : (typeof AGENT_EASY_STEPS !== "undefined" ? AGENT_EASY_STEPS : EVAL_EASY_BOXED_FULL_STEPS);
-    const easy = (typeof AGENT_EASY !== "undefined") ? AGENT_EASY[key] : null;
-    const s3 = (typeof AGENT_S3 !== "undefined") ? AGENT_S3[key] : null;
-    const v2ag = (typeof AGENT_V2 !== "undefined") ? AGENT_V2[key] : null;
-    const e24ag = (typeof AGENT_E24K !== "undefined") ? AGENT_E24K[key] : null;
-    const e32ag = (typeof AGENT_E32K !== "undefined") ? AGENT_E32K[key] : null;
-    const s124ag = (typeof AGENT_S124K !== "undefined") ? AGENT_S124K[key] : null;
-    const extEasyAg = (typeof AGENT_EXT_EASY !== "undefined") ? AGENT_EXT_EASY[key] : null;
-    const extE24Ag = (typeof AGENT_EXT_E24K !== "undefined") ? AGENT_EXT_E24K[key] : null;
-    const extS1Ag = (typeof AGENT_EXT_S1 !== "undefined") ? AGENT_EXT_S1[key] : null;
-    const opdag = (typeof AGENT_OPD !== "undefined") ? AGENT_OPD[key] : null;
-    const opsdag = (typeof AGENT_OPSD !== "undefined") ? AGENT_OPSD[key] : null;
+    const baseAgSteps = key === "opd" && typeof AGENT_OPD_STEPS !== "undefined"
+      ? AGENT_OPD_STEPS
+      : (key === "opsd" && typeof AGENT_OPSD_STEPS !== "undefined"
+        ? AGENT_OPSD_STEPS
+        : (key === "opsd" && typeof AGENT_OPD_STEPS !== "undefined"
+          ? AGENT_OPD_STEPS
+          : ((typeof AGENT_S3_STEPS !== "undefined")
+            ? AGENT_S3_STEPS
+            : (typeof AGENT_EASY_STEPS !== "undefined" ? AGENT_EASY_STEPS : EVAL_EASY_BOXED_FULL_STEPS))));
+    const easy = key === "opd"
+      ? ((typeof AGENT_OPD !== "undefined") ? AGENT_OPD.e2 : null)
+      : (key === "opsd"
+        ? ((typeof AGENT_OPSD !== "undefined") ? AGENT_OPSD.e2 : null)
+        : ((typeof AGENT_EASY !== "undefined") ? AGENT_EASY[key] : null));
+    const s3 = isDistill ? null : ((typeof AGENT_S3 !== "undefined") ? AGENT_S3[key] : null);
+    const v2ag = isDistill ? null : ((typeof AGENT_V2 !== "undefined") ? AGENT_V2[key] : null);
+    const e24ag = (typeof AGENT_E24K !== "undefined") ? AGENT_E24K[srcKey] : null;
+    const e32ag = isDistill ? null : ((typeof AGENT_E32K !== "undefined") ? AGENT_E32K[key] : null);
+    const s124ag = isDistill ? null : ((typeof AGENT_S124K !== "undefined") ? AGENT_S124K[key] : null);
+    const extEasyAg = isDistill ? null : ((typeof AGENT_EXT_EASY !== "undefined") ? AGENT_EXT_EASY[key] : null);
+    const extE24Ag = isDistill ? null : ((typeof AGENT_EXT_E24K !== "undefined") ? AGENT_EXT_E24K[key] : null);
+    const extS1Ag = isDistill ? null : ((typeof AGENT_EXT_S1 !== "undefined") ? AGENT_EXT_S1[key] : null);
+    const opdag = key === "opd" ? null : ((typeof AGENT_OPD !== "undefined") ? AGENT_OPD[srcKey] : null);
+    const opsdag = key === "opsd" ? null : ((typeof AGENT_OPSD !== "undefined") ? AGENT_OPSD[srcKey] : null);
     const e24AgSteps = (typeof AGENT_E24K_STEPS !== "undefined") ? AGENT_E24K_STEPS : baseAgSteps;
     const extE24AgSteps = (typeof AGENT_EXT_E24K_STEPS !== "undefined") ? AGENT_EXT_E24K_STEPS : e24AgSteps;
     const e32AgSteps = (typeof AGENT_E32K_STEPS !== "undefined") ? AGENT_E32K_STEPS : baseAgSteps;
@@ -1510,9 +1577,9 @@ function renderExpPanel(key) {
       // legends. AGENT_*.label still keeps "E2 DAPO Easy" for the multi-exp eval tab.
       if (evalHasMetric(easy, metric)) {
         items.push({
-          name: "Easy",
+          name: isDistill ? primName : "Easy",
           data: alignEvalSeries(easy[metric], baseAgSteps, agSteps),
-          color: easy.color || COLORS[key],
+          color: isDistill ? (e.color || (key === "opsd" ? COLORS.opsd : COLORS.opd)) : (easy.color || COLORS[key]),
         });
       }
       if (evalHasMetric(s3, metric)) {

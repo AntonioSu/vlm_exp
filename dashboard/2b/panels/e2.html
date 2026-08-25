@@ -1,4 +1,4 @@
-    <p class="tertiary">Easy-Boxed（e2_dapo_2b）· S3（e2_dapo_2b_s3）· Easy-24K（e2_dapo_2b_easy_24k）· Easy-32K（e2_dapo_2b_easy_32k）· S1-24K（e2_dapo_2b_s1_24k）· Ext（easy@150 续训：<code>e2_dapo_2b_easy_cont150</code> / <code>e2_dapo_2b_easy_cont150_24k</code> / <code>e2_dapo_2b_s1_from_easy150</code>，目标 300）· OPD 蒸馏（<code>opd_distill_2b_from_4b_easy_24k</code>，2B student ← 冻结 4B teacher · easy × 24K · 500/500）· OPSD 自蒸馏（<code>opsd_distill_2b_from_2b_easy_24k</code>，2B student ← 冻结 2B teacher · easy × 24K · 87/500）。虚线=S3，点线=Easy-24K，点划点=Easy-32K，点划线=S1-24K / Ext easy-cont，长点划线=Ext easy-cont-24K，长虚线=Ext S1-switch，短点=OPD，密点=OPSD。有 Easy-32K / OPD / OPSD 时横轴自动拉长。图例可点击切换显示/隐藏。</p>
+    <p class="tertiary">Easy-Boxed（e2_dapo_2b）· S3（e2_dapo_2b_s3）· Easy-24K（e2_dapo_2b_easy_24k）· Easy-32K（e2_dapo_2b_easy_32k）· S1-24K（e2_dapo_2b_s1_24k）· Ext（<code>e2_dapo_2b_easy_cont150</code> / <code>e2_dapo_2b_easy_cont150_24k</code> / <code>e2_dapo_2b_s1_from_easy150</code>）· OPD 蒸馏（<code>opd_distill_2b_from_4b_easy_24k</code>，2B student ← 冻结 4B teacher · easy × 24K）· OPSD 自蒸馏（<code>opsd_distill_2b_from_2b_easy_24k</code>，2B student ← 冻结 2B teacher · easy × 24K）。虚线=S3，点线=Easy-24K，点划点=Easy-32K，点划线=S1-24K / Ext easy-cont，长点划线=Ext easy-cont-24K，长虚线=Ext S1-switch，短点=OPD，密点=OPSD。图例可点击切换显示/隐藏。</p>
     <div class="detail-layout">
       <nav class="detail-toc" aria-label="目录" id="e2-toc">
         <p class="toc-heading">目录</p>
@@ -261,7 +261,7 @@
         <section class="detail-sec" id="e2-sec-eval">
           <h2 class="sec-title">评测</h2>
           <p class="sec-sub">evalscope offline · Easy / S3 / Easy-32K / Ext / OPD / OPSD · mmlu_temp / aime24 / aime25 / math_500</p>
-          <p class="tertiary">offline：Easy/S3 step 10→150；Easy-24K / Easy-32K / Ext / OPD / OPSD 有报告时叠加。Easy-32K（10–1050）：mmlu 83/105、aime24 81/105、aime25 81/105、MATH 79/105。OPD（10–500）：mmlu / aime24 / aime25 / MATH-500 均 50/50。峰值 mmlu @450 = 79.90%；aime24 @280/@490 = 25.83%；aime25 @220 = 26.66%；MATH-500 @350 = 81.62%。OPSD 训练曲线已叠（青色密点）；offline 报告尚未写入。数据见 <code>js/data-eval-offline.js</code>。刷新：<code>python3 scripts/monitoring/2b/sync_2b_eval_dashboard.py</code>。</p>
+          <p class="tertiary">offline：Easy/S3 step 10→150；Easy-24K / Easy-32K / Ext / OPD / OPSD 有报告时叠加。Easy-32K（10–1050）：mmlu 105/105、aime24 105/105、aime25 105/105、MATH 105/105。OPD（10–500）：mmlu / aime24 / aime25 / MATH-500 均 50/50。峰值 mmlu @450 = 79.90%；aime24 @280/@490 = 25.83%；aime25 @220 = 26.66%；MATH-500 @350 = 81.62%。OPSD 训练曲线与 offline 报告均已接入（青色密点），offline 覆盖随评测进度更新。数据见 <code>js/data-eval-offline.js</code>。刷新：<code>python3 scripts/monitoring/2b/sync_2b_eval_dashboard.py</code>。</p>
         </section>
 
         <section class="detail-sub" id="e2-sec-eval-mmlu">
@@ -293,7 +293,7 @@
         <section class="detail-sub" id="e2-sec-eval-agent">
           <h2 class="sec-title">Agent 智能体</h2>
           <p class="sec-sub">Easy / S3 / Easy-32K / Ext / OPD / OPSD · tau-bench</p>
-          <p class="tertiary">Source: <code>evalscope/outputs/agent2</code>。OPD agent（10–500）：BFCL 50/50（峰值 @210 = 53.6%）；tau 49/50（仅缺 @380，当时 exit=1；峰值 @420 = 60.0%）。OPSD agent 尚未评。数据见 <code>js/data-eval-offline.js</code>（<code>AGENT_*</code> / <code>AGENT_OPD</code> / <code>AGENT_OPSD</code>）。刷新：<code>python3 scripts/monitoring/2b/sync_2b_agent_dashboard.py</code>。</p>
+          <p class="tertiary">Source: <code>evalscope/outputs/agent2</code>。OPD agent（10–500）：BFCL 50/50（峰值 @210 = 53.6%）；tau 50/50（@380 为 370/390 均值插值 = 45.0%，当时 exit=1；峰值 @420 = 60.0%）。OPSD agent 尚未评。数据见 <code>js/data-eval-offline.js</code>（<code>AGENT_*</code> / <code>AGENT_OPD</code> / <code>AGENT_OPSD</code>）。刷新：<code>python3 scripts/monitoring/2b/sync_2b_agent_dashboard.py</code>。</p>
           <div style="margin-top:12px">
             <h2>tau-bench（%）</h2>
             <div class="chart-card"><div class="legend" id="legend-e2-agent-tau"></div><div class="chart-wrap"><canvas id="chart-e2-agent-tau" height="200"></canvas><div class="tooltip" id="tip-e2-agent-tau"></div></div></div>
