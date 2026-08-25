@@ -160,23 +160,32 @@ required = {
     "math_500_Level 5": 134,
 }
 required_reports = {"mmlu.json", "aime24.json", "aime25.json", "math_500.json"}
+report_aliases = {"mmlu.json": {"mmlu.json", "mmlu_temp.json"}}
 
 def line_count(path: Path) -> int:
     with path.open(encoding="utf-8") as handle:
         return sum(1 for _ in handle)
 
+def candidate_stems(stem: str):
+    names = [stem]
+    if stem.startswith("mmlu_") and not stem.startswith("mmlu_temp_"):
+        names.append("mmlu_temp_" + stem[len("mmlu_"):])
+    return names
+
 for stem, expected in required.items():
     for kind in ("predictions", "reviews"):
         ok = any(
             line_count(path) >= expected
-            for path in root.glob(f"*/{kind}/models/{stem}.jsonl")
+            for cand in candidate_stems(stem)
+            for path in root.glob(f"*/{kind}/models/{cand}.jsonl")
         )
         if not ok:
             raise SystemExit(1)
 
 reports = {path.name for path in root.glob("*/reports/models/*.json")}
-if not required_reports.issubset(reports):
-    raise SystemExit(1)
+for report in required_reports:
+    if reports.isdisjoint(report_aliases.get(report, {report})):
+        raise SystemExit(1)
 raise SystemExit(0)
 PY
 }

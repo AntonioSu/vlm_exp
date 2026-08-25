@@ -99,19 +99,28 @@ def line_count(path: Path) -> int:
     with path.open(encoding="utf-8") as handle:
         return sum(1 for _ in handle)
 
+def candidate_stems(stem: str):
+    names = [stem]
+    if stem.startswith("mmlu_") and not stem.startswith("mmlu_temp_"):
+        names.append("mmlu_temp_" + stem[len("mmlu_"):])
+    return names
+
 missing = []
 for stem, expected in required.items():
     for kind in ("predictions", "reviews"):
         ok = any(
             line_count(path) >= expected
-            for path in root.glob(f"*/{kind}/models/{stem}.jsonl")
+            for cand in candidate_stems(stem)
+            for path in root.glob(f"*/{kind}/models/{cand}.jsonl")
         )
         if not ok:
             missing.append(f"{kind}/models/{stem}.jsonl >= {expected}")
 
 reports = {path.name for path in root.glob("*/reports/models/*.json")}
-for report in sorted(required_reports - reports):
-    missing.append(f"reports/models/{report}")
+report_aliases = {"mmlu.json": {"mmlu.json", "mmlu_temp.json"}}
+for report in sorted(required_reports):
+    if reports.isdisjoint(report_aliases.get(report, {report})):
+        missing.append(f"reports/models/{report}")
 
 if missing:
     print("Missing text evaluation artifacts:", file=sys.stderr)
@@ -258,11 +267,12 @@ PY
 kill_vllm_on_this_gpu
 sleep 3
 
-# Text retention and general-capability evaluation. Put the verl environment's
-# vLLM-capable Python first; the evalscope CLI itself remains /usr/local/bin/evalscope.
+# Text eval: vLLM server from verl_qwen35, evalscope CLI from the same
+# interpreter with the local evalscope repo on PYTHONPATH.
+# /usr/bin/python3 does not have evalscope installed (Aug 24 fill failures).
 export PATH=${ENVBIN}:${PATH}
-# vLLM serving needs verl_qwen35 on PATH; evalscope CLI lives in the system python.
-export EVAL_PYTHON="${EVAL_PYTHON:-/usr/bin/python3}"
+export PYTHONPATH=${EVALSCOPE}${PYTHONPATH:+:${PYTHONPATH}}
+export EVAL_PYTHON="${EVAL_PYTHON:-${ENVBIN}/python}"
 export PORT="${PORT:-8082}"
 export TP_SIZE="${TP_SIZE:-1}"
 export NO_PROXY="${NO_PROXY:-127.0.0.1,localhost,::1}"
@@ -275,27 +285,36 @@ cleanup_eval_server() {
   pkill -f "vllm.entrypoints.openai.api_server --model ${MERGED_DIR} " 2>/dev/null || true
   kill_vllm_on_this_gpu
 }
-trap cleanup_eval_server EXIT
-set +e
-bash "${EVALSCOPE}/eval.sh" \
-  --model-name "exp2card_mm/${EXP}_step${EVAL_STEP}" \
-  --model-path "${MERGED_DIR}" \
-  --batch-size 10 \
-  --infer-type vllm \
-  -t "mmlu_temp" \
-  -mt "aime24 aime25 math_500" \
-  --common-generation-config "temperature=0.6,top_p=0.95,max_tokens=16384,n=8" \
-  --math-generation-config "temperature=0.6,top_p=0.95,max_tokens=16384,n=8"
-eval_exit=$?
-set -e
-if ! validate_text_eval_outputs; then
-  exit 1
+# EVAL_COMMON_TASK / EVAL_MATH_TASK override which evalscope suites to run.
+# Unset → default full suite. Empty string → skip that suite (e.g. MATH-only resume).
+COMMON_TASKS=${EVAL_COMMON_TASK-mmlu_temp}
+MATH_TASKS=${EVAL_MATH_TASK-aime24 aime25 math_500}
+
+if validate_text_eval_outputs 2>/dev/null; then
+  echo "Skipping text eval; already complete: ${EVALSCOPE}/outputs/exp2card_mm/${EXP}_step${EVAL_STEP}"
+else
+  trap cleanup_eval_server EXIT
+  set +e
+  bash "${EVALSCOPE}/eval.sh" \
+    --model-name "exp2card_mm/${EXP}_step${EVAL_STEP}" \
+    --model-path "${MERGED_DIR}" \
+    --batch-size 10 \
+    --infer-type vllm \
+    -t "${COMMON_TASKS}" \
+    -mt "${MATH_TASKS}" \
+    --common-generation-config "temperature=0.6,top_p=0.95,max_tokens=16384,n=8" \
+    --math-generation-config "temperature=0.6,top_p=0.95,max_tokens=16384,n=8"
+  eval_exit=$?
+  set -e
+  if ! validate_text_eval_outputs; then
+    exit 1
+  fi
+  if [[ "${eval_exit}" -ne 0 ]]; then
+    echo "eval.sh exited ${eval_exit}, but required text evaluation artifacts are complete; continuing"
+  fi
+  cleanup_eval_server
+  trap - EXIT
 fi
-if [[ "${eval_exit}" -ne 0 ]]; then
-  echo "eval.sh exited ${eval_exit}, but required text evaluation artifacts are complete; continuing"
-fi
-cleanup_eval_server
-trap - EXIT
 
 mkdir -p "${DONE_DIR}"
 touch "${DONE_DIR}/${EXP}_step${EVAL_STEP}.done"
