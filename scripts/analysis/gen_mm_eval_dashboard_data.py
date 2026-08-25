@@ -12,7 +12,8 @@ from __future__ import annotations
 import argparse
 import json
 import os
-from datetime import date
+import re
+from datetime import date, datetime
 from pathlib import Path
 from typing import Any
 
@@ -254,7 +255,7 @@ def build_mm_group(
         missing_text = all(v is None for v in text["scores"].values())
         note = f"正式口径 Geo3K n=8 / 16K。已完成 step：{steps_str}。"
         if missing_text:
-            note += " 文本 evalscope 尚未出报告。"
+            note += f" 对照表取 @{step}，该 step 文本尚未出报告（更早 step 见曲线）。"
         if lights:
             note += " light 探查（n=1 / 512）保留作对照，不与 formal 横比绝对值。"
         return {
@@ -317,7 +318,10 @@ def build_mm_group(
 
 
 def build_payload() -> dict[str, Any]:
-    m0_geo = load_geo3k("m0_e1_grpo_2b_step150.jsonl.summary.json")
+    m0_formals = discover_formal_geo("m0_e1_grpo_2b")
+    m0_geo = (m0_formals[-1][1] if m0_formals else None) or load_geo3k(
+        "m0_e1_grpo_2b_step150.jsonl.summary.json"
+    )
     m1_lights = discover_m1_light_geo()
     m1_geo_quick = load_geo3k("m1_geo3k100_2b_step70_quick.jsonl.summary.json")
     m1_formals = discover_formal_geo("m1_geo3k100_2b")
@@ -340,16 +344,24 @@ def build_payload() -> dict[str, Any]:
             "label": "M0 · 0% 图文 (E1 GRPO)",
             "shortLabel": "M0 GRPO",
             "color": "#2563eb",
-            "step": 150,
+            "step": m0_formals[-1][0] if m0_formals else 150,
             "visionPct": 0,
             "config": "formal",
             "configNote": (
-                "文本曲线复用 e1_grpo_2b 全 step（10–150 /10）正式 evalscope；"
-                "Geo3K 仅有 @150 正式基线（n=8 / 16K）。柱状图取 @150 端点。"
+                "文本曲线复用 e1_grpo_2b 全 step（10–150 /10）正式 evalscope。"
+                + (
+                    f" Geo3K formal 已完成 step：{'/'.join(str(s) for s, _ in m0_formals)}（n=8 / 16K）。"
+                    if m0_formals
+                    else " Geo3K formal 尚未出报告。"
+                )
             ),
             "geo3k": m0_geo,
             "text": m0_text["scores"],
-            "sources": {"geo3k": (m0_geo or {}).get("source"), **m0_text.get("sources", {})},
+            "sources": {
+                "geo3k": (m0_geo or {}).get("source"),
+                **m0_text.get("sources", {}),
+                **{f"geo3k@{s}": g.get("source") for s, g in m0_formals},
+            },
         },
         build_mm_group("m1", formals=m1_formals, lights=m1_lights, extra={"geo3kQuick": m1_geo_quick}),
         build_mm_group("m2", formals=m2_formals),
@@ -380,14 +392,15 @@ def build_payload() -> dict[str, Any]:
                 "aime25": grpo["scores"].get("aime25"),
             },
         )
-    put_at(
-        full["m0"],
-        150,
-        {
-            "geo3kAcc": (m0_geo or {}).get("sampleAccuracy"),
-            "geo3kPass": (m0_geo or {}).get("passAtN"),
-        },
-    )
+    for step, geo in m0_formals:
+        put_at(
+            full["m0"],
+            step,
+            {
+                "geo3kAcc": geo.get("sampleAccuracy"),
+                "geo3kPass": geo.get("passAtN"),
+            },
+        )
     for key, formals in (("m1", m1_formals), ("m2", m2_formals), ("m3", m3_formals)):
         exp = FORMAL_EXPS[key][0]
         for step, geo in formals:
@@ -419,7 +432,12 @@ def build_payload() -> dict[str, Any]:
             formal_bits.append(f"{key} formal @{'/'.join(str(s) for s, _ in formals)}")
     light_steps = "/".join(str(s) for s, _ in m1_lights) if m1_lights else "none"
     note = (
-        "M0 文本曲线 = 2B E1 GRPO（e1_grpo_2b，10–150 /10）；Geo3K 仅 @150。"
+        "M0 文本曲线 = 2B E1 GRPO（e1_grpo_2b，10–150 /10）；"
+        + (
+            f"Geo3K formal @{'/'.join(str(s) for s, _ in m0_formals)}。"
+            if m0_formals
+            else "Geo3K 尚未出报告。"
+        )
         + (" " + "；".join(formal_bits) + "。" if formal_bits else "")
         + f" M1 light Geo3K steps：{light_steps}（n=1 / 512，不与 formal 横比）。"
         " 全 step 曲线只画 formal（10–150 /10）；缺测为 null。"
@@ -470,11 +488,35 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+def cache_bust_mm_index(js_path: Path) -> None:
+    html_path = js_path.parents[1] / "index.html"
+    if not html_path.exists():
+        return
+    stamp = datetime.now().strftime("%Y%m%d%H%M%S")
+    html = html_path.read_text(encoding="utf-8")
+    html2, n = re.subn(
+        r'(src="js/data-eval\.js)(?:\?v=[^"]*)?(")',
+        rf"\1?v={stamp}\2",
+        html,
+        count=1,
+    )
+    html2, n2 = re.subn(
+        r'(src="js/charts-eval\.js)(?:\?v=[^"]*)?(")',
+        rf"\1?v={stamp}\2",
+        html2,
+        count=1,
+    )
+    if n or n2:
+        html_path.write_text(html2, encoding="utf-8")
+        print(f"Cache-busted {html_path} -> data-eval.js?v={stamp}")
+
+
 def main() -> None:
     args = parse_args()
     payload = build_payload()
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(render_js(payload), encoding="utf-8")
+    cache_bust_mm_index(args.output)
     ready = [g["key"] for g in payload["groups"] if g.get("geo3k") or any(v is not None for v in (g.get("text") or {}).values())]
     print(f"Wrote {args.output} (groups with scores: {', '.join(ready) or 'none'})")
 
