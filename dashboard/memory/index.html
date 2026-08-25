@@ -67,9 +67,9 @@
     <h2>一张卡怎么切</h2>
     <p class="sec-sub">80GB 标尺 · 训练留一半给 rollout · 评测把整卡给 KV</p>
     <p>
-      <code>gpu_memory_utilization</code> 是 vLLM <strong>在「它看见的空闲显存」里再订多少</strong>，不是整卡的 50%。
+      <code>gpu_memory_utilization</code> 是 vLLM <strong>在「它看见的空闲显存」里再申请多少</strong>，不是整卡的 50%。
       训练时 actor/ref 已经占了一截，rollout=0.5 大约还能拿到 30–40GB KV。
-      评测时卡上几乎只有一个引擎，0.8 就会订走约 63GB。
+      评测时卡上几乎只有一个引擎，0.8 就会申请约 63GB。
     </p>
     <div class="vram-legend">
       <span><i class="vram-w"></i>权重</span>
@@ -187,7 +187,7 @@
         $n_{\mathrm{full}}$ = full attn 层数（interval=4）；$d{=}256$。GDN/linear 是常数量级 state，不进 $m$。
         2B：$n_{\mathrm{full}}{=}6$，$n_{\mathrm{kv}}{=}2$ → $m{=}12$&nbsp;KiB/token；$M_{\mathrm{KV}}{=}256\times 17408\times 12\,\mathrm{KiB}{=}51.0$&nbsp;GiB；TP=1、2 卡 → 每卡 $25.5$&nbsp;GiB。
         4B：$n_{\mathrm{full}}{=}8$，$n_{\mathrm{kv}}{=}4$ → $m{=}32$&nbsp;KiB/token；$M_{\mathrm{KV}}{=}136$&nbsp;GiB；TP=4 → 每卡 $34.0$&nbsp;GiB。
-        实际长度往往 &lt; $S$，上式是上界；vLLM 再按空闲显存的 $0.5$ 预订。
+        实际长度往往 &lt; $S$，上式是上界；vLLM 再按空闲显存的 $0.5$ 申请一块 KV 池。
       </p>
     </div>
   </section>
@@ -357,7 +357,7 @@
     <p>
       一批 128 条。即便 128 条都打到 17K，KV 也只有
       \(128 \times 17408 \times 12\,\mathrm{KiB} \approx 25\,\mathrm{GiB}\)。
-      独占却订了 <strong>57 GiB</strong>（按 263 条打满来的），多出来的是预留，不是正在用的。
+      独占却申请了 <strong>57 GiB</strong>（按 263 条打满来的），多出来的是预留，不是正在用的。
       长尾时短序列已经结束，活着的更少，瞬时 KV 更低。
       GPU 23–25%：慢在等最长那几条 decode，<strong>不是 KV 容量</strong>。
       所以把 util 砍到 0.42（约 27 GiB）对 Geo 几乎没影响——25 GiB 还是装得下这一批。
@@ -370,18 +370,56 @@
       0.42×2 之后每路只剩 ≈ <strong>88 条</strong>，并发腰斩，MATH L3 15 min → 40 min。
     </p>
 
-    <h3>3. 那 Easy-32K pack 为什么能快约一倍</h3>
+    <h3>3. 同一套 MATH n=8，为什么 Easy pack 快、MM pack 慢</h3>
     <p>
-      协议不一样：Easy 的 MMLU 是 <strong>n=2</strong> 选择题，生成很快结束（几十个 token，不是 16K）；
-      MM formal 的 MMLU 也是 <strong>n=8</strong>，再加同样 n=8 的长 MATH。
-      Easy 独占 util 0.90 订了约 73GB，但 GPU 只有约 <strong>40%</strong>——KV 订满、活 token 很少，卡在「活着的短请求不够、SM 空转」。
-      再塞一路 0.42：短序列本来就装得下，两路把空转的 SM 吃掉，墙钟大约 ×2。
-      MM 文本已经 90–100%，没有空转可吃，再切 KV 只会更慢。
+      题一样：MATH-500，n=8，max_tokens=16384。不是 MM 开了 CoT、Easy 没评 math。
+      差在 <strong>vLLM 怎么起</strong>。
+    </p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th></th>
+            <th>Easy-32K（eval_exp4b.sh）</th>
+            <th>MM 文本（eval.sh 起 api_server）</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>CUDA Graph</td>
+            <td><code>enforce_eager</code>，<strong>关</strong></td>
+            <td>默认 <strong>开</strong></td>
+          </tr>
+          <tr>
+            <td>max_model_len</td>
+            <td>17408</td>
+            <td>24576</td>
+          </tr>
+          <tr>
+            <td>独占 GPU</td>
+            <td>~<strong>40%</strong>（eager decode 喂不饱 SM）</td>
+            <td>~<strong>90–100%</strong></td>
+          </tr>
+          <tr>
+            <td>独占 KV 并发</td>
+            <td>申请 ~73GB，槽很多但 SM 空着</td>
+            <td>60.85 GiB ≈ <strong>199 条打满</strong></td>
+          </tr>
+          <tr>
+            <td>0.42×2</td>
+            <td class="ok">两路 eager 去填空 SM，队列吞吐约 ×2</td>
+            <td class="bad">两路都要打满，KV 199→88，MATH L3 15→40 min</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p>
+      eager 下一再加并发也抬不高 GPU%（和 Geo 23–25% 同一类：decode 喂不饱 SM）。
+      所以 Easy 砍一半槽位，一路还是约 40%，两路把空 SM 加起来，墙钟大约快一倍。
+      MM 文本 Graph 已经把 SM 和 KV 用满，砍槽位就是砍吞吐。
     </p>
     <p class="vram-note">
-      不是 HTTP <code>batch-size</code>：Easy 默认 64，MM 文本才 10，Easy 一次塞得更多。
-      KV = 同时活着的条数 × 当前长度。差在 MMLU <strong>n=2 短答</strong> vs <strong>n=8 长生成</strong>，活 token 差两个数量级。
-      Geo：KV 用不满，慢在长尾 decode。Easy pack：KV 也用不满，空的是 SM。MM 文本：KV 和 SM 都满了，pack 把并发 199→88。
+      Geo：KV 用不满，慢在长尾 decode。Easy MATH pack：eager，一路约 40%。MM MATH pack：Graph 已满，199→88。
     </p>
   </section>
 
