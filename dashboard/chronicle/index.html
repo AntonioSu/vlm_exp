@@ -40,6 +40,148 @@
     <article class="feed-item">
       <div class="feed-marker" aria-hidden="true"></div>
       <div class="feed-head">
+        <span class="feed-date">2026-08-24</span>
+        <span class="feed-label">评测结果：</span>
+      </div>
+      <div class="feed-row">
+        <span class="feed-time">17:27</span>
+        <div class="feed-content">
+          <p>M0 Geo3K 正式重评已排队（E1 GRPO <code>merged_150</code>，n=8 / 16K，从零跑 601 题）。四卡仍在补 M1–M3，空出一张卡后自动开跑；旧结果先保留在看板，出新 summary 再替换。刷新：<span class="mono">eval_geo3k.py</span> · <span class="mono">gen_mm_eval_dashboard_data.py</span></p>
+        </div>
+      </div>
+      <div class="feed-row">
+        <span class="feed-time">16:54</span>
+        <div class="feed-content">
+          <p>MM formal 看板补进 M1@100 AIME25 <strong>22.91%</strong>（MATH 仍缺）。四卡补测已重启：GPU0 M2@120 文本 · GPU1 M1@110/120 · GPU2 M1@100 MATH + @130 · GPU3 M3@140（Geo 从 208/601 续）/@150 + M1@140。刷新：<span class="mono">gen_mm_eval_dashboard_data.py</span></p>
+        </div>
+      </div>
+      <div class="feed-row">
+        <span class="feed-time">11:40</span>
+        <div class="feed-content">
+          <p>MM formal：<strong>M1 Geo @10–100</strong>（@100 Geo <strong>70.1%</strong>；mmlu/aime24 齐，aime25/MATH 到 @90）；M2 Geo 仍满 150（缺 @120 文本）；<strong>M3 Geo+文本 @10–130</strong>（@130 MATH <strong>80.7%</strong>）。刷新：<span class="mono">gen_mm_eval_dashboard_data.py</span></p>
+          <p>Easy-32K offline 已满 <strong>105/105</strong>（mmlu/aime24/aime25/MATH）。agent BFCL 103/105，tau 16/105。刷新：<span class="mono">sync_2b_eval_dashboard.py</span> · <span class="mono">sync_2b_agent_dashboard.py</span></p>
+        </div>
+      </div>
+    </article>
+
+    <article class="feed-item">
+      <div class="feed-marker" aria-hidden="true"></div>
+      <div class="feed-head">
+        <span class="feed-date">2026-08-23</span>
+        <span class="feed-label">看板更新：</span>
+      </div>
+      <div class="feed-row">
+        <span class="feed-time">14:52</span>
+        <div class="feed-content">
+          <p>OPSD 自蒸馏跑满：<strong>500/500</strong>（~61.90h · 61h53m）。曲线已写入 <code>data-opsd-e2.js</code>。offline / agent 仍未评。刷新：<code>parse_2b_logs.py</code>（只跑 OPSD）+ <code>gen_2b_js.py</code></p>
+        </div>
+      </div>
+    </article>
+
+    <article class="feed-item">
+      <div class="feed-marker" aria-hidden="true"></div>
+      <div class="feed-head">
+        <span class="feed-date">2026-08-23</span>
+        <span class="feed-label">看板更新：</span>
+      </div>
+      <div class="feed-row">
+        <span class="feed-time">11:56</span>
+        <div class="feed-content">
+          <p>OPSD 训练曲线刷新：<strong>483/500</strong>（~59.98h，仍在跑；日志已到 step 484）。上次看板停在 319。刷新：<code>parse_2b_logs.py</code>（只跑 OPSD）+ <code>gen_2b_js.py</code></p>
+        </div>
+      </div>
+    </article>
+
+    <article class="feed-item">
+      <div class="feed-marker" aria-hidden="true"></div>
+      <div class="feed-head">
+        <span class="feed-date">2026-08-23</span>
+        <span class="feed-label">评测结果：</span>
+      </div>
+      <div class="feed-row">
+        <span class="feed-time">11:54</span>
+        <div class="feed-content">
+          <p>MM formal：<strong>M1@80</strong> Geo <strong>69.0%</strong>（峰仍 @60 69.1%），MMLU 77.8 / AIME24 19.2（缺 MATH）；M2 仍满 150（缺 @110/120/130 文本）；M3 Geo 仍到 @120，@130 Geo ~592/601。GPU0 M2@100 · GPU1 M3@130 Geo · GPU2 M1@80 MATH · GPU3 M3@90</p>
+          <p>Easy-32K 训练仍停 <strong>1053</strong>。offline 补到 mmlu/aime <strong>104/105</strong>、MATH 102/105（只缺 @900；MATH 另缺 @830/@890）。@1050 mmlu 72.5 / aime24 1.25 / MATH 64.4。刷新：<span class="mono">gen_mm_eval_dashboard_data.py</span> · <span class="mono">sync_2b_eval_dashboard.py</span></p>
+        </div>
+      </div>
+    </article>
+
+    <article class="feed-item">
+      <div class="feed-marker" aria-hidden="true"></div>
+      <div class="feed-head">
+        <span class="feed-date">2026-08-22</span>
+        <span class="feed-label">评测结果：</span>
+      </div>
+      <div class="feed-row">
+        <span class="feed-time">19:29</span>
+        <div class="feed-content">
+          <p>MM formal 再刷：M3@120 MATH-500 <strong>75.6%</strong>（对照表终于齐文本）；M1 文本到 @60（MMLU 76.9 / AIME24 19.6，MATH 仍到 @50）；M2@70 AIME24 <strong>38.8%</strong> 新高。Geo 未变（M1@70 / M2 满 150 / M3@120）。GPU0 M2@70 · GPU1 M3@130 Geo · GPU2 M1@60 MATH · GPU3 M3@50</p>
+          <p>Easy-32K 训练仍停 <strong>1053</strong>。offline 同步到 @1050：mmlu <strong>95/105</strong>、aime24 <strong>95/105</strong>、aime25 94/105、MATH 91/105。@1050 mmlu <strong>72.5%</strong> / aime24 <strong>1.25%</strong>（长训后期数学崩）。缺 810–830 / 860–900 / 1040。刷新：<span class="mono">sync_2b_eval_dashboard.py</span></p>
+        </div>
+      </div>
+    </article>
+
+    <article class="feed-item">
+      <div class="feed-marker" aria-hidden="true"></div>
+      <div class="feed-head">
+        <span class="feed-date">2026-08-22</span>
+        <span class="feed-label">看板更新：</span>
+      </div>
+      <div class="feed-row">
+        <span class="feed-time">15:36</span>
+        <div class="feed-content">
+          <p>OPSD 训练曲线刷新：<strong>319/500</strong>（~39.62h，仍在跑；日志已到 step 320 进行中）。看板 193 是上次 parse 的旧数。</p>
+        </div>
+      </div>
+    </article>
+
+    <article class="feed-item">
+      <div class="feed-marker" aria-hidden="true"></div>
+      <div class="feed-head">
+        <span class="feed-date">2026-08-22</span>
+        <span class="feed-label">看板更新：</span>
+      </div>
+      <div class="feed-row">
+        <span class="feed-time">15:35</span>
+        <div class="feed-content">
+          <p>2B 新增 <strong>OPSD 自蒸馏</strong> 子页：训练走 <code>renderExpPanel("opsd")</code>，主序列 <code>EXP.opsd_e2</code>（193/500 · ~24.05h，仍在跑），对照叠 Easy-24K + OPD。offline / agent 尚未写入，有报告时自动叠。刷新：<code>parse_2b_logs.py</code> + <code>gen_2b_js.py</code></p>
+        </div>
+      </div>
+    </article>
+
+    <article class="feed-item">
+      <div class="feed-marker" aria-hidden="true"></div>
+      <div class="feed-head">
+        <span class="feed-date">2026-08-22</span>
+        <span class="feed-label">看板更新：</span>
+      </div>
+      <div class="feed-row">
+        <span class="feed-time">15:30</span>
+        <div class="feed-content">
+          <p>2B 新增 <strong>OPD 蒸馏</strong> 子页：训练 / offline / agent 走 <code>renderExpPanel("opd")</code>，主序列 <code>EXP.opd_e2</code>（500/500 · ~39.13h），对照叠 Easy-24K + OPSD。对比总览底栏仍保留。刷新：<code>parse_2b_logs.py</code> + <code>gen_2b_js.py</code></p>
+        </div>
+      </div>
+    </article>
+
+    <article class="feed-item">
+      <div class="feed-marker" aria-hidden="true"></div>
+      <div class="feed-head">
+        <span class="feed-date">2026-08-22</span>
+        <span class="feed-label">评测结果：</span>
+      </div>
+      <div class="feed-row">
+        <span class="feed-time">15:17</span>
+        <div class="feed-content">
+          <p>MM formal 刷进看板：<strong>M2 Geo 满 10–150</strong>，峰 @130 <strong>73.8%</strong>、@150 <strong>70.2%</strong>，文本齐 MATH <strong>87.6%</strong> / MMLU <strong>80.5%</strong>（略高于 M0）；M1 Geo @10–70 峰 @60 <strong>69.1%</strong>，文本 @10–50 AIME24 掉到 14–19%；M3 Geo @10–120 从 @10 <strong>65.9%</strong> 跌到 @100 <strong>51.9%</strong> 再回 @120 <strong>57.0%</strong></p>
+          <p>GPU0 M2@60 MATH · GPU1 M3@120 MATH · GPU2 M1@50 MATH · GPU3 M3@40 MMLU。刷新：<span class="mono">python3 scripts/analysis/gen_mm_eval_dashboard_data.py</span></p>
+        </div>
+      </div>
+    </article>
+
+    <article class="feed-item">
+      <div class="feed-marker" aria-hidden="true"></div>
+      <div class="feed-head">
         <span class="feed-date">2026-08-21</span>
         <span class="feed-label">看板更新：</span>
       </div>
