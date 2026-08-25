@@ -1,10 +1,10 @@
 // ---- Multimodal offline eval (Geo3K + evalscope) ----
-// Auto-generated 2026-08-21 by scripts/analysis/gen_mm_eval_dashboard_data.py
+// Auto-generated 2026-08-25 by scripts/analysis/gen_mm_eval_dashboard_data.py
 // Refresh: python3 scripts/analysis/gen_mm_eval_dashboard_data.py
 window.MM_EVAL = {
-  "generatedAt": "2026-08-21",
+  "generatedAt": "2026-08-25",
   "generatedBy": "scripts/analysis/gen_mm_eval_dashboard_data.py",
-  "note": "M0 文本曲线 = 2B E1 GRPO（e1_grpo_2b，10–150 /10）；Geo3K 仅 @150。 M1 formal @10/20/30/40/50/60/70；M2 formal @10/20/30/40/50/60/70/80/90/100/110/120/130；M3 formal @10/20/30/40/50/60/70/80/90。 M1 light Geo3K steps：70/100（n=1 / 512，不与 formal 横比）。 全 step 曲线只画 formal（10–150 /10）；缺测为 null。 文本 evalscope 未出报告的 step 仅有 Geo3K。",
+  "note": "M0 文本曲线 = 2B E1 GRPO（e1_grpo_2b，10–150 /10）；Geo3K formal @150。 M1 formal @10/20/30/40/50/60/70/80/90/100/110/120/130/140/150；M2 formal @10/20/30/40/50/60/70/80/90/100/110/120/130/140/150；M3 formal @10/20/30/40/50/60/70/80/90/100/110/120/130/140/150。 M1 light Geo3K steps：70/100（n=1 / 512，不与 formal 横比）。 全 step 曲线只画 formal（10–150 /10）；缺测为 null。 文本 evalscope 未出报告的 step 仅有 Geo3K。",
   "metrics": [
     {
       "key": "geo3kAcc",
@@ -46,7 +46,7 @@ window.MM_EVAL = {
       "step": 150,
       "visionPct": 0,
       "config": "formal",
-      "configNote": "文本曲线复用 e1_grpo_2b 全 step（10–150 /10）正式 evalscope；Geo3K 仅有 @150 正式基线（n=8 / 16K）。柱状图取 @150 端点。",
+      "configNote": "文本曲线复用 e1_grpo_2b 全 step（10–150 /10）正式 evalscope。 Geo3K formal 已完成 step：150（n=8 / 16K）。",
       "geo3k": {
         "source": "/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/evaluation/geo3k/m0_e1_grpo_2b_step150.jsonl.summary.json",
         "questions": 601,
@@ -55,7 +55,7 @@ window.MM_EVAL = {
         "maxTokens": 16384,
         "temperature": 0.6,
         "topP": 0.95,
-        "sampleAccuracy": 57.32,
+        "sampleAccuracy": 57.26,
         "passAtN": 83.69
       },
       "text": {
@@ -69,44 +69,57 @@ window.MM_EVAL = {
         "mmlu": "/data/juicefs-white/5281-gpu-a100/lijunyi/evalscope/outputs/exp2card_mm/m0_e1_grpo_2b/20260722_124641/reports/models/mmlu.json",
         "aime24": "/data/juicefs-white/5281-gpu-a100/lijunyi/evalscope/outputs/exp2card_mm/m0_e1_grpo_2b/20260722_133001/reports/models/aime24.json",
         "aime25": "/data/juicefs-white/5281-gpu-a100/lijunyi/evalscope/outputs/exp2card_mm/m0_e1_grpo_2b/20260722_133001/reports/models/aime25.json",
-        "math500": "/data/juicefs-white/5281-gpu-a100/lijunyi/evalscope/outputs/exp2card_mm/m0_e1_grpo_2b/20260722_133001/reports/models/math_500.json"
+        "math500": "/data/juicefs-white/5281-gpu-a100/lijunyi/evalscope/outputs/exp2card_mm/m0_e1_grpo_2b/20260722_133001/reports/models/math_500.json",
+        "geo3k@150": "/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/evaluation/geo3k/m0_e1_grpo_2b_step150.jsonl.summary.json"
       }
     },
     {
       "key": "m1",
-      "label": "M1 · 100% 图文 (@70 formal)",
-      "shortLabel": "M1@70",
+      "label": "M1 · 100% 图文 (@150 formal)",
+      "shortLabel": "M1@150",
       "color": "#d97706",
-      "step": 70,
+      "step": 150,
       "visionPct": 100,
       "config": "formal",
-      "configNote": "正式口径 Geo3K n=8 / 16K。已完成 step：10/20/30/40/50/60/70。 文本 evalscope 尚未出报告。 light 探查（n=1 / 512）保留作对照，不与 formal 横比绝对值。",
+      "configNote": "正式口径 Geo3K n=8 / 16K。已完成 step：10/20/30/40/50/60/70/80/90/100/110/120/130/140/150。 light 探查（n=1 / 512）保留作对照，不与 formal 横比绝对值。",
       "geo3k": {
-        "source": "/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/evaluation/geo3k/m1_geo3k100_2b_step70.jsonl.summary.json",
+        "source": "/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/evaluation/geo3k/m1_geo3k100_2b_step150.jsonl.summary.json",
         "questions": 601,
         "samples": 4808,
         "n": 8,
         "maxTokens": 16384,
         "temperature": 0.6,
         "topP": 0.95,
-        "sampleAccuracy": 68.32,
-        "passAtN": 89.85
+        "sampleAccuracy": 71.07,
+        "passAtN": 91.68
       },
       "text": {
-        "mmlu": null,
-        "aime24": null,
-        "aime25": null,
-        "math500": null
+        "mmlu": 78.0,
+        "aime24": 15.0,
+        "aime25": 20.41,
+        "math500": 79.15
       },
       "sources": {
-        "geo3k": "/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/evaluation/geo3k/m1_geo3k100_2b_step70.jsonl.summary.json",
+        "geo3k": "/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/evaluation/geo3k/m1_geo3k100_2b_step150.jsonl.summary.json",
+        "mmlu": "/data/juicefs-white/5281-gpu-a100/lijunyi/evalscope/outputs/exp2card_mm/m1_geo3k100_2b_step150/20260825_024336/reports/models/mmlu_temp.json",
+        "aime24": "/data/juicefs-white/5281-gpu-a100/lijunyi/evalscope/outputs/exp2card_mm/m1_geo3k100_2b_step150/20260825_035706/reports/models/aime24.json",
+        "aime25": "/data/juicefs-white/5281-gpu-a100/lijunyi/evalscope/outputs/exp2card_mm/m1_geo3k100_2b_step150/20260825_035706/reports/models/aime25.json",
+        "math500": "/data/juicefs-white/5281-gpu-a100/lijunyi/evalscope/outputs/exp2card_mm/m1_geo3k100_2b_step150/20260825_035706/reports/models/math_500.json",
         "geo3k@10": "/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/evaluation/geo3k/m1_geo3k100_2b_step10.jsonl.summary.json",
         "geo3k@20": "/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/evaluation/geo3k/m1_geo3k100_2b_step20.jsonl.summary.json",
         "geo3k@30": "/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/evaluation/geo3k/m1_geo3k100_2b_step30.jsonl.summary.json",
         "geo3k@40": "/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/evaluation/geo3k/m1_geo3k100_2b_step40.jsonl.summary.json",
         "geo3k@50": "/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/evaluation/geo3k/m1_geo3k100_2b_step50.jsonl.summary.json",
         "geo3k@60": "/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/evaluation/geo3k/m1_geo3k100_2b_step60.jsonl.summary.json",
-        "geo3k@70": "/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/evaluation/geo3k/m1_geo3k100_2b_step70.jsonl.summary.json"
+        "geo3k@70": "/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/evaluation/geo3k/m1_geo3k100_2b_step70.jsonl.summary.json",
+        "geo3k@80": "/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/evaluation/geo3k/m1_geo3k100_2b_step80.jsonl.summary.json",
+        "geo3k@90": "/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/evaluation/geo3k/m1_geo3k100_2b_step90.jsonl.summary.json",
+        "geo3k@100": "/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/evaluation/geo3k/m1_geo3k100_2b_step100.jsonl.summary.json",
+        "geo3k@110": "/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/evaluation/geo3k/m1_geo3k100_2b_step110.jsonl.summary.json",
+        "geo3k@120": "/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/evaluation/geo3k/m1_geo3k100_2b_step120.jsonl.summary.json",
+        "geo3k@130": "/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/evaluation/geo3k/m1_geo3k100_2b_step130.jsonl.summary.json",
+        "geo3k@140": "/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/evaluation/geo3k/m1_geo3k100_2b_step140.jsonl.summary.json",
+        "geo3k@150": "/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/evaluation/geo3k/m1_geo3k100_2b_step150.jsonl.summary.json"
       },
       "geo3kQuick": {
         "source": "/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/evaluation/geo3k/m1_geo3k100_2b_step70_quick.jsonl.summary.json",
@@ -122,32 +135,36 @@ window.MM_EVAL = {
     },
     {
       "key": "m2",
-      "label": "M2 · 50% 图文 (@130 formal)",
-      "shortLabel": "M2@130",
+      "label": "M2 · 50% 图文 (@150 formal)",
+      "shortLabel": "M2@150",
       "color": "#059669",
-      "step": 130,
+      "step": 150,
       "visionPct": 50,
       "config": "formal",
-      "configNote": "正式口径 Geo3K n=8 / 16K。已完成 step：10/20/30/40/50/60/70/80/90/100/110/120/130。 文本 evalscope 尚未出报告。",
+      "configNote": "正式口径 Geo3K n=8 / 16K。已完成 step：10/20/30/40/50/60/70/80/90/100/110/120/130/140/150。",
       "geo3k": {
-        "source": "/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/evaluation/geo3k/m2_mix50_2b_step130.jsonl.summary.json",
+        "source": "/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/evaluation/geo3k/m2_mix50_2b_step150.jsonl.summary.json",
         "questions": 601,
         "samples": 4808,
         "n": 8,
         "maxTokens": 16384,
         "temperature": 0.6,
         "topP": 0.95,
-        "sampleAccuracy": 73.75,
-        "passAtN": 92.35
+        "sampleAccuracy": 70.15,
+        "passAtN": 89.02
       },
       "text": {
-        "mmlu": null,
-        "aime24": null,
-        "aime25": null,
-        "math500": null
+        "mmlu": 80.61,
+        "aime24": 36.67,
+        "aime25": 28.75,
+        "math500": 87.77
       },
       "sources": {
-        "geo3k": "/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/evaluation/geo3k/m2_mix50_2b_step130.jsonl.summary.json",
+        "geo3k": "/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/evaluation/geo3k/m2_mix50_2b_step150.jsonl.summary.json",
+        "mmlu": "/data/juicefs-white/5281-gpu-a100/lijunyi/evalscope/outputs/exp2card_mm/m2_mix50_2b_step150/20260823_190331/reports/models/mmlu_temp.json",
+        "aime24": "/data/juicefs-white/5281-gpu-a100/lijunyi/evalscope/outputs/exp2card_mm/m2_mix50_2b_step150/20260823_204049/reports/models/aime24.json",
+        "aime25": "/data/juicefs-white/5281-gpu-a100/lijunyi/evalscope/outputs/exp2card_mm/m2_mix50_2b_step150/20260823_204049/reports/models/aime25.json",
+        "math500": "/data/juicefs-white/5281-gpu-a100/lijunyi/evalscope/outputs/exp2card_mm/m2_mix50_2b_step150/20260823_204049/reports/models/math_500.json",
         "geo3k@10": "/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/evaluation/geo3k/m2_mix50_2b_step10.jsonl.summary.json",
         "geo3k@20": "/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/evaluation/geo3k/m2_mix50_2b_step20.jsonl.summary.json",
         "geo3k@30": "/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/evaluation/geo3k/m2_mix50_2b_step30.jsonl.summary.json",
@@ -160,40 +177,43 @@ window.MM_EVAL = {
         "geo3k@100": "/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/evaluation/geo3k/m2_mix50_2b_step100.jsonl.summary.json",
         "geo3k@110": "/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/evaluation/geo3k/m2_mix50_2b_step110.jsonl.summary.json",
         "geo3k@120": "/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/evaluation/geo3k/m2_mix50_2b_step120.jsonl.summary.json",
-        "geo3k@130": "/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/evaluation/geo3k/m2_mix50_2b_step130.jsonl.summary.json"
+        "geo3k@130": "/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/evaluation/geo3k/m2_mix50_2b_step130.jsonl.summary.json",
+        "geo3k@140": "/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/evaluation/geo3k/m2_mix50_2b_step140.jsonl.summary.json",
+        "geo3k@150": "/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/evaluation/geo3k/m2_mix50_2b_step150.jsonl.summary.json"
       }
     },
     {
       "key": "m3",
-      "label": "M3 · 20% 图文 (@90 formal)",
-      "shortLabel": "M3@90",
+      "label": "M3 · 20% 图文 (@150 formal)",
+      "shortLabel": "M3@150",
       "color": "#9333ea",
-      "step": 90,
+      "step": 150,
       "visionPct": 20,
       "config": "formal",
-      "configNote": "正式口径 Geo3K n=8 / 16K。已完成 step：10/20/30/40/50/60/70/80/90。",
+      "configNote": "正式口径 Geo3K n=8 / 16K。已完成 step：10/20/30/40/50/60/70/80/90/100/110/120/130/140/150。",
       "geo3k": {
-        "source": "/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/evaluation/geo3k/m3_mix20_2b_step90.jsonl.summary.json",
+        "source": "/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/evaluation/geo3k/m3_mix20_2b_step150.jsonl.summary.json",
         "questions": 601,
         "samples": 4808,
         "n": 8,
         "maxTokens": 16384,
         "temperature": 0.6,
         "topP": 0.95,
-        "sampleAccuracy": 52.56,
-        "passAtN": 80.53
+        "sampleAccuracy": 53.99,
+        "passAtN": 80.2
       },
       "text": {
-        "mmlu": 76.78,
-        "aime24": 22.08,
-        "aime25": 21.67,
-        "math500": null
+        "mmlu": 78.02,
+        "aime24": 24.17,
+        "aime25": 20.41,
+        "math500": 80.12
       },
       "sources": {
-        "geo3k": "/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/evaluation/geo3k/m3_mix20_2b_step90.jsonl.summary.json",
-        "mmlu": "/data/juicefs-white/5281-gpu-a100/lijunyi/evalscope/outputs/exp2card_mm/m3_mix20_2b_step90/20260821_002305/reports/models/mmlu_temp.json",
-        "aime24": "/data/juicefs-white/5281-gpu-a100/lijunyi/evalscope/outputs/exp2card_mm/m3_mix20_2b_step90/20260821_013320/reports/models/aime24.json",
-        "aime25": "/data/juicefs-white/5281-gpu-a100/lijunyi/evalscope/outputs/exp2card_mm/m3_mix20_2b_step90/20260821_013320/reports/models/aime25.json",
+        "geo3k": "/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/evaluation/geo3k/m3_mix20_2b_step150.jsonl.summary.json",
+        "mmlu": "/data/juicefs-white/5281-gpu-a100/lijunyi/evalscope/outputs/exp2card_mm/m3_mix20_2b_step150/20260824_225704/reports/models/mmlu_temp.json",
+        "aime24": "/data/juicefs-white/5281-gpu-a100/lijunyi/evalscope/outputs/exp2card_mm/m3_mix20_2b_step150/20260825_001919/reports/models/aime24.json",
+        "aime25": "/data/juicefs-white/5281-gpu-a100/lijunyi/evalscope/outputs/exp2card_mm/m3_mix20_2b_step150/20260825_001919/reports/models/aime25.json",
+        "math500": "/data/juicefs-white/5281-gpu-a100/lijunyi/evalscope/outputs/exp2card_mm/m3_mix20_2b_step150/20260825_001919/reports/models/math_500.json",
         "geo3k@10": "/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/evaluation/geo3k/m3_mix20_2b_step10.jsonl.summary.json",
         "geo3k@20": "/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/evaluation/geo3k/m3_mix20_2b_step20.jsonl.summary.json",
         "geo3k@30": "/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/evaluation/geo3k/m3_mix20_2b_step30.jsonl.summary.json",
@@ -202,7 +222,13 @@ window.MM_EVAL = {
         "geo3k@60": "/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/evaluation/geo3k/m3_mix20_2b_step60.jsonl.summary.json",
         "geo3k@70": "/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/evaluation/geo3k/m3_mix20_2b_step70.jsonl.summary.json",
         "geo3k@80": "/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/evaluation/geo3k/m3_mix20_2b_step80.jsonl.summary.json",
-        "geo3k@90": "/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/evaluation/geo3k/m3_mix20_2b_step90.jsonl.summary.json"
+        "geo3k@90": "/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/evaluation/geo3k/m3_mix20_2b_step90.jsonl.summary.json",
+        "geo3k@100": "/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/evaluation/geo3k/m3_mix20_2b_step100.jsonl.summary.json",
+        "geo3k@110": "/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/evaluation/geo3k/m3_mix20_2b_step110.jsonl.summary.json",
+        "geo3k@120": "/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/evaluation/geo3k/m3_mix20_2b_step120.jsonl.summary.json",
+        "geo3k@130": "/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/evaluation/geo3k/m3_mix20_2b_step130.jsonl.summary.json",
+        "geo3k@140": "/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/evaluation/geo3k/m3_mix20_2b_step140.jsonl.summary.json",
+        "geo3k@150": "/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/evaluation/geo3k/m3_mix20_2b_step150.jsonl.summary.json"
       }
     }
   ],
@@ -250,7 +276,7 @@ window.MM_EVAL = {
         null,
         null,
         null,
-        57.32
+        57.26
       ],
       "geo3kPass": [
         null,
@@ -339,7 +365,7 @@ window.MM_EVAL = {
       ]
     },
     "m1": {
-      "label": "M1 · 100% 图文 (@70 formal)",
+      "label": "M1 · 100% 图文 (@150 formal)",
       "shortLabel": "M1",
       "color": "#d97706",
       "config": "formal",
@@ -351,14 +377,14 @@ window.MM_EVAL = {
         66.62,
         69.09,
         68.32,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null
+        68.95,
+        68.66,
+        70.11,
+        70.59,
+        72.19,
+        71.98,
+        71.05,
+        71.07
       ],
       "geo3kPass": [
         91.68,
@@ -368,86 +394,86 @@ window.MM_EVAL = {
         89.68,
         91.01,
         89.85,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null
+        90.85,
+        90.85,
+        91.68,
+        90.02,
+        90.35,
+        91.35,
+        89.68,
+        91.68
       ],
       "math500": [
-        75.55,
-        76.12,
-        77.0,
-        76.1,
+        75.23,
+        76.0,
+        76.63,
+        75.3,
         76.02,
+        76.08,
+        75.13,
+        76.68,
+        76.97,
         null,
         null,
+        77.88,
         null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null
+        78.25,
+        79.15
       ],
       "mmlu": [
+        76.4,
         76.22,
-        75.94,
-        76.69,
-        77.47,
-        77.25,
+        77.33,
+        76.6,
+        76.46,
+        76.92,
+        77.65,
+        77.79,
+        77.59,
+        76.92,
         null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null
+        77.78,
+        77.94,
+        77.95,
+        78.0
       ],
       "aime24": [
-        15.0,
-        17.08,
-        15.83,
-        17.5,
-        18.33,
+        14.17,
+        16.25,
+        19.17,
+        17.92,
+        15.42,
+        19.58,
+        16.67,
+        19.17,
+        21.25,
+        18.75,
         null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null
+        20.0,
+        19.17,
+        25.0,
+        15.0
       ],
       "aime25": [
-        17.5,
-        17.08,
-        21.25,
-        16.67,
-        17.5,
+        19.17,
+        19.59,
+        19.59,
+        18.33,
+        12.5,
+        16.25,
+        18.75,
+        17.91,
+        19.59,
+        22.91,
         null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null
+        18.33,
+        14.16,
+        20.84,
+        20.41
       ]
     },
     "m2": {
-      "label": "M2 · 50% 图文 (@130 formal)",
+      "label": "M2 · 50% 图文 (@150 formal)",
       "shortLabel": "M2",
       "color": "#059669",
       "config": "formal",
@@ -465,8 +491,8 @@ window.MM_EVAL = {
         72.88,
         72.19,
         73.75,
-        null,
-        null
+        72.34,
+        70.15
       ],
       "geo3kPass": [
         91.18,
@@ -482,80 +508,80 @@ window.MM_EVAL = {
         91.51,
         89.52,
         92.35,
-        null,
-        null
+        91.18,
+        89.02
       ],
       "math500": [
-        79.3,
-        81.1,
-        84.68,
-        84.37,
-        83.1,
-        84.95,
-        85.6,
-        87.08,
+        79.15,
+        81.35,
+        83.03,
+        84.1,
+        84.3,
+        85.4,
+        85.05,
+        86.68,
         87.65,
-        87.22,
-        null,
-        null,
-        null,
-        null,
-        null
+        87.32,
+        87.62,
+        87.65,
+        88.17,
+        88.28,
+        87.77
       ],
       "mmlu": [
-        76.43,
-        77.13,
+        76.05,
+        76.5,
         77.87,
-        78.5,
-        78.59,
-        78.93,
-        79.1,
-        79.2,
-        80.1,
-        79.92,
-        null,
-        null,
-        null,
-        null,
-        null
+        78.33,
+        78.6,
+        79.53,
+        79.62,
+        79.66,
+        79.23,
+        80.94,
+        80.65,
+        80.92,
+        80.67,
+        80.89,
+        80.61
       ],
       "aime24": [
-        21.67,
+        17.92,
+        27.08,
         28.75,
-        28.33,
-        35.0,
-        30.83,
-        34.17,
-        31.25,
+        31.67,
+        32.08,
+        36.25,
+        38.75,
+        32.5,
+        38.33,
         33.75,
         37.08,
-        37.08,
-        null,
-        null,
-        null,
-        null,
-        null
+        39.58,
+        35.83,
+        36.67,
+        36.67
       ],
       "aime25": [
-        19.17,
-        24.17,
-        27.09,
+        21.67,
+        21.25,
+        25.83,
+        22.5,
+        29.58,
+        27.5,
         27.08,
-        28.33,
-        27.08,
-        23.34,
-        32.92,
+        32.08,
+        29.58,
+        30.83,
+        30.83,
         30.84,
-        28.75,
-        null,
-        null,
-        null,
-        null,
-        null
+        31.66,
+        35.83,
+        28.75
       ]
     },
     "m3": {
-      "label": "M3 · 20% 图文 (@90 formal)",
+      "label": "M3 · 20% 图文 (@150 formal)",
       "shortLabel": "M3",
       "color": "#9333ea",
       "config": "formal",
@@ -569,12 +595,12 @@ window.MM_EVAL = {
         54.66,
         54.35,
         52.56,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null
+        51.93,
+        56.39,
+        56.95,
+        56.91,
+        54.22,
+        53.99
       ],
       "geo3kPass": [
         89.35,
@@ -586,80 +612,80 @@ window.MM_EVAL = {
         82.2,
         81.7,
         80.53,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null
+        80.53,
+        83.03,
+        82.53,
+        81.7,
+        80.2,
+        80.2
       ],
       "math500": [
-        78.5,
-        79.55,
-        83.9,
-        81.15,
-        79.8,
+        78.6,
+        79.32,
+        83.87,
+        81.5,
+        80.17,
+        80.25,
+        78.48,
+        79.6,
+        77.83,
+        78.17,
+        77.05,
+        75.25,
+        80.7,
         null,
-        79.45,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null
+        80.12
       ],
       "mmlu": [
-        76.16,
-        76.92,
+        77.02,
+        75.73,
         77.94,
-        76.6,
+        76.74,
+        76.94,
+        76.25,
+        76.86,
+        76.99,
         76.44,
+        75.77,
+        75.95,
+        76.5,
+        77.3,
         null,
-        77.71,
-        null,
-        76.78,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null
+        78.02
       ],
       "aime24": [
-        21.67,
-        23.33,
-        35.0,
-        30.0,
+        20.0,
+        25.83,
+        30.42,
         27.08,
+        28.33,
+        23.75,
+        22.5,
+        23.75,
+        21.67,
+        17.92,
+        17.5,
+        18.33,
+        22.92,
         null,
-        21.25,
-        null,
-        22.08,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null
+        24.17
       ],
       "aime25": [
-        19.58,
-        20.0,
-        24.17,
+        16.67,
         21.67,
-        20.42,
+        24.58,
+        22.92,
+        22.09,
+        20.41,
+        18.33,
+        18.75,
+        15.42,
+        15.0,
+        15.0,
+        14.16,
+        16.66,
         null,
-        19.58,
-        null,
-        21.67,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null
+        20.41
       ]
     }
   },
@@ -673,7 +699,7 @@ window.MM_EVAL = {
       "geo3kAcc": [
         null,
         null,
-        57.32
+        57.26
       ],
       "math500": [
         85.05,
@@ -694,67 +720,67 @@ window.MM_EVAL = {
     "m1": {
       "geo3kAcc": [
         66.62,
-        null,
-        null
+        70.11,
+        71.07
       ],
       "math500": [
         76.02,
         null,
-        null
+        79.15
       ],
       "mmlu": [
-        77.25,
-        null,
-        null
+        76.46,
+        76.92,
+        78.0
       ],
       "aime25": [
-        17.5,
-        null,
-        null
+        12.5,
+        22.91,
+        20.41
       ]
     },
     "m2": {
       "geo3kAcc": [
         71.94,
         73.13,
-        null
+        70.15
       ],
       "math500": [
-        83.1,
-        87.22,
-        null
+        84.3,
+        87.32,
+        87.77
       ],
       "mmlu": [
-        78.59,
-        79.92,
-        null
+        78.6,
+        80.94,
+        80.61
       ],
       "aime25": [
-        28.33,
-        28.75,
-        null
+        29.58,
+        30.83,
+        28.75
       ]
     },
     "m3": {
       "geo3kAcc": [
         55.35,
-        null,
-        null
+        51.93,
+        53.99
       ],
       "math500": [
-        79.8,
-        null,
-        null
+        80.17,
+        78.17,
+        80.12
       ],
       "mmlu": [
-        76.44,
-        null,
-        null
+        76.94,
+        75.77,
+        78.02
       ],
       "aime25": [
-        20.42,
-        null,
-        null
+        22.09,
+        15.0,
+        20.41
       ]
     }
   }

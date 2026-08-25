@@ -52,7 +52,7 @@
 <div class="page">
 
   <h1>多模态训练 — Qwen3.5-2B 图文数据配比</h1>
-  <p class="subtitle">方案说明见 <a href="../algo/mm.html">多模态介绍</a> · 每组 2×A100-80GB · <strong>M1/M2/M3 均已完成 150/150</strong> · 离线 formal 评测进行中（GPU0–3，从 step10 起）。评测协议见 <a href="../benchmark/index.html">Benchmark 介绍</a>。</p>
+  <p class="subtitle">方案说明见 <a href="../algo/mm.html">多模态介绍</a> · 评测协议见 <a href="../benchmark/index.html">Benchmark 介绍</a>。</p>
 
   <div class="tabs">
     <button class="tab-btn active" data-tab="overview">方案 / 算法总览</button>
@@ -148,11 +148,11 @@
           <tr><td>数据准备（Geo3K 下载 + 文本子集切分 + 验证探针）</td><td><span class="badge"><span class="sdot" style="background:var(--e3)"></span>已完成</span></td><td>产物已落盘 <span class="mono">vlm_exp/parquet/mm/</span>，可直接被训练脚本引用</td></tr>
           <tr><td>Reward dispatcher / 训练脚本（M1–M3 + 烟测脚本）</td><td><span class="badge"><span class="sdot" style="background:var(--e3)"></span>已完成</span></td><td><span class="mono">run_m1_geo3k_2b.sh</span> / <span class="mono">run_m2_mix50_2b.sh</span> / <span class="mono">run_m3_mix20_2b.sh</span> / <span class="mono">run_smoke_mm.sh</span></td></tr>
           <tr><td>多模态链路烟测</td><td><span class="badge"><span class="sdot" style="background:var(--e3)"></span>已通过</span></td><td>2026-07-21 完成 2 step；多模态生成、图文混训、mixed reward 与双验证集指标均已验证</td></tr>
-          <tr><td>M1 → M2 → M3 正式训练</td><td><span class="badge"><span class="sdot" style="background:var(--e3)"></span>M1/M2/M3 150</span></td><td>2026-08-02 刷新：M1/M2/M3 均已跑满 150/150。看板训练曲线已同步三组；正式离线评测仍待 M1–M3 formal pipeline</td></tr>
+          <tr><td>M1 → M2 → M3 正式训练</td><td><span class="badge"><span class="sdot" style="background:var(--e3)"></span>M1/M2/M3 150</span></td><td>2026-08-02 刷新：M1/M2/M3 均已跑满 150/150。看板训练曲线已同步三组；离线 formal 见「评测结果」页签</td></tr>
           <tr><td>Geo3K 601 题离线评测脚本</td><td><span class="badge"><span class="sdot" style="background:var(--e3)"></span>已完成</span></td><td><span class="mono">scripts/eval/eval_geo3k.py</span> 已通过端到端验证；M0 Geo3K 601 题正式基线评测已完成</td></tr>
-          <tr><td>M0 正式基线评测</td><td><span class="badge"><span class="sdot" style="background:var(--e3)"></span>已完成</span></td><td>文本：MMLU=78.34%，AIME24=35.42%，AIME25=32.50%，MATH-500=86.35%；Geo3K：sample_accuracy=57.32%、pass@8=83.69%。已写入 done 标记，并进入看板「评测结果」页签</td></tr>
+          <tr><td>M0 正式基线评测</td><td><span class="badge"><span class="sdot" style="background:var(--e2)"></span>Geo3K 全 step 排队</span></td><td>文本已齐。Geo3K @150 = 57.26% / pass@8 83.69%。e1_grpo_2b <strong>@10–140</strong> Geo3K 已排队（空卡、且该卡 MM fill 结束后开跑），曲线随报告写入</td></tr>
           <tr><td>M1 light 离线评测</td><td><span class="badge"><span class="sdot" style="background:var(--e3)"></span>@70 / @100</span></td><td>light 口径仅作对照，不与 formal 横比。正式评测见「评测结果」页签</td></tr>
-          <tr><td>M1–M3 自动评测接力 / 归档</td><td><span class="badge"><span class="sdot" style="background:var(--e2)"></span>进行中</span></td><td>formal 已到 M1@70 / M2@130 / M3@90（M1@70、M2@130 仅 Geo3K；M3@90 文本缺 MATH-500）。GPU0a/0b 补 M2@40 / M3@50 文本；GPU1 M3@90 文本；GPU2 开 M1@80 Geo；GPU3 M2@140 Geo。刷新：<span class="mono">python3 scripts/analysis/gen_mm_eval_dashboard_data.py</span></td></tr>
+          <tr><td>M1–M3 自动评测接力 / 归档</td><td><span class="badge"><span class="sdot" style="background:var(--e2)"></span>进行中</span></td><td>Geo 已齐：M1/M2/M3 @10–150。文本进行中：GPU0 M1@140 MATH · GPU1 M1@120 MATH · GPU2 M3@150 MATH · GPU3 M1@150 文本。曲线随 <span class="mono">data-eval.js</span> 自动刷新（报告一落盘即同步）</td></tr>
         </tbody>
       </table>
       <p class="caption">训练 2026-08-02 已满 150/150。离线 formal 从 step10 起补；看板数字以「评测结果」页签为准。</p>
@@ -377,7 +377,7 @@
 
 </div>
 
-<script src="js/data-eval.js?v=20260821103300"></script>
+<script src="js/data-eval.js?v=20260825082045"></script>
 <script src="js/data-m1-train.js?v=20260817111300"></script>
 <script src="js/data-m2-train.js?v=20260817111300"></script>
 <script src="js/data-m3-train.js?v=20260817111300"></script>
@@ -385,7 +385,7 @@
 <script src="js/data-m2-rollouts.js?v=20260802183000"></script>
 <script src="js/data-m3-rollouts.js?v=20260802183000"></script>
 <script src="../common/chart-utils.js?v=20260817110000"></script>
-<script src="js/charts-eval.js?v=20260820104600"></script>
+<script src="js/charts-eval.js?v=20260825082045"></script>
 <script>
   const tabBtns = document.querySelectorAll(".tab-btn");
   const panels = {

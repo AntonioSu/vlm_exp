@@ -324,6 +324,16 @@
     }).filter((s) => s.data.some((v) => v != null));
   }
 
+  // A single measured point (M0 Geo3K @150) is easy to miss on a 15-step axis.
+  // Repeat it as a dashed baseline so M1–M3 can be compared at every step.
+  function expandSingletonBaseline(series) {
+    return series.map((s) => {
+      const vals = s.data.filter((v) => v != null);
+      if (vals.length !== 1) return s;
+      return { ...s, data: s.data.map(() => vals[0]) };
+    });
+  }
+
   function renderEval() {
     const evalData = window.MM_EVAL;
     if (!evalData) return;
@@ -384,7 +394,7 @@
 
     // Mid-step offline curves: only draw when a series has ≥2 points; otherwise show checkpoint cards.
     const fullSteps = evalData.fullSteps || [];
-    const geoSeries = fullSeries("geo3kAcc");
+    const geoSeries = expandSingletonBaseline(fullSeries("geo3kAcc"));
     const maxPts = Math.max(0, ...geoSeries.map((s) => s.data.filter((v) => v != null).length));
     const canDrawCurves = maxPts >= 2;
 
@@ -393,7 +403,7 @@
     const midCaption = document.getElementById("mm-eval-mid-caption");
     if (midCaption) {
       midCaption.innerHTML = canDrawCurves
-        ? "M0 文本 = 2B E1 GRPO 全 step（10–150 /10，虚线）；Geo3K 仅 M0@150。M1–M3 为 MM formal。缺测为断点。"
+        ? "M0 文本 = 2B E1 GRPO 全 step（10–150 /10，虚线）。Geo3K 按已完成 formal step 画点（缺测为断点）；仅 1 个点时虚线横贯为 @150 基线对照。M1–M3 为 MM formal。"
         : "当前每组只有 <strong>1 个</strong>离线点，画不出曲线。上方对照表是主视图；下面列出已完成 checkpoint。";
     }
     if (sparseEl) {
