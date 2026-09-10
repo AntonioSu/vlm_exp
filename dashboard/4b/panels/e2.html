@@ -1,4 +1,4 @@
-    <p class="tertiary">Easy-Boxed（e2_dapo_4b）与 S3（e2_dapo_4b_s3）对比。虚线 = S3 曲线。图例可点击切换。</p>
+    <p class="tertiary">Easy-Boxed（e2_dapo_4b，step 150 原地续训 → 1000）与 S3（e2_dapo_4b_s3）对比。虚线 = S3 曲线。图例可点击切换。</p>
 
     <div class="detail-layout">
       <nav class="detail-toc" aria-label="目录" id="e2-toc">
@@ -63,6 +63,7 @@
               <li><strong>学习信号：</strong>pass 末段与其它组同处高位；entropy 0.256→0.417 全程走高——四组中唯一没有收敛趋势。</li>
               <li><strong>稳定性：</strong>step43 grad_norm→0.96、step59→1.13（其余 0.1–0.3），梯度图上两个尖峰；需关注后期是否熵失控。</li>
               <li><strong>耗时：</strong>均值 ~12.9 min/step（gen ≈56%，update_actor ≈34%）；总墙钟约 32.6h，四组最快。</li>
+              <li><strong>续训：</strong>2026-08-29 起从 <code>global_step_150</code> 原地续到 1000，已跑满（续训墙钟 182h59m，rollout acc 均值 85.1%，末 10 步 pass ~80–93%）。offline/agent 评测轴仍是 10–150（160+ 尚无报告）。</li>
               <li><strong>评测亮点：</strong>offline aime24 峰值 E2@80=80.4%；aime25 峰值 E2@80=62.5%，step150 仍最高（59.6%）。</li>
             </ul>
           </div>

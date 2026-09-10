@@ -21,7 +21,7 @@
         <h2 class="sec-title">概览</h2>
         <div class="callout">
           <div class="title">Easy-Boxed / S3 / V2 对照</div>
-          Easy-Boxed 末段 pass 挤在 88–91%（零优势 group 过多）。V2 用难度池 <code>mix_4b_band</code> + 统一 shaped overlong + KL=none（见 <code>scripts/train/experiments_v2/</code>），与 V1 尺度不同，单独看图。
+          Easy-Boxed 末段 pass 挤在 88–91%（零优势 group 过多）。E2 DAPO 已从 step 150 原地续训满 1000（<code>e2_dapo_4b</code>）；对比图 X 轴随 E2 当前步数延长，E1/E3/E4/E5 在 150 后为断点。V2 用难度池 <code>mix_4b_band</code> + 统一 shaped overlong + KL=none（见 <code>scripts/train/experiments_v2/</code>），与 V1 尺度不同，单独看图。
         </div>
       </section>
 
@@ -123,7 +123,7 @@
 
       <h2 class="sec-title" style="margin-top:8px">Easy-Boxed（E1–E5）</h2>
       <section class="detail-sec" id="cmp-sec-eb-pass">
-        <h2>Pass rate 学习曲线对比（%，5-step MA，全 150 步）</h2>
+        <h2>Pass rate 学习曲线对比（%，5-step MA；E2 续训后轴变长）</h2>
         <div class="chart-card">
           <div class="legend" id="legend-pass"></div>
           <div class="chart-wrap"><canvas id="chart-pass" height="280"></canvas><div class="tooltip" id="tip-pass"></div></div>
@@ -133,14 +133,14 @@
 
       <section class="detail-sec grid2" id="cmp-sec-eb-len">
         <div>
-          <h2>平均响应长度对比（tokens，全 150 步）</h2>
+          <h2>平均响应长度对比（tokens；E2 续训后轴变长）</h2>
           <div class="chart-card">
             <div class="legend" id="legend-len"></div>
             <div class="chart-wrap"><canvas id="chart-len" height="240"></canvas><div class="tooltip" id="tip-len"></div></div>
           </div>
         </div>
         <div>
-          <h2>策略熵对比（entropy，全 150 步）</h2>
+          <h2>策略熵对比（entropy；E2 续训后轴变长）</h2>
           <div class="chart-card">
             <div class="legend" id="legend-ent"></div>
             <div class="chart-wrap"><canvas id="chart-ent" height="240"></canvas><div class="tooltip" id="tip-ent"></div></div>
@@ -150,7 +150,7 @@
 
       <section class="detail-sec grid2" id="cmp-sec-eb-grad">
         <div>
-          <h2>梯度范数对比（grad_norm，全 150 步）</h2>
+          <h2>梯度范数对比（grad_norm；E2 续训后轴变长）</h2>
           <div class="chart-card">
             <div class="legend" id="legend-grad"></div>
             <div class="chart-wrap"><canvas id="chart-grad" height="220"></canvas><div class="tooltip" id="tip-grad"></div></div>

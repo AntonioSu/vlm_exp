@@ -1,5 +1,6 @@
 // Tab loader: fetches panel HTML fragments, injects into container, triggers render
 (function () {
+  const PANEL_V = "20260906133546";
   const container = document.getElementById("panel-container");
   const subtabBtns = document.querySelectorAll(".subtab-btn");
   const cache = {};
@@ -45,7 +46,7 @@
 
   async function loadPanel(tab) {
     if (!cache[tab]) {
-      const resp = await fetch("panels/" + tab + ".html?v=20260813114100");
+      const resp = await fetch("panels/" + tab + ".html?v=" + PANEL_V);
       cache[tab] = await resp.text();
     }
     container.innerHTML = cache[tab];

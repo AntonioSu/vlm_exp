@@ -369,11 +369,11 @@ function drawBarChart(canvasId, tipId, { categories, data, colors, valueSuffix =
 
 function render() {
   renderLegend(document.getElementById("legend-pass"), [
-    { name: "E1 GRPO", data: movingAvg(EXP.e1.pass, 5), color: COLORS.e1 },
-    { name: "E2 DAPO", data: movingAvg(EXP.e2.pass, 5), color: COLORS.e2 },
-    { name: "E3 Dr.GRPO", data: movingAvg(EXP.e3.pass, 5), color: COLORS.e3 },
-    { name: "E4 RLOO", data: movingAvg(EXP.e4.pass, 5), color: COLORS.e4 },
-    { name: "E5 REINFORCE++", data: movingAvg(EXP.e5.pass, 5), color: COLORS.e5 },
+    { name: "E1 GRPO", data: EASY_BOXED_E1_PASS_MA, color: COLORS.e1 },
+    { name: "E2 DAPO", data: EASY_BOXED_E2_PASS_MA, color: COLORS.e2 },
+    { name: "E3 Dr.GRPO", data: EASY_BOXED_E3_PASS_MA, color: COLORS.e3 },
+    { name: "E4 RLOO", data: EASY_BOXED_E4_PASS_MA, color: COLORS.e4 },
+    { name: "E5 REINFORCE++", data: EASY_BOXED_E5_PASS_MA, color: COLORS.e5 },
   ], (visible) => drawLineChart("chart-pass", "tip-pass", {
     categories: STEP_CATS,
     series: visible,
@@ -428,6 +428,7 @@ function render() {
   }
 
   // ---- S3（独立对比图；逐 step 原始 pass，不做移动平均）----
+  const s3Cats = (typeof S3_STEP_CATS !== "undefined") ? S3_STEP_CATS : STEP_CATS;
   const s3PassLegend = document.getElementById("legend-s3-pass");
   if (s3PassLegend) {
   const s3Pass = [];
@@ -438,7 +439,7 @@ function render() {
   if (EXP.s3_e5 && EXP.s3_e5.pass) s3Pass.push({ name: "S3 E5 REINFORCE++", data: EXP.s3_e5.pass, color: COLORS.e5 });
   if (s3Pass.length) {
     renderLegend(s3PassLegend, s3Pass, (visible) => drawLineChart("chart-s3-pass", "tip-s3-pass", {
-      categories: STEP_CATS,
+      categories: s3Cats,
       series: visible,
       yMin: 0, yMax: 80, valueSuffix: "%", height: 280,
     }));
@@ -452,7 +453,7 @@ function render() {
   if (typeof S3_E5_LEN !== "undefined") s3Len.push({ name: "S3 E5 REINFORCE++", data: S3_E5_LEN, color: COLORS.e5 });
   if (s3Len.length && document.getElementById("legend-s3-len")) {
     renderLegend(document.getElementById("legend-s3-len"), s3Len, (visible) => drawLineChart("chart-s3-len", "tip-s3-len", {
-      categories: STEP_CATS,
+      categories: s3Cats,
       series: visible,
       valueSuffix: " tok", height: 240,
       referenceLines: [{ value: 16384, label: "16K cap", tone: "danger" }],
@@ -467,7 +468,7 @@ function render() {
   if (typeof S3_E5_ENTROPY !== "undefined") s3Ent.push({ name: "S3 E5 REINFORCE++", data: S3_E5_ENTROPY, color: COLORS.e5 });
   if (s3Ent.length && document.getElementById("legend-s3-ent")) {
     renderLegend(document.getElementById("legend-s3-ent"), s3Ent, (visible) => drawLineChart("chart-s3-ent", "tip-s3-ent", {
-      categories: STEP_CATS,
+      categories: s3Cats,
       series: visible,
       height: 240,
     }));
@@ -481,7 +482,7 @@ function render() {
   if (typeof S3_E5_GRAD !== "undefined") s3Grad.push({ name: "S3 E5 REINFORCE++", data: S3_E5_GRAD, color: COLORS.e5 });
   if (s3Grad.length && document.getElementById("legend-s3-grad")) {
     renderLegend(document.getElementById("legend-s3-grad"), s3Grad, (visible) => drawLineChart("chart-s3-grad", "tip-s3-grad", {
-      categories: STEP_CATS,
+      categories: s3Cats,
       series: visible,
       height: 220,
     }));
@@ -588,7 +589,7 @@ function fillExpStats(key, e) {
   const avgStepMin = meanOf(e.stepMin || []);
   const fmt = (v, d = 1) => (v == null ? "—" : Number(v).toFixed(d));
   el.innerHTML = [
-    `<div class="stat"><div class="stat-val">${n}/150</div><div class="stat-label">训练步数</div></div>`,
+    `<div class="stat"><div class="stat-val">${n}/${e.targetSteps || 150}</div><div class="stat-label">训练步数</div></div>`,
     `<div class="stat"><div class="stat-val">${fmt(meanOf(last10))}%</div><div class="stat-label">末 10 步 pass 均值</div></div>`,
     `<div class="stat"><div class="stat-val">${fmt(peak.v)}%</div><div class="stat-label">峰值（step ${peak.i}）</div></div>`,
     `<div class="stat"><div class="stat-val">${fmt(meanOf(first5))}%</div><div class="stat-label">首 5 步 pass 均值</div></div>`,
