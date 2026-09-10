@@ -19,22 +19,23 @@
 
         <section class="detail-sec" id="eval-sec-overview">
           <h2 class="sec-title">概览</h2>
-          <p class="sec-sub">评测配置 · Easy 实线 / S3 虚线 / V2 短虚线 / Easy-32K·Ext·OPD·OPSD overlays · step150 汇总</p>
-          <p class="tertiary">Source: <code>evalscope</code>（evalscope 框架，本地 vLLM 0.24 serving 出的 checkpoint 权重，非训练时 verl 内置验证）。评测配置：math 类（aime24/aime25/math_500）<code>temperature=0.6, top_p=0.95, max_tokens=16384, n=8</code>（8 采样取均值 acc）；mmlu_temp <code>n=2</code>。权重来自 FSDP → HuggingFace 合并（<code>trans_weight.sh</code>），路径 <code>model/exp2card/&lt;exp&gt;/merged_&lt;step&gt;</code>。训练数据：Stage-1 <code>polaris_easy_boxed</code> / Stage-3 S3 / V2 difficulty-band。Easy/S3 曲线 step 10→150；有 V2 / Easy-32K / OPD / OPSD 时 X 轴扩到更长（缺报告为断点）。刷新：<code>python3 scripts/monitoring/2b/sync_2b_eval_dashboard.py</code>。</p>
+          <p class="sec-sub">评测配置 · Easy 实线 / S3 虚线 / V2 短虚线 / Easy-32K·Think32K·Ext·OPD·OPSD overlays · step150 汇总</p>
+          <p class="tertiary">Source: <code>evalscope</code>（evalscope 框架，本地 vLLM 0.24 serving 出的 checkpoint 权重，非训练时 verl 内置验证）。评测配置：math 类（aime24/aime25/math_500）<code>temperature=0.6, top_p=0.95, max_tokens=16384, n=8</code>（8 采样取均值 acc）；mmlu_temp <code>n=2</code>。权重来自 FSDP → HuggingFace 合并（<code>trans_weight.sh</code>），路径 <code>model/exp2card/&lt;exp&gt;/merged_&lt;step&gt;</code>。训练数据：Stage-1 <code>polaris_easy_boxed</code> / Stage-3 S3 / V2 difficulty-band。Easy/S3 曲线 step 10→150；有 V2 / Easy-32K / Think32K / OPD / OPSD 时 X 轴扩到更长（缺报告为断点）。刷新：<code>python3 scripts/monitoring/2b/sync_2b_eval_dashboard.py</code>。</p>
           <div class="callout" style="margin-top:10px">
-            <div class="title">Easy-Boxed + S3 offline 均已 15/15；V2 E1 10–250；Easy-24K/32K + Ext 已接入；OPD offline 50/50，agent BFCL/tau 满（@380 tau 插值）；OPSD 训练已接入</div>
+            <div class="title">Easy-Boxed + S3 offline 均已 15/15；V2 E1 10–250；Easy-24K/32K + Ext 已接入；OPD offline 50/50，agent BFCL/tau 满（@380 tau 插值）；OPSD offline 45/50</div>
             <strong>Easy mmlu_temp</strong> 峰值 <strong>E3@100 = 82.42%</strong>；step150 最高 E4（79.74%）。
             <strong>Easy aime24</strong> 峰值 E2/E4@80–100 = 42.50%；
             <strong>aime25</strong> 峰值 <strong>E5@130 = 38.33%</strong>，step150 最高 E4（37.50%）。
             <strong>S3</strong> 整体低于 Easy（aime25 step150 约 22–26%）。
             <strong>V2 E1</strong>：mmlu/aime/math 均 25/30（10–250）；260–300 待评测。
-            <strong>Easy-32K E2</strong>：offline 轴 10–1050（mmlu 105/105；aime24 105/105；aime25 105/105；math 105/105）。agent BFCL 105/105（峰值 @220 <strong>54.3%</strong>）；tau 103/105。
+            <strong>Easy-32K E2</strong>：offline 轴 10–1050（mmlu 105/105；aime24 105/105；aime25 105/105；math 105/105）。agent BFCL 105/105（峰值 @220 <strong>54.3%</strong>）；tau 105/105。
+            <strong>Easy-Think32K E2</strong>：offline 轴 10–500（mmlu 38/50；aime24 38/50；aime25 36/50；math 33/50）；thinking ON · max_tokens=32768。agent 尚未评。
             <strong>Easy-24K E2</strong>：offline 近满（mmlu/aime 30/30，math 29/30）；agent BFCL 29/30（缺 180），tau 24/30。
             <strong>Ext easy-cont E2</strong>：offline 16/30（150–300；@270 为 260/280 均值插值，仅 mmlu/aime24/aime25/MATH-500）；agent BFCL/tau 仅 @150（160–300 权重已清）。
             <strong>Ext easy-cont-24K E2</strong>：offline 16/30（150–300 全点）；agent BFCL 16/16、tau 16/16（150–300 全点，tau 峰值 @290/@300 = <strong>62.5%</strong>）。
             <strong>Ext S1-switch E2</strong>：offline 16/30（150–300）；agent tau 16/30，BFCL 尚未评。
             <strong>OPD 2B←4B</strong>：offline 轴 10–500，mmlu / aime24 / aime25 / MATH-500 均 <strong>50/50</strong>。峰值 mmlu @450 = <strong>79.90%</strong>；aime24 @280/@490 = <strong>25.83%</strong>；aime25 @220 = <strong>26.66%</strong>；MATH-500 @350 = <strong>81.62%</strong>。agent BFCL <strong>50/50</strong>（峰值 @210 = <strong>53.6%</strong>）；tau <strong>50/50</strong>（@380 为 370/390 均值插值 = <strong>45.0%</strong>，当时 exit=1；峰值 @420 = <strong>60.0%</strong>）。四卡队列已收工。金色短点叠在 E2 / 评测页。
-            <strong>OPSD 2B←2B</strong>：训练曲线已叠进 E2（青色密点 = 冻结 2B teacher 自蒸馏，对照 OPD 的 4B teacher）。offline / agent 尚未评；有报告时由 <code>sync_2b_eval_dashboard.py</code> / <code>sync_2b_agent_dashboard.py</code> 自动叠加。
+            <strong>OPSD 2B←2B</strong>：offline 已接入（mmlu 45/50、aime24 45/50、aime25 45/50、math 45/50）。峰值 mmlu @390 = 78.12%；aime24 @170/@260 = 21.25%；aime25 @500 = 22.50%；MATH-500 @270 = 77.28%。训练曲线已叠进 E2（青色密点 = 冻结 2B teacher 自蒸馏，对照 OPD 的 4B teacher）。agent BFCL 50/50（峰值 @60 = 51.3%）；tau 50/50（峰值 @170/@290/@330 = 55.0%）。
             Agent 柱状图取 step150，缺报告则为空。
           </div>
           <section class="grid2" style="margin-top:20px">

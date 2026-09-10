@@ -1,7 +1,7 @@
 // Tab loader: fetches panel HTML fragments, injects into container, triggers render
 (function () {
   // Bumped by sync_2b_*_dashboard.py so eval/e2 captions are not stuck on an old fragment.
-  const PANEL_V = "20260825170453";
+  const PANEL_V = "20260910110147";
   const container = document.getElementById("panel-container");
   const subtabBtns = document.querySelectorAll(".subtab-btn");
   const cache = {};

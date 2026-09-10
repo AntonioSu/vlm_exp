@@ -293,7 +293,7 @@
         <section class="detail-sub" id="opd-sec-eval-agent">
           <h2 class="sec-title">Agent 智能体</h2>
           <p class="sec-sub">OPD 2B←4B · Easy-24K 对照 · tau-bench</p>
-          <p class="tertiary">Source: <code>evalscope/outputs/agent2</code>。OPD agent（10–500）：BFCL 50/50（峰值 @210 = 53.6%）；tau 50/50（@380 为 370/390 均值插值 = 45.0%，当时 exit=1；峰值 @420 = 60.0%）。OPSD agent 尚未评。数据见 <code>js/data-eval-offline.js</code>（<code>AGENT_OPD</code>）。刷新：<code>python3 scripts/monitoring/2b/sync_2b_agent_dashboard.py</code>。</p>
+          <p class="tertiary">Source: <code>evalscope/outputs/agent2</code>。OPD agent（10–500）：BFCL 50/50（峰值 @210 = 53.6%）；tau 50/50（@380 为 370/390 均值插值 = 45.0%，当时 exit=1；峰值 @420 = 60.0%）。OPSD agent 见 OPSD 页（BFCL/tau 50/50）。数据见 <code>js/data-eval-offline.js</code>（<code>AGENT_OPD</code> / <code>AGENT_OPSD</code>）。刷新：<code>python3 scripts/monitoring/2b/sync_2b_agent_dashboard.py</code>。</p>
           <div style="margin-top:12px">
             <h2>tau-bench（%）</h2>
             <div class="chart-card"><div class="legend" id="legend-opd-agent-tau"></div><div class="chart-wrap"><canvas id="chart-opd-agent-tau" height="200"></canvas><div class="tooltip" id="tip-opd-agent-tau"></div></div></div>

@@ -56,7 +56,8 @@
             <ul class="intro-points">
               <li><strong>算法设定：</strong>k1 + policy gradient · 关 task reward · 关 KL/ref。脚本 <code>experiments_opd_distill/run_opsd_easy_24k_2b.sh</code>。</li>
               <li><strong>训练：</strong>500/500 · ~61.90h · rollout acc 均值 41.0%。</li>
-              <li><strong>offline / agent：</strong>offline 报告已开始写入，agent 尚未评测。<code>sync_2b_eval_dashboard.py</code> / <code>sync_2b_agent_dashboard.py</code> 会自动叠 <code>EVAL_FULL_OPSD</code> / <code>AGENT_OPSD</code>。</li>
+              <li><strong>offline：</strong>已接入（mmlu 45/50、aime24 45/50、aime25 45/50、math 45/50）。峰值 mmlu @390 = 78.12%；aime24 @170/@260 = 21.25%；aime25 @500 = 22.50%；MATH-500 @270 = 77.28%。</li>
+              <li><strong>agent：</strong>BFCL 50/50（峰值 @60 = 51.3%）；tau 50/50（峰值 @170/@290/@330 = 55.0%）。</li>
             </ul>
           </div>
           <div class="stats" id="opsd-stats" style="margin-top:12px"></div>
@@ -260,7 +261,7 @@
         <section class="detail-sec" id="opsd-sec-eval">
           <h2 class="sec-title">评测</h2>
           <p class="sec-sub">evalscope offline · OPSD 2B←2B · Easy-24K / OPD 对照</p>
-          <p class="tertiary">OPSD offline 报告已开始写入，当前覆盖会随评测进度更新。图上叠 Easy-24K（点线）、OPD 2B←4B（短点，10–500 已满）与 OPSD（密点）。数据自动走 <code>EVAL_FULL_OPSD</code>；刷新：<code>python3 scripts/monitoring/2b/sync_2b_eval_dashboard.py</code>。</p>
+          <p class="tertiary">OPSD offline 已接入（mmlu 45/50、aime24 45/50、aime25 45/50、math 45/50）。峰值 mmlu @390 = 78.12%；aime24 @170/@260 = 21.25%；aime25 @500 = 22.50%；MATH-500 @270 = 77.28%。图上叠 Easy-24K（点线）、OPD 2B←4B（短点，10–500 已满）与 OPSD（密点）。数据自动走 <code>EVAL_FULL_OPSD</code>；刷新：<code>python3 scripts/monitoring/2b/sync_2b_eval_dashboard.py</code>。</p>
         </section>
 
         <section class="detail-sub" id="opsd-sec-eval-mmlu">
@@ -292,7 +293,7 @@
         <section class="detail-sub" id="opsd-sec-eval-agent">
           <h2 class="sec-title">Agent 智能体</h2>
           <p class="sec-sub">OPSD 2B←2B · Easy-24K / OPD 对照 · tau-bench</p>
-          <p class="tertiary">Source: <code>evalscope/outputs/agent2</code>。OPSD agent 尚未评。对照可叠 OPD（BFCL 50/50 峰值 @210 = 53.6%；tau 峰值 @420 = 60.0%）与 Easy-24K。刷新：<code>python3 scripts/monitoring/2b/sync_2b_agent_dashboard.py</code>。</p>
+          <p class="tertiary">Source: <code>evalscope/outputs/agent2</code>。OPSD agent（10–500）：BFCL 50/50（峰值 @60 = 51.3%）；tau 50/50（峰值 @170/@290/@330 = 55.0%）。对照可叠 OPD（BFCL 50/50 峰值 @210 = 53.6%；tau 峰值 @420 = 60.0%）与 Easy-24K。刷新：<code>python3 scripts/monitoring/2b/sync_2b_agent_dashboard.py</code>。</p>
           <div style="margin-top:12px">
             <h2>tau-bench（%）</h2>
             <div class="chart-card"><div class="legend" id="legend-opsd-agent-tau"></div><div class="chart-wrap"><canvas id="chart-opsd-agent-tau" height="200"></canvas><div class="tooltip" id="tip-opsd-agent-tau"></div></div></div>
