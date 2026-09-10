@@ -1,10 +1,10 @@
 // ---- Multimodal offline eval (Geo3K + evalscope) ----
-// Auto-generated 2026-08-25 by scripts/analysis/gen_mm_eval_dashboard_data.py
+// Auto-generated 2026-08-27 by scripts/analysis/gen_mm_eval_dashboard_data.py
 // Refresh: python3 scripts/analysis/gen_mm_eval_dashboard_data.py
 window.MM_EVAL = {
-  "generatedAt": "2026-08-25",
+  "generatedAt": "2026-08-27",
   "generatedBy": "scripts/analysis/gen_mm_eval_dashboard_data.py",
-  "note": "M0 文本曲线 = 2B E1 GRPO（e1_grpo_2b，10–150 /10）；Geo3K formal @150。 M1 formal @10/20/30/40/50/60/70/80/90/100/110/120/130/140/150；M2 formal @10/20/30/40/50/60/70/80/90/100/110/120/130/140/150；M3 formal @10/20/30/40/50/60/70/80/90/100/110/120/130/140/150。 M1 light Geo3K steps：70/100（n=1 / 512，不与 formal 横比）。 全 step 曲线只画 formal（10–150 /10）；缺测为 null。 文本 evalscope 未出报告的 step 仅有 Geo3K。",
+  "note": "M0 文本曲线 = 2B E1 GRPO（e1_grpo_2b，10–150 /10）；Geo3K formal @10/20/30/40/50/60/70/80/90/100/110/120/130/140/150。 M1 formal @10/20/30/40/50/60/70/80/90/100/110/120/130/140/150；M2 formal @10/20/30/40/50/60/70/80/90/100/110/120/130/140/150；M3 formal @10/20/30/40/50/60/70/80/90/100/110/120/130/140/150。 M1 light Geo3K steps：70/100（n=1 / 512，不与 formal 横比）。 全 step 曲线只画 formal（10–150 /10）；缺测为 null。 文本 evalscope 未出报告的 step 仅有 Geo3K。",
   "metrics": [
     {
       "key": "geo3kAcc",
@@ -46,7 +46,7 @@ window.MM_EVAL = {
       "step": 150,
       "visionPct": 0,
       "config": "formal",
-      "configNote": "文本曲线复用 e1_grpo_2b 全 step（10–150 /10）正式 evalscope。 Geo3K formal 已完成 step：150（n=8 / 16K）。",
+      "configNote": "文本曲线复用 e1_grpo_2b 全 step（10–150 /10）正式 evalscope。 Geo3K formal 已完成 step：10/20/30/40/50/60/70/80/90/100/110/120/130/140/150（n=8 / 16K）。",
       "geo3k": {
         "source": "/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/evaluation/geo3k/m0_e1_grpo_2b_step150.jsonl.summary.json",
         "questions": 601,
@@ -70,6 +70,20 @@ window.MM_EVAL = {
         "aime24": "/data/juicefs-white/5281-gpu-a100/lijunyi/evalscope/outputs/exp2card_mm/m0_e1_grpo_2b/20260722_133001/reports/models/aime24.json",
         "aime25": "/data/juicefs-white/5281-gpu-a100/lijunyi/evalscope/outputs/exp2card_mm/m0_e1_grpo_2b/20260722_133001/reports/models/aime25.json",
         "math500": "/data/juicefs-white/5281-gpu-a100/lijunyi/evalscope/outputs/exp2card_mm/m0_e1_grpo_2b/20260722_133001/reports/models/math_500.json",
+        "geo3k@10": "/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/evaluation/geo3k/m0_e1_grpo_2b_step10.jsonl.summary.json",
+        "geo3k@20": "/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/evaluation/geo3k/m0_e1_grpo_2b_step20.jsonl.summary.json",
+        "geo3k@30": "/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/evaluation/geo3k/m0_e1_grpo_2b_step30.jsonl.summary.json",
+        "geo3k@40": "/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/evaluation/geo3k/m0_e1_grpo_2b_step40.jsonl.summary.json",
+        "geo3k@50": "/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/evaluation/geo3k/m0_e1_grpo_2b_step50.jsonl.summary.json",
+        "geo3k@60": "/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/evaluation/geo3k/m0_e1_grpo_2b_step60.jsonl.summary.json",
+        "geo3k@70": "/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/evaluation/geo3k/m0_e1_grpo_2b_step70.jsonl.summary.json",
+        "geo3k@80": "/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/evaluation/geo3k/m0_e1_grpo_2b_step80.jsonl.summary.json",
+        "geo3k@90": "/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/evaluation/geo3k/m0_e1_grpo_2b_step90.jsonl.summary.json",
+        "geo3k@100": "/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/evaluation/geo3k/m0_e1_grpo_2b_step100.jsonl.summary.json",
+        "geo3k@110": "/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/evaluation/geo3k/m0_e1_grpo_2b_step110.jsonl.summary.json",
+        "geo3k@120": "/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/evaluation/geo3k/m0_e1_grpo_2b_step120.jsonl.summary.json",
+        "geo3k@130": "/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/evaluation/geo3k/m0_e1_grpo_2b_step130.jsonl.summary.json",
+        "geo3k@140": "/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/evaluation/geo3k/m0_e1_grpo_2b_step140.jsonl.summary.json",
         "geo3k@150": "/data/juicefs-white/5281-gpu-a100/lijunyi/vlm_exp/evaluation/geo3k/m0_e1_grpo_2b_step150.jsonl.summary.json"
       }
     },
@@ -262,37 +276,37 @@ window.MM_EVAL = {
       "color": "#2563eb",
       "config": "formal",
       "geo3kAcc": [
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
+        65.06,
+        66.35,
+        65.93,
+        64.73,
+        66.64,
+        66.62,
+        65.37,
+        65.74,
+        63.37,
+        61.86,
+        61.48,
+        62.62,
+        58.49,
+        58.78,
         57.26
       ],
       "geo3kPass": [
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
+        89.35,
+        90.52,
+        90.68,
+        89.18,
+        88.69,
+        90.18,
+        88.85,
+        89.35,
+        88.52,
+        87.02,
+        87.02,
+        88.02,
+        84.86,
+        85.69,
         83.69
       ],
       "math500": [
@@ -413,10 +427,10 @@ window.MM_EVAL = {
         75.13,
         76.68,
         76.97,
-        null,
-        null,
+        77.42,
+        77.2,
         77.88,
-        null,
+        76.63,
         78.25,
         79.15
       ],
@@ -431,7 +445,7 @@ window.MM_EVAL = {
         77.79,
         77.59,
         76.92,
-        null,
+        77.25,
         77.78,
         77.94,
         77.95,
@@ -448,7 +462,7 @@ window.MM_EVAL = {
         19.17,
         21.25,
         18.75,
-        null,
+        21.25,
         20.0,
         19.17,
         25.0,
@@ -465,7 +479,7 @@ window.MM_EVAL = {
         17.91,
         19.59,
         22.91,
-        null,
+        18.34,
         18.33,
         14.16,
         20.84,
@@ -633,7 +647,7 @@ window.MM_EVAL = {
         77.05,
         75.25,
         80.7,
-        null,
+        80.87,
         80.12
       ],
       "mmlu": [
@@ -650,7 +664,7 @@ window.MM_EVAL = {
         75.95,
         76.5,
         77.3,
-        null,
+        77.51,
         78.02
       ],
       "aime24": [
@@ -667,7 +681,7 @@ window.MM_EVAL = {
         17.5,
         18.33,
         22.92,
-        null,
+        23.33,
         24.17
       ],
       "aime25": [
@@ -684,7 +698,7 @@ window.MM_EVAL = {
         15.0,
         14.16,
         16.66,
-        null,
+        20.84,
         20.41
       ]
     }
@@ -697,8 +711,8 @@ window.MM_EVAL = {
   "summary": {
     "m0": {
       "geo3kAcc": [
-        null,
-        null,
+        66.64,
+        61.86,
         57.26
       ],
       "math500": [
@@ -725,7 +739,7 @@ window.MM_EVAL = {
       ],
       "math500": [
         76.02,
-        null,
+        77.42,
         79.15
       ],
       "mmlu": [
